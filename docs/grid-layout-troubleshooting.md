@@ -1,6 +1,6 @@
 # Fix compact grids that leave unused space
 
-Use this guide when a screen shows smaller inventory tiles but keeps too few columns or rows. The sell-menu fix in revision 12 targets Steam build `26329202`. Its live UI validation is pending.
+Use this guide when a screen shows smaller inventory tiles but keeps too few columns or rows. The sell-menu fix targets Steam build `26329202`. The user confirmed its visible result in revision 13 after the failed revision 12 bundle was separated from the buy-menu styling changes.
 
 ## Identify the screen's own layout
 
