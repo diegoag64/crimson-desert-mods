@@ -52,6 +52,17 @@ $rollbackOptions = $options.Clone(); $rollbackOptions.Package = $previous; $roll
 Invoke-GridChange -Action Install @rollbackOptions -PreviousPackage $package -PreviousManifest $manifest
 if ((Get-GridHash (Join-Path $game 'bin64\NativeGrid.asi')) -ne $prior.files[0].sha256) { throw 'Rollback did not restore previous bytes.' }
 Write-Output 'PASS: explicit downgrade restores previous package'
+# Additional archive inputs must be checked before any owned file changes.
+[IO.Directory]::CreateDirectory((Join-Path $game '0020')) | Out-Null
+$extraPath = Join-Path $game '0020\0.pamt'
+[IO.File]::WriteAllText($extraPath, 'synthetic localization index')
+$manifest | Add-Member -NotePropertyName extra_indexes -NotePropertyValue ([pscustomobject]@{'0020/0.pamt'=(Get-GridHash $extraPath)})
+Invoke-GridChange -Action Verify @options -PreviousPackage $previous -PreviousManifest $prior
+[IO.File]::WriteAllText($extraPath, 'changed localization index')
+Assert-Throws { Invoke-GridChange -Action Install @options -PreviousPackage $previous -PreviousManifest $prior } 'changed localization index refuses mutation'
+$manifest.extra_indexes = [pscustomobject]@{'../0.pamt'=('a' * 64)}
+Assert-Throws { Invoke-GridChange -Action Verify @options -PreviousPackage $previous -PreviousManifest $prior } 'unsafe extra index path refused'
+$manifest.PSObject.Properties.Remove('extra_indexes')
 [IO.File]::WriteAllText((Join-Path $game '0012\0.pamt'), 'changed index')
 Assert-Throws { Invoke-GridChange -Action Install @options -PreviousPackage $previous -PreviousManifest $prior } 'changed game index refuses mutation'
 Write-Output "Synthetic installer fixtures retained at $root"

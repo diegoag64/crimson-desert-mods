@@ -38,6 +38,12 @@ function Invoke-GridChange {
     )) {
         if ((Get-GridHash (Join-Path $Game $check.path)) -ne $check.hash) { throw "Game changed: $($check.path)" }
     } }
+    if ($Action -ne 'Uninstall' -and $Manifest.PSObject.Properties['extra_indexes']) {
+        foreach ($index in $Manifest.extra_indexes.PSObject.Properties) {
+            if ($index.Name -cnotmatch '^[0-9]{4}/0\.pamt$' -or $index.Value -cnotmatch '^[a-f0-9]{64}$') { throw 'Invalid extra index guard.' }
+            if ((Get-GridHash (Join-Path $Game $index.Name)) -cne $index.Value) { throw "Game changed: $($index.Name)" }
+        }
+    }
     $bin = Join-Path $Game 'bin64'
     $other = @(Get-ChildItem -LiteralPath $bin -File -Filter '*.asi' | Where-Object Name -ne 'NativeGrid.asi')
     if ($other.Count) { throw 'Another ASI is installed. Resolve the shared loader before changing this package.' }

@@ -24,7 +24,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tests\test_installer.ps1
 .venv\Scripts\python.exe -m unittest discover -s tests -p "test_*.py"
 ```
 
-Six native suites exercise nine raw-read cases and ten full-read cases, then repeat the harness with a missing interface, a changed executable, and three changed method fingerprints. The harness checks ABI arguments, return values, `LastError`, canaries, exact bytes, partial reads, invalid pointers, read-only buffers, resize failure, and nested reads.
+Seven native suites exercise nine raw-read cases and ten full-read cases, then repeat the harness with a missing interface, a changed executable, and three changed method fingerprints. A final suite repeats the read cases with a shorter replacement to check reuse of the existing allocation. The harness checks ABI arguments, return values, `LastError`, canaries, exact bytes, partial reads, invalid pointers, read-only buffers, resize failure, and nested reads.
 
 Installer fixtures use synthetic files under `build`. They never touch the real game. All tests must pass before installation. Do not run Python with `-O`, because transform assertions are required.
 
@@ -41,6 +41,8 @@ The output includes `manifest.json`, three install files, licenses, fixture resu
 To include the experimental six-column NPC buy-store grid, add `--experimental-shop` and choose another output directory, such as `build\shop-6`. The default remains inventory only. The shop transforms rename scoped component styles while retaining native script and binding attributes. They do not add purchase logic. Shop behavior still needs an active runtime and live UI validation.
 
 The current build uses allocator RVA `0x1501e20` and verifies the direct call at full-read RVA plus `0x80`. Current game originals are extracted afresh, including the two component binaries changed by the update. The new pins follow a separate offline method and allocator audit. An unknown EXE or changed asset is refused. Successful offline builds do not establish the visible in-game result.
+
+On build `26329202`, experimental shop packages also read `0020/0.pamt` and the English `localstringinfo.paloc` resource. The `shop_requirements` metadata pins this index and both resource hashes. The installer verifies the additional index before replacement. The localization transform changes three short requirement labels to their original inline icons and verifies that all other records remain identical. Its compressed envelope changes size, so delivery requires the existing full-read hook. See [requirement-label troubleshooting](grid-layout-troubleshooting.md#requirement-text-overflows-a-shop-card) for the format, scope, and live checks.
 
 ## Audit files before publication
 

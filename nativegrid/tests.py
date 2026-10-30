@@ -29,5 +29,12 @@ def test(output, gcc, minhook):
     run('changed executable',[],False);exe.write_bytes(data)
     for index,name in [(0,'raw read'),(1,'full read'),(2,'buffer resize')]:
         compile_flexible(folder,data,payloads,rvas,gcc,minhook,bad=index);run('changed '+name+' fingerprint',[],False)
+    # Localization recompression can shrink a resource. Exercise the existing
+    # allocation-reuse path, descriptor length, terminators and failure behavior.
+    subprocess.run([str(gcc),'-DFIXTURE_SHRINK','-O2','-Wall','-Wextra','-Werror','-static','-o',str(exe),str(SOURCE/'fixtures/native_grid_fixture.c')],check=True,timeout=60)
+    data=exe.read_bytes(); rvas=[exported_rva(data,n) for n in ['fixture_read','fixture_full','fixture_resize']]
+    payloads[1]=(payloads[1][0],payloads[1][1],b'grid')
+    compile_flexible(folder,data,payloads,rvas,gcc,minhook)
+    run('shorter payload preserves descriptor, terminators and read failures',[],True)
     (output/'fixture-results.json').write_text(json.dumps(results,indent=2)+'\n')
     return results

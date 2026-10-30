@@ -23,6 +23,8 @@ nativegrid/pe.py
 nativegrid/runtime/native_grid.c
 nativegrid/runtime/native_grid_flexible_resolver.h
 nativegrid/shop.py
+nativegrid/requirements.py
+tests/test_requirements.py
 nativegrid/shop_grid.css
 nativegrid/supported_build.json
 nativegrid/tests.py

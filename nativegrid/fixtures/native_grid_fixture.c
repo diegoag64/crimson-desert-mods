@@ -88,7 +88,11 @@ int legacy_tests(int argc,char **argv) {
 
 struct Buffer {void *data; DWORD capacity,length; unsigned char tracking,pad[7];};
 static const char variable_before[]="grid row=9";
+#ifdef FIXTURE_SHRINK
+static const char variable_after[]="grid";
+#else
 static const char variable_after[]="grid row=11";
+#endif
 static unsigned full_mode,full_calls,resize_calls;
 static int context_value;
 

@@ -55,6 +55,28 @@ For component style changes, use `component_end` in `nativegrid/shop.py`. In the
 
 The earlier shop code sliced from a component name to the next name. That changed one root and the next component's children. The visible card retained its old icons and labels. Revision 10 fixed this by starting after the previous component's footer and ending after the target component's footer. The regression fixture in `tests/test_shop.py` reproduces this order and fails against the earlier implementation.
 
+## Requirement text overflows a shop card
+
+The Trust and Contract icons are inline emoji tokens inside a localized string. They are not separate child widgets. The native currency control puts that string in `CoinMoneyLabel` or `CoinMoneyImpossibleLabel`. Narrowing the card does not remove its words, and hiding the label removes its icons too.
+
+For English on build `26329202`, revision 15 changes exactly these short-label records in `gamedata/stringtable/binary__/eng/localstringinfo.paloc`:
+
+| Decimal key | Short label | Replacement |
+| --- | --- | --- |
+| `578823104575307952` | Ranch + Trust | Original ranch and Trust emoji tokens |
+| `5944274002255020208` | Trust | Original Trust emoji token |
+| `6675443097217794224` | Trust + Contract Complete | Original Trust and contract emoji tokens |
+
+The detailed warning is a different record, `15741278594103509168`, and remains unchanged. Generic Trust text, names, item data, and purchase rules also remain unchanged. These are localization-record replacements, so any other control that reuses one of the three exact short-label keys also receives its icons-only value. The change is not a global word substitution. Other languages and unaudited requirement labels are outside its scope.
+
+The implementation is `nativegrid/requirements.py`. The audited resource has a 512-byte envelope: `paloc` and four zero bytes, two little-endian u32 sizes at offsets 9 and 13, and zero padding through offset 511. Its body is an LZ4 block. The decoded table consists of tag, reserved value, length-prefixed decimal key, and length-prefixed UTF-8 value records, followed by a u32 record count. Preserve the tag and reserved value; they are not string lengths. Reject unknown envelope bytes, truncated records, duplicate keys, mismatched counts, missing keys, or unexpected original values.
+
+The transform retains emoji tokens in their original order and case, recompresses the body, and updates both size fields. It independently decodes the result and checks that all 6,737 non-target records remain byte-identical. Do not pad a compressed binary with CSS-style spaces or modify signed archives. Recompression changes the resource length, so confirm a `REPLACED resized` runtime entry for the English PALOC path after a fresh launch. If there is no entry, investigate when and how localization is loaded before changing the label styling again.
+
+For layout, scope `coin-money-label` to the shop components in both compiled and source templates. Keep the native visibility classes and selectors. The current label uses a normal 13-pixel font and a 24-pixel line box in the price row. Never use a zero-sized font to suppress the words: that was part of the earlier failed launch package, whose exact crash cause remains unknown.
+
+After installation, verify that both requirement icons fit within the locked card, the selected-item panel still explains the restriction, and selecting an unavailable item cannot bypass the original requirement. Also test an ordinary purchasable item and the adjacent empty slot. Offline record checks do not establish runtime delivery or glyph placement.
+
 ## Verify and keep a rollback checkpoint
 
 Build into a new ignored directory. Run the Python checks, native fixtures, installer fixtures, and publication audit described in [the build guide](build.md). Add new source or documentation paths to both `.gitignore` and `tracked-files.txt`. Stage explicit paths and commit each fix separately.
