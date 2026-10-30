@@ -1,6 +1,7 @@
 """Check shop transform scope and preservation of native handler attributes."""
 import unittest
 import struct
+import xml.etree.ElementTree as ET
 from nativegrid.shop import style_template, style_binary, transform, STYLE_MAP, compact_css, fit_bytes, component_end, validate_shop_selectors
 from nativegrid.inventory import sized
 
@@ -15,7 +16,7 @@ class ShopChecks(unittest.TestCase):
     def test_compiled_cards_isolate_shared_styles_and_preserve_bindings(self):
         styles = b''.join(sized(name) for name in STYLE_MAP if name != 'two-colunm-item-icon')
         bindings = (sized('cpp-item-slot-name') + sized('selector-item-price') + sized('.cpp-item-slot-price')
-                    + sized('coin-money-label') + sized('CoinMoneyImpossibleLabel'))
+                    + sized('CoinMoneyImpossibleLabel'))
         def record(name):
             # The fixture puts child data BEFORE the named root footer, as the
             # game does. The previous name-to-next-name slice edits the wrong card.
@@ -37,7 +38,7 @@ class ShopChecks(unittest.TestCase):
         self.assertEqual(result.count(bindings), 5)
         self.assertEqual(len(records), 2)
         first = result[len(previous):len(previous)+len(card)]
-        for name in ('font-text-minor-white', 'font-text-sub-white', 'self-center', 'item-icon-wrap'):
+        for name in ('font-text-minor-white', 'font-text-sub-white', 'self-center', 'item-icon-wrap', 'coin-money-label'):
             self.assertNotIn(sized(name), first)
             self.assertIn(sized(STYLE_MAP[name]), first)
 
@@ -58,8 +59,14 @@ class ShopChecks(unittest.TestCase):
         for attribute in (b'script="native_buy"', b'script="native_quantity"', b'selector-item="value"', b'tabindex="7"'):
             self.assertIn(attribute, after)
         self.assertIn(b'<component name="Other"><widget css="two-colunm-item-icon" script="unchanged"></widget></component>', after)
-        self.assertNotIn(b'override selector="#CoinMoneyLabel"', after)
-        self.assertNotIn(b'override selector="#CoinMoneyImpossibleLabel"', after)
+        root = ET.fromstring(b'<root>' + after + b'</root>')
+        for component in root:
+            overrides = [node for node in component.iter('override')
+                         if node.get('selector') in ('#CoinMoneyLabel', '#CoinMoneyImpossibleLabel')]
+            self.assertEqual(len(overrides), 2 if component.get('name') == 'StoreInfoIcon' else 0)
+            for override in overrides:
+                self.assertEqual(override.attrib, {'selector': override.get('selector'),
+                    'override-type': 'merge', 'css': STYLE_MAP['coin-money-label']})
         self.assertEqual(len(after), len(source))
 
     def test_css_compaction_preserves_strings_and_descendant_selectors(self):

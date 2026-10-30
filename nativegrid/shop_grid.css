@@ -11,15 +11,16 @@
 .shop-grid-title-text { width: 116px; max-height: 17px; }
 .shop-grid-single-line { white-space: nowrap; overflow-x: hidden; overflow-y: hidden; }
 #ItemIconTradePriceWrap.shop-grid-pricebox { position: absolute; left: 3px; top: 79px; width: 118px; height: 17px; margin: 0px; display: flex; justify-content: center; align-items: center; }
-.coin-money-list-wrap.shop-grid-price { position: relative; width: auto; height: 17px; display: flex; justify-content: center; align-items: center; }
+.coin-money-list-wrap.shop-grid-price { position: relative; width: 118px; height: 17px; display: flex; justify-content: center; align-items: center; }
 .shop-grid-coinlist { position: relative; width: auto; height: 17px; display: flex; align-items: center; }
 .shop-grid-coinwrap { position: relative; width: auto; height: 17px; display: flex; align-items: center; margin: 0px 3px 0px 0px; }
 .shop-grid-coinicon { width: 14px; height: 14px; margin-right: 2px; }
 .shop-grid-coinvalue { position: relative; top: 0px; width: auto; height: 17px; line-height: 17px; font-size: 13px; display: inline-block; white-space: nowrap; }
 .shop-grid-pricevalue { height: 17px; line-height: 17px; font-size: 13px; }
-/* Both compiled labels already carry these classes. Their native rule sets
-   position: relative; use a direct compound selector and a positional offset. */
-.coin-money-label.shop-grid-font-minor { top: -18px; }
+/* Explicit box inside the price row for both compiled and source-created labels.
+   Keep native display/visibility states; grouped selectors are not supported here. */
+#CoinMoneyLabel.shop-grid-requirement { position: absolute; left: 0px; top: 0px; width: 118px; height: 24px; line-height: 24px; font-size: 13px; margin: 0px; text-align: center; justify-content: center; align-items: center; white-space: nowrap; }
+#CoinMoneyImpossibleLabel.shop-grid-requirement { position: absolute; left: 0px; top: 0px; width: 118px; height: 24px; line-height: 24px; font-size: 13px; margin: 0px; text-align: center; justify-content: center; align-items: center; white-space: nowrap; }
 #ItemAvailableCountWrap.shop-grid-counts { position: absolute; left: 4px; top: 97px; right: auto; bottom: auto; width: 116px; height: 14px; display: flex; justify-content: center; align-items: center; white-space: nowrap; }
 .shop-grid-counts-extra { bottom: auto; }
 .shop-grid-stock-icon { position: relative; width: 12px; height: 12px; background-image: textureid(cd_icon_common_instock_item); margin-right: 2px; }

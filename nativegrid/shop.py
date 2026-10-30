@@ -59,6 +59,7 @@ STYLE_NAMES={
     'coin-money-wrap':'shop-grid-coinwrap',
     'small-coin-icon':'shop-grid-coinicon',
     'coin-money-value':'shop-grid-coinvalue',
+    'coin-money-label':'shop-grid-requirement',
     'store-item-coin-money-value':'shop-grid-pricevalue',
     'item-available-count-wrap':'shop-grid-counts',
     'store-info-count-wrap':'shop-grid-counts-extra',
@@ -202,7 +203,8 @@ def style_template(before):
             coin=re.search(r'<widget id="ItemIconPrice".*?</widget>',block,re.S);assert coin
             additions=''
             for target,style in [('GoldCoinMark','shop-grid-coinicon'),('SilverCoinMark','shop-grid-coinicon'),('BronzeCoinMark','shop-grid-coinicon'),
-                ('GoldCoinWarp','shop-grid-coinwrap'),('SilverCoinWarp','shop-grid-coinwrap'),('BronzeCoinWarp','shop-grid-coinwrap'),('DefaultCoinWrap','shop-grid-coinlist')]:
+                ('GoldCoinWarp','shop-grid-coinwrap'),('SilverCoinWarp','shop-grid-coinwrap'),('BronzeCoinWarp','shop-grid-coinwrap'),('DefaultCoinWrap','shop-grid-coinlist'),
+                ('CoinMoneyLabel','shop-grid-requirement'),('CoinMoneyImpossibleLabel','shop-grid-requirement')]:
                 additions+=f'<override selector="#{target}" override-type="merge" css="{CSS_ALIASES[style]}"></override>\n'
             block=block[:coin.end()-9]+additions+block[coin.end()-9:]
         for attr in ['selector-[\\w-]+','script','tabindex','tabIndexGroup']:
