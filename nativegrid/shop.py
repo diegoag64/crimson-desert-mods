@@ -15,7 +15,9 @@ SHOP_PATHS = (
 def transform(path, before):
     if path.endswith('/itemicon.css'):
         # The caller supplies the already transformed inventory stylesheet.
-        return before + b'\n' + Path(__file__).with_name('shop_grid.css').read_bytes()
+        styles = Path(__file__).with_name('shop_grid.css').read_text(encoding='utf8')
+        styles = re.sub(r'(?<=\.)shop-grid-[\w-]+', lambda m: CSS_ALIASES[m[0]], styles)
+        return fit_bytes(compact_css(before.decode('utf-8-sig') + '\n' + styles).encode('utf8'), len(before))
     if path.endswith('npcstorebuyview2_game.uibinary'):
         old = sized('column') + sized('2') + sized('row') + sized('4')
         new = sized('column') + sized('6') + sized('row') + sized('3')
@@ -30,10 +32,10 @@ def transform(path, before):
     if path.endswith('npcstorebuyview2.html'):
         needle = b'<widget id="NpcStoreList"'
         assert before.count(needle) == 1
-        return before.replace(needle, needle + b' column="6" row="3"')
+        return fit_markup(before.replace(needle, needle + b' column="6" row="3"'), len(before))
     raise ValueError('Unsupported shop asset: ' + path)
 
-STYLE_MAP={
+STYLE_NAMES={
     'item-icon-wrap':'shop-grid-root',
     'self-center':'shop-grid-center',
     'size-100per':'shop-grid-fill',
@@ -67,6 +69,46 @@ STYLE_MAP={
     'item-icon-disabled-action-layer-colunm':'shop-grid-disabled',
 }
 
+# Some consumers call the fixed-buffer read directly. Keep every serialized
+# class and every shop resource at its original length so both hooks replace it.
+STYLE_MAP = {old: old[:-1] + '_' for old in STYLE_NAMES}
+CSS_ALIASES = {name: STYLE_MAP[old] for old, name in STYLE_NAMES.items()}
+assert len(set(STYLE_MAP.values())) == len(STYLE_MAP)
+assert all(len(old) == len(new) for old, new in STYLE_MAP.items())
+
+
+def fit_bytes(data, size):
+    if len(data) > size:
+        raise ValueError(f'Shop replacement exceeds original size: {len(data)} > {size}')
+    return data + b' ' * (size - len(data))
+
+
+def fit_markup(data, size):
+    # Only discard formatting between tags; text nodes and attributes stay exact.
+    return fit_bytes(re.sub(rb'>[\r\n\t ]+<', b'><', data), size)
+
+
+def compact_css(text):
+    # Strings are copied literally. Comments become whitespace, not concatenation.
+    parts = re.split(r'("(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\'|/\*.*?\*/)', text, flags=re.S)
+    result = []
+    pending = ''
+    def flush():
+        nonlocal pending
+        value = re.sub(r'\s+', ' ', pending)
+        value = re.sub(r'([{:;,]) +', r'\1', value)
+        value = re.sub(r' +([{};])', r'\1', value)
+        result.append(value)
+        pending = ''
+    for part in parts:
+        if part.startswith(('"', "'")):
+            flush()
+            result.append(part)
+        else:
+            pending += ' ' if part.startswith('/*') else part
+    flush()
+    return ''.join(result).strip()
+
 def style_binary(before):
     after=before; changes=[]
     for name,next_name in [('StoreInfoIcon','StoreInfoIcon2'),('FreeStoreInfoIcon','FreeStoreInfoIconWithChart')]:
@@ -74,11 +116,12 @@ def style_binary(before):
         start=after.index(sized(name));end=after.index(sized(next_name))
         original=after[start:end];block=original
         assert block.count(sized('two-colunm-item-icon'))==1
+        assert not any(sized(alias) in original for alias in STYLE_MAP.values())
         replacements=[]
         for old,new in STYLE_MAP.items():
             count=block.count(sized(old))
             if count:
-                # Each replacement changes a complete serialized string, including its length.
+                # Replace a complete serialized string without changing any offsets.
                 block=block.replace(sized(old),sized(new));replacements.append((old,new,count))
         # Verify no attribute, native script or binding bytes were lost.
         restored=block
@@ -88,6 +131,7 @@ def style_binary(before):
         assert restored==original
         after=after[:start]+block+after[end:]
         changes.append(dict(component=name,style_strings=sum(r[2] for r in replacements)))
+    assert len(after) == len(before)
     return after,changes
 
 def style_template(before):
@@ -103,9 +147,9 @@ def style_template(before):
             additions=''
             for target,style in [('GoldCoinMark','shop-grid-coinicon'),('SilverCoinMark','shop-grid-coinicon'),('BronzeCoinMark','shop-grid-coinicon'),
                 ('GoldCoinWarp','shop-grid-coinwrap'),('SilverCoinWarp','shop-grid-coinwrap'),('BronzeCoinWarp','shop-grid-coinwrap'),('DefaultCoinWrap','shop-grid-coinlist')]:
-                additions+=f'<override selector="#{target}" override-type="merge" css="{style}"></override>\n'
+                additions+=f'<override selector="#{target}" override-type="merge" css="{CSS_ALIASES[style]}"></override>\n'
             block=block[:coin.end()-9]+additions+block[coin.end()-9:]
         for attr in ['selector-[\\w-]+','script','tabindex','tabIndexGroup']:
             assert re.findall(r'\b'+attr+r'="[^"]*"',original)==re.findall(r'\b'+attr+r'="[^"]*"',block)
         text=text[:m.start()]+block+text[m.end():]
-    return text.encode('utf8')
+    return fit_markup(text.encode('utf8'), len(before))
