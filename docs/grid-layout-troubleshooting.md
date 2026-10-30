@@ -104,28 +104,32 @@ After installation, verify that both requirement icons fit within the locked car
 
 ### Requirement icons stay at the bottom after currency-label edits
 
-Revision 20 loaded successfully, but the user's full-shop screenshot still showed the requirement icons at the bottom border. Its currency-label changes did not move this text. The earlier assumption that these icons belonged to `CoinMoneyLabel` or `CoinMoneyImpossibleLabel` was wrong for this unavailable-item path.
+Revisions 20 and 21 loaded successfully, but the user's screenshots still showed the requirement icons at the bottom border. Their runtime logs confirm stylesheet replacement. Delivery did not prove that either selector matched the visible control.
 
-Read-only inspection of build `26329202` establishes the stock-label binding:
+The shop card binds `selector-buy-item-count-text` to `#ItemAvailableCountText`. Native code reuses this count element as the container for formatted requirement icons. Currency labels are separate controls. Two native paths use different state classes on the count element; do not infer a shared state from a shared selector.
 
-- The initializer at RVA `0x17c016` registers `selector-buy-item-count-text` in atom storage at `0x7116f54`.
-- The binding at RVA `0x10f8894` passes that selector and control member `+0x220` to the element lookup. The shop template resolves the selector to `#ItemAvailableCountText`.
-- The unavailable branch at RVA `0x1104f92` applies the `cpp-condition-fail` atom (`0x71173ac`) to that same element. At `0x1105066`, the requirement-formatting path passes it to the formatter at `0x70b860`.
-- The ordinary branch removes the condition-failed state and sets the count text on the same member. The original stylesheet also defines `.item-available-count-text.cpp-condition-fail`.
+Revision 21 followed the path that binds member `+0x220` at RVA `0x10f8894` and applies `cpp-condition-fail` at `0x1104f92`. That trace establishes a stock-control path, but it did not establish the path used by this shop card. Its conditional rule had no visible effect in the user's test.
 
-These addresses document this EXE only. They are not new runtime hooks, compatibility pins, or addresses to patch. Do not reuse them after an update without inspecting the new executable.
+The `StoreInfoIcon` source names `UIGamePlayControlCommonInfoDescription`. The corresponding count-update path in the audited build `26329202` uses a different state:
 
-Revision 21 adds one scoped rule:
+- RVA `0x10ade95` resolves `selector-buy-item-count-text` (atom storage `0x7116a8c`) into the local element pointer at `[rsp+0x50]`.
+- The ordinary branch removes atom `0x7116ac4` at `0x10ae278`, then writes the numeric count to that element at `0x10ae2fc`.
+- The unavailable branch loads the same element at `0x10ae3e4` and adds atom `0x7116ac4` at `0x10ae40c`. The initializer at `0x179b73` identifies this atom as `font-text-sub-red-negative`.
+- At `0x10ae48d`, the element is passed as the output container to the requirement formatter at `0x70b860`. The following lookup targets a generated `cpp-icon-emoji` child and applies `condition-fail` to it. This child state is distinct from `cpp-condition-fail` on the other path's parent.
+
+These addresses document this EXE only. They are not new runtime hooks or addresses to patch. After an update, inspect the new executable rather than reusing these addresses.
+
+Revision 22 replaces the ineffective revision 21 rule with:
 
 ```css
-.shop-grid-stock-count.cpp-condition-fail { top: -18px; }
+.shop-grid-stock-count.font-text-sub-red-negative { top: -18px; }
 ```
 
-The builder emits the same-length alias `item-available-count-tex_` in place of `shop-grid-stock-count`. The count wrapper starts at card y=97; moving its condition-failed label up by 18 layout pixels brings it toward the price row at y=79, directly below the title box ending at y=78. This is an intended layout shift, not a measurement of final glyph bounds. Ordinary count labels lack the state class, so the new rule does not match them. Keep native state classes and visibility intact.
+The builder emits the same-length alias `item-available-count-tex_` in place of `shop-grid-stock-count`. The count wrapper starts at card y=97; the offset moves its requirement container toward y=79, below the title box ending at y=78. Native code removes the extra font class in the ordinary branch, so the rule does not match normal stock counts. Preserve native state and visibility changes. The final glyph position still requires live verification.
 
-Only the stylesheet payload changes from revision 20. The other fourteen payloads, including localization, compiled cards, sell layout, and inventory resources, must remain byte-identical. Currency-label rules from revision 20 are retained to isolate this test; they are not evidence of the requirement text's location. Do not keep adjusting those labels when diagnosing this particular path.
+Only the stylesheet payload changes from revision 21. The other fourteen payloads, including localization, compiled cards, sell layout, and inventory resources, must remain byte-identical. Currency-label styles from revision 20 remain unchanged to isolate this test.
 
-For future layout failures, trace the native selector and state back to the source element before changing offsets. A successful resource-replacement log only proves delivery. Confirm the new selector's visible effect with a fresh launch, a locked item, an ordinary item, and the adjacent empty card. Revision 21 still awaits that live test.
+For future layout failures, identify the card's script, follow its exact selector lookup, and inspect both the ordinary and unavailable branches. Distinguish the original container from generated icon children. A state applied by another handler is not evidence that the current card has it. Test a locked item, an ordinary item, and the adjacent empty card after a fresh launch. Revision 22 awaits that live test.
 
 ## Verify and keep a rollback checkpoint
 

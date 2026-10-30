@@ -57,7 +57,7 @@
     },
     "ui/xml/gamemain/title/itemicon.css": {
       "original_sha256": "f21d01dc72a819594a9113b604530e7dc7ae6638061e4db589c5ad8fff1f9b22",
-      "replacement_sha256": "d0bc6b8102f89e8798a4ab8e3794e81f35a8990d37e3b5467bf123b75e0ec3ea"
+      "replacement_sha256": "047f9ec34ee6376664dd10cf10ebc07656ff29d2f8116aee6e8b82d663164538"
     },
     "ui/bin__/warehouseview2_game.uibinary": {
       "original_sha256": "e563c124d4a243a48477fc43d0a58cb78fc86dcd7f597c2cd6f2694b3e8dba79",
