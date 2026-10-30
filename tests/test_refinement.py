@@ -1,5 +1,7 @@
 import unittest
 import struct
+import re
+from pathlib import Path
 from unittest.mock import patch
 
 from nativegrid.inventory import sized
@@ -40,6 +42,49 @@ class RefinementChecks(unittest.TestCase):
         self.assertIn(b'#Existing{width:40px;}', result)
         with self.assertRaises(ValueError):
             transform(REFINEMENT_PATHS[2], b'#Existing{width:40px;}')
+
+    def test_rich_text_alignment_replays_live_overlap(self):
+        # Build 26329202, native layout RVA 0x38676cc: text-align:center
+        # adds half the unused width to EACH run, not to the complete label.
+        # Live ring: 172px label, 24px emblem, 148px name including its space.
+        def native_center(x, width):
+            return x + (172 - width) / 2
+        emblem = native_center(0, 24)
+        name = native_center(24, 148)
+        self.assertEqual((emblem, name), (74, 36))
+        self.assertTrue(name < emblem < name + 148)
+
+    def test_card_labels_center_as_a_unit_without_run_overlap(self):
+        # Geometry replay of the native run-alignment rule, using the actual
+        # stylesheet. This is not a rendered-game test. Short labels must have
+        # equal side margins; long labels must keep their start and clip the end.
+        css = Path('nativegrid/refinement_grid.css').read_text()
+        def rule(selector):
+            body = re.search(re.escape(selector) + r'\s*\{([^}]+)\}', css)[1]
+            return dict(part.strip().split(':', 1) for part in body.split(';') if part.strip())
+        outer = {k: v.strip() for k, v in rule('#ItemIconTitleWrap.product-item1').items()}
+        inner = {k: v.strip() for k, v in rule('#ItemIconTitle.product-item-icon-title').items()}
+        self.assertEqual(inner['width'], 'auto')
+        self.assertNotRegex(css, r'(?m)^\.cpp-icon-emoji\s*\{')
+        scale = 4 / 3
+        viewport = float(outer['width'][:-2]) * scale
+        minimum = float(inner['min-width'][:-2]) * scale
+        maximum = float(inner['max-width'][:-2]) * scale
+        for widths in ([44], [118], [214], [24, 148], [24, 40], [12, 24, 40]):
+            with self.subTest(runs=widths):
+                total = sum(widths)
+                box = min(max(total, minimum), maximum)
+                origin = (viewport - box) / 2 if outer['justify-content'] == 'center' else 0
+                starts, cursor = [], origin
+                for width in widths:
+                    shift = (box - width) / 2 if inner['text-align'] == 'center' else 0
+                    starts.append(cursor + shift)
+                    cursor += width
+                self.assertAlmostEqual(starts[0], max(0, (viewport - total) / 2))
+                for i in range(1, len(widths)):
+                    self.assertAlmostEqual(starts[i], starts[i-1] + widths[i-1])
+                if total <= viewport:
+                    self.assertAlmostEqual(starts[0], viewport - starts[-1] - widths[-1])
 
     def runtime_fixture(self):
         data = bytearray(4096)

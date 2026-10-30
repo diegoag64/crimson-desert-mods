@@ -135,6 +135,14 @@ Invoke-WrapperVerify
 Write-Output 'PASS: revision 29 accepts inline-symbol alignment with unchanged runtime pins'
 $candidate.payloads[2].replacement_sha256 = $support.refinement_revisions.'28'.'ui/xml/gamemain/play/itemenchantpanel.css'.replacement_sha256
 Assert-Throws { Invoke-WrapperVerify } 'revision 29 refuses the previous stylesheet'
+$candidate.revision = 30
+$candidate.payloads = @($support.refinement_revisions.'30'.PSObject.Properties | ForEach-Object {
+    [pscustomobject]@{path=$_.Name; original_sha256=$_.Value.original_sha256; replacement_sha256=$_.Value.replacement_sha256; size=100; replacement_size=100}
+})
+Invoke-WrapperVerify
+Write-Output 'PASS: revision 30 accepts whole-label alignment with unchanged runtime pins'
+$candidate.payloads[2].replacement_sha256 = $support.refinement_revisions.'29'.'ui/xml/gamemain/play/itemenchantpanel.css'.replacement_sha256
+Assert-Throws { Invoke-WrapperVerify } 'revision 30 refuses the previous stylesheet'
 $candidate.revision = 25
 $candidate.fixture_tests_passed = 7
 $candidate.payloads = @($support.refinement_assets.PSObject.Properties | ForEach-Object {

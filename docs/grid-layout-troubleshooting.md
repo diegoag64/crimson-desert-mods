@@ -249,11 +249,27 @@ Live inspection after revision 27 found three independent card elements:
 
 These rules exist only in the refinement document stylesheet. No shared name formatter, localization record, material requirement, or native hook changes. Check a short name, a long name, the contribution ring, and an item with insufficient materials after installation. The expected result is one emblem, no card warning overflow, centered short names, and readable long names during focus/scrolling. Revision 28's fixture results do not establish those visible outcomes.
 
-### An inline emblem can overlap a centered name even after the frame copy is hidden
+### Center the complete rich-text label, not its individual runs
 
-Revision 28's live ring had `display: none` on `ItemIconEmoji`; its frame overlay was correctly hidden. The remaining emblem was a generated `cpp-icon-emoji` child of `ItemIconTitle`, not a second frame copy. That child had absolute positioning, zero layout width/height, and inherited centered text alignment. The title also had `justify-content: center`. This combined independent symbol placement with centered name rendering.
+Revisions 28 and 29 failed the live ring check. `ItemIconEmoji` resolved to `display: none`, so the frame-copy hide worked. The remaining emblem came from the name formatter. Revision 29's generic `.cpp-icon-emoji` rule did not fix it and displaced some short names. Do not repeat that rule or interpret a zero-size generated child as the whole rendering mechanism.
 
-Revision 29 removes the title's flex centering while retaining its 116-pixel minimum width and centered text. It sets `text-align: left` on generated `cpp-icon-emoji` elements within the refinement document so each glyph uses its own anchor origin. This also affects generated symbols elsewhere in that document, so check tooltip and material labels when validating. The frame overlay remains hidden. Runtime hooks, material warning rules, and all other asset payloads match revision 28. The visible result remains unverified until the new package runs.
+Read-only inspection of revision 29 on build `26329202` identified the separate native text runs. The layout loop near RVA `0x3867630` walks the element's run list. For `text-align: center`, the branch at `0x38676cc` adds `(label_width - run_width) / 2` to each run's existing x position. It does not center the assembled icon-and-name line once.
+
+The live ring had a 172-pixel intrinsic line, split into a 24-pixel emblem and a 148-pixel name run, including the separating space. Relative to the label origin, the emblem moved from x=0 to x=74. The name moved from x=24 to x=36. The emblem therefore overlapped the name. Both measured positions match the native arithmetic. The previous change targeted the generated child's alignment instead of this parent run-layout operation.
+
+The same session measured Ignir's visible run at 44 pixels inside a 154.667-pixel viewport. It started 91.333 pixels from the viewport's left edge, although the centered position is 55.333 pixels. The title's forced minimum width participated in native text measurement. A resolved `text-align: center` property alone is not evidence that a label is centered.
+
+Revision 30 assigns alignment to the outer `ItemIconTitleWrap` flex container. The inner title has automatic width, minimum width zero, maximum width 116 CSS pixels, left-aligned text, and start-aligned contents. Short label boxes can be centered as a unit. Long label boxes are capped at the viewport, with the complete name still available in the detail panel. The inline emblem and text keep their native sequential run positions. The generic emoji override is removed, so tooltip and material symbols retain their original styles. The separate frame copy stays hidden.
+
+To investigate a recurrence:
+
+1. Verify the active package and the replacement log before inspecting layout.
+2. Read the title, wrapper, and generated child styles and their actual bounds. Element x, y, width, and height are four floats at `+0x70` on this build.
+3. Read the text-run vector through `element +0xa0`, then `+0x10`. Its data pointer is at `+0`, and its count is at `+8`. Each run's metrics pointer is at `+0x50`; the first four floats give x, y, width, and height. Bound reads and verify the current process before following pointers. These offsets are observations for this exact build, not portable runtime pins.
+4. Compare the full run sequence with the viewport. Short names need equal side margins. An emblem must end before its following text begins. Long names must start inside the left edge and stay clipped by the viewport.
+5. Inspect an emblem-bearing label, a short plain label, and a long label in the same live session. Do not infer all three from a CSS property check.
+
+Two Python regressions replay the observed overlap and check the proposed whole-label geometry using the actual stylesheet. This replay models the audited arithmetic; it does not execute the game's layout engine. Revision 30 passes eight native suites, 29 Python tests, and 26 installer cases. Seventeen of eighteen asset payloads match revision 29, and the native runtime source and audit pins are unchanged. Revision 30 still needs installed live measurements. Revision 29 remains installed until the user closes the game and authorizes replacement.
 
 The same investigation found no tier texture on the Pailunese Signet card, although its tier element had the intended size and position. Its `CommonInfoDescription` field at `+0x8ca` was signed 16-bit zero. The neighboring dagger reported two and had a background texture. The native code near RVA `0xe053f2` reads this field to format `cd_icon_item_tier_%#`; the unsuccessful texture path removes the background property near `0xe056c4`. A blank level-zero slot is therefore different from a clipped nonzero marker. Do not add an I texture just because the refinement preview shows the proposed next level. No game item fields were changed during inspection or by this revision.
 
