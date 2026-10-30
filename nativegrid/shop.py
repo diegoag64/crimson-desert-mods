@@ -34,6 +34,11 @@ def transform(path, before):
     raise ValueError('Unsupported shop asset: ' + path)
 
 STYLE_MAP={
+    'item-icon-wrap':'shop-grid-root',
+    'self-center':'shop-grid-center',
+    'size-100per':'shop-grid-fill',
+    'font-text-minor-white':'shop-grid-font-minor',
+    'font-text-sub-white':'shop-grid-font-sub',
     'two-colunm-item-icon':'shop-grid-card',
     'two-colunm-item':'shop-grid-bg',
     'two-colunm-item2':'shop-grid-bg-alt',
@@ -59,6 +64,7 @@ STYLE_MAP={
     'item-inventory-have-count-text':'shop-grid-owned-count',
     'slot-bg-item-list-hover':'shop-grid-hover',
     'list-item-focus-line':'shop-grid-focus-border',
+    'item-icon-disabled-action-layer-colunm':'shop-grid-disabled',
 }
 
 def style_binary(before):
