@@ -8,7 +8,8 @@ from nativegrid.inventory import sized
 class ShopChecks(unittest.TestCase):
     def test_compiled_cards_isolate_shared_styles_and_preserve_bindings(self):
         styles = b''.join(sized(name) for name in STYLE_MAP if name != 'two-colunm-item-icon')
-        bindings = sized('cpp-item-slot-name') + sized('selector-item-price') + sized('.cpp-item-slot-price')
+        bindings = (sized('cpp-item-slot-name') + sized('selector-item-price') + sized('.cpp-item-slot-price')
+                    + sized('coin-money-label') + sized('CoinMoneyImpossibleLabel'))
         def record(name):
             # The fixture puts child data BEFORE the named root footer, as the
             # game does. The previous name-to-next-name slice edits the wrong card.
@@ -51,6 +52,8 @@ class ShopChecks(unittest.TestCase):
         for attribute in (b'script="native_buy"', b'script="native_quantity"', b'selector-item="value"', b'tabindex="7"'):
             self.assertIn(attribute, after)
         self.assertIn(b'<component name="Other"><widget css="two-colunm-item-icon" script="unchanged"></widget></component>', after)
+        self.assertNotIn(b'override selector="#CoinMoneyLabel"', after)
+        self.assertNotIn(b'override selector="#CoinMoneyImpossibleLabel"', after)
         self.assertEqual(len(after), len(source))
 
     def test_css_compaction_preserves_strings_and_descendant_selectors(self):

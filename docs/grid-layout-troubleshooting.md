@@ -59,6 +59,8 @@ The earlier shop code sliced from a component name to the next name. That change
 
 Revision 15 is a failed live test, not an installation recommendation. The user reported a loading stall after launch and requested restoration of revision 14. The log recorded the localization replacement, then continued through compiled UI loads and 100,000 raw reads. No captured evidence identifies whether the localization change, card styling, or another cause produced the stall. Preserve that package and its log for investigation; use revision 14 as the working checkpoint.
 
+The user confirmed loading works after restoring revision 14. Revision 16 isolates the two changes: its fourteen UI payloads have exactly the revision 14 replacement hashes, and its only added payload is the unchanged revision 15 localization resource. Do not add new row styles while testing this package. If loading fails again, investigate localization delivery and parsing. If it succeeds, check the icons in the shop before considering any separate positioning adjustment. Neither outcome has been observed yet.
+
 The Trust and Contract icons are inline emoji tokens inside a localized string. They are not separate child widgets. The native currency control puts that string in `CoinMoneyLabel` or `CoinMoneyImpossibleLabel`. Narrowing the card does not remove its words, and hiding the label removes its icons too.
 
 For English on build `26329202`, revision 15 changes exactly these short-label records in `gamedata/stringtable/binary__/eng/localstringinfo.paloc`:
@@ -75,7 +77,7 @@ The implementation is `nativegrid/requirements.py`. The audited resource has a 5
 
 The transform retains emoji tokens in their original order and case, recompresses the body, and updates both size fields. It independently decodes the result and checks that all 6,737 non-target records remain byte-identical. Do not pad a compressed binary with CSS-style spaces or modify signed archives. Recompression changes the resource length, so confirm a `REPLACED resized` runtime entry for the English PALOC path after a fresh launch. If there is no entry, investigate when and how localization is loaded before changing the label styling again.
 
-For layout, scope `coin-money-label` to the shop components in both compiled and source templates. Keep the native visibility classes and selectors. The current label uses a normal 13-pixel font and a 24-pixel line box in the price row. Never use a zero-sized font to suppress the words: that was part of the earlier failed launch package, whose exact crash cause remains unknown.
+Revision 15 also scoped `coin-money-label` to the shop components and added a 13-pixel font with a 24-pixel line box. Revision 16 removes those class aliases and source overrides, restoring revision 14's label styling. Keep native visibility classes and selectors intact in any later layout change. Never use a zero-sized font to suppress the words: that was part of an earlier failed launch package, whose exact crash cause remains unknown.
 
 After installation, verify that both requirement icons fit within the locked card, the selected-item panel still explains the restriction, and selecting an unavailable item cannot bypass the original requirement. Also test an ordinary purchasable item and the adjacent empty slot. Offline record checks do not establish runtime delivery or glyph placement.
 
