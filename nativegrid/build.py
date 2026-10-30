@@ -116,7 +116,7 @@ def build(game, output, gcc, experimental_shop=False):
     # Match the tested loader configuration, including Windows line endings.
     (output / 'winmm.ini').write_bytes(b'[GlobalSets]\r\nDebugLog=1\r\nLoadExtraPlugins=\r\n[FileLoader]\r\nOverloadFromFolder=\r\n')
     shutil.copytree(SOURCE / 'licenses', output / 'licenses')
-    revision = 20 if requirement_support else (14 if sell_pins or experimental_shop else (7 if support['game_build'] == '26329202' else 5))
+    revision = 21 if requirement_support else (14 if sell_pins or experimental_shop else (7 if support['game_build'] == '26329202' else 5))
     manifest = dict(schema=1, revision=revision, experimental_shop=experimental_shop,
                     status='built_not_installed', game_build=support['game_build'],
                     exe_sha256=support['exe_sha256'], master_sha256=support['master_sha256'], pamt_sha256=support['pamt_sha256'],

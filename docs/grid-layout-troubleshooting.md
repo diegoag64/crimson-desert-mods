@@ -102,6 +102,31 @@ The new labels use absolute positioning at `(0, 0)` inside the price widget, a w
 
 After installation, verify that both requirement icons fit within the locked card, the selected-item panel still explains the restriction, and selecting an unavailable item cannot bypass the original requirement. Also test an ordinary purchasable item and the adjacent empty slot. Offline record checks do not establish runtime delivery or glyph placement.
 
+### Requirement icons stay at the bottom after currency-label edits
+
+Revision 20 loaded successfully, but the user's full-shop screenshot still showed the requirement icons at the bottom border. Its currency-label changes did not move this text. The earlier assumption that these icons belonged to `CoinMoneyLabel` or `CoinMoneyImpossibleLabel` was wrong for this unavailable-item path.
+
+Read-only inspection of build `26329202` establishes the stock-label binding:
+
+- The initializer at RVA `0x17c016` registers `selector-buy-item-count-text` in atom storage at `0x7116f54`.
+- The binding at RVA `0x10f8894` passes that selector and control member `+0x220` to the element lookup. The shop template resolves the selector to `#ItemAvailableCountText`.
+- The unavailable branch at RVA `0x1104f92` applies the `cpp-condition-fail` atom (`0x71173ac`) to that same element. At `0x1105066`, the requirement-formatting path passes it to the formatter at `0x70b860`.
+- The ordinary branch removes the condition-failed state and sets the count text on the same member. The original stylesheet also defines `.item-available-count-text.cpp-condition-fail`.
+
+These addresses document this EXE only. They are not new runtime hooks, compatibility pins, or addresses to patch. Do not reuse them after an update without inspecting the new executable.
+
+Revision 21 adds one scoped rule:
+
+```css
+.shop-grid-stock-count.cpp-condition-fail { top: -18px; }
+```
+
+The builder emits the same-length alias `item-available-count-tex_` in place of `shop-grid-stock-count`. The count wrapper starts at card y=97; moving its condition-failed label up by 18 layout pixels brings it toward the price row at y=79, directly below the title box ending at y=78. This is an intended layout shift, not a measurement of final glyph bounds. Ordinary count labels lack the state class, so the new rule does not match them. Keep native state classes and visibility intact.
+
+Only the stylesheet payload changes from revision 20. The other fourteen payloads, including localization, compiled cards, sell layout, and inventory resources, must remain byte-identical. Currency-label rules from revision 20 are retained to isolate this test; they are not evidence of the requirement text's location. Do not keep adjusting those labels when diagnosing this particular path.
+
+For future layout failures, trace the native selector and state back to the source element before changing offsets. A successful resource-replacement log only proves delivery. Confirm the new selector's visible effect with a fresh launch, a locked item, an ordinary item, and the adjacent empty card. Revision 21 still awaits that live test.
+
 ## Verify and keep a rollback checkpoint
 
 Build into a new ignored directory. Run the Python checks, native fixtures, installer fixtures, and publication audit described in [the build guide](build.md). Add new source or documentation paths to both `.gitignore` and `tracked-files.txt`. Stage explicit paths and commit each fix separately.
