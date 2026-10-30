@@ -73,11 +73,11 @@
     },
     "ui/bin__/itemicon_component_game.uibinary": {
       "original_sha256": "c7e8212d5ea5dd86f1e85fe8ba7243702e03cdae464cc7f74c40c281b883e8df",
-      "replacement_sha256": "4947af9bc4940e5e713ec8de53e6b8d0c6b52521924e87abd706d5cd6b53e8fb"
+      "replacement_sha256": "4d14de505d8f1204d291899acb34cfc93594d4bfa01815c842bc770add5a0867"
     },
     "ui/bin__/itemicon_game.uibinary": {
       "original_sha256": "383145a646b353aa75ea43b24a5e0b885a1fb6c09a084567c64e251f4cfae5eb",
-      "replacement_sha256": "c4efa54bf359bc1da1a5daabb5bc81e03df57e1909673d3633d15fe48aa3cbe3"
+      "replacement_sha256": "c9f374d5128404770dbb396308089fdf0dcda20486db6d9abf3d824e7f546a39"
     },
     "ui/xml/gamemain/template/itemicon.thtml": {
       "original_sha256": "d84c8b9b184423e3fd0d4393d9afd8f5f1ccc1731e32ac5152786c78aa05a586",

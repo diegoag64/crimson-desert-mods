@@ -1,27 +1,44 @@
 """Check shop transform scope and preservation of native handler attributes."""
 import unittest
-from nativegrid.shop import style_template, style_binary, transform, STYLE_MAP, compact_css, fit_bytes
+import struct
+from nativegrid.shop import style_template, style_binary, transform, STYLE_MAP, compact_css, fit_bytes, component_end
 from nativegrid.inventory import sized
 
 
 class ShopChecks(unittest.TestCase):
     def test_compiled_cards_isolate_shared_styles_and_preserve_bindings(self):
-        styles = b''.join(sized(name) for name in STYLE_MAP)
+        styles = b''.join(sized(name) for name in STYLE_MAP if name != 'two-colunm-item-icon')
         bindings = sized('cpp-item-slot-name') + sized('selector-item-price') + sized('.cpp-item-slot-price')
-        card = sized('StoreInfoIcon') + styles + bindings
-        free = sized('FreeStoreInfoIcon') + styles + bindings
-        untouched = sized('StoreInfoIcon2') + styles
-        source = card + untouched + free + sized('FreeStoreInfoIconWithChart') + styles
+        def record(name):
+            # The fixture puts child data BEFORE the named root footer, as the
+            # game does. The previous name-to-next-name slice edits the wrong card.
+            footer = (sized(name) + struct.pack('<I', 1) + sized('two-colunm-item-icon')
+                      + sized('native_buy') + b'\x61' + struct.pack('<I', 1)
+                      + sized('selector-item-price') + sized('.cpp-item-slot-price'))
+            return struct.pack('<I', 1) + styles + bindings + footer
+        previous = record('StoreInfoIconWithChart')
+        card = record('StoreInfoIcon')
+        free = record('FreeStoreInfoIcon')
+        untouched = record('StoreInfoIcon2')
+        following = record('FreeStoreInfoIconWithChart')
+        source = previous + card + untouched + free + following
         result, records = style_binary(source)
         self.assertEqual(len(result), len(source))
+        self.assertTrue(result.startswith(previous))
         self.assertIn(untouched, result)
-        self.assertTrue(result.endswith(sized('FreeStoreInfoIconWithChart') + styles))
-        self.assertEqual(result.count(bindings), 2)
+        self.assertTrue(result.endswith(following))
+        self.assertEqual(result.count(bindings), 5)
         self.assertEqual(len(records), 2)
-        first = result[:result.index(sized('StoreInfoIcon2'))]
+        first = result[len(previous):len(previous)+len(card)]
         for name in ('font-text-minor-white', 'font-text-sub-white', 'self-center', 'item-icon-wrap'):
             self.assertNotIn(sized(name), first)
             self.assertIn(sized(STYLE_MAP[name]), first)
+
+    def test_component_footer_refuses_truncation_and_duplicate_name(self):
+        with self.assertRaises(ValueError):
+            component_end(sized('Card') + b'\x01', 'Card')
+        with self.assertRaises(ValueError):
+            component_end(sized('Card') * 2, 'Card')
 
     def test_template_retains_handlers_and_unrelated_component(self):
         source = (

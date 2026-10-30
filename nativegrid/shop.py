@@ -1,5 +1,6 @@
 """Experimental NPC buy-store transforms; native handlers are preserved."""
 import re
+import struct
 from pathlib import Path
 from .inventory import sized
 
@@ -109,11 +110,50 @@ def compact_css(text):
     flush()
     return ''.join(result).strip()
 
+def component_end(data, name):
+    """Read the component footer: name, classes, script, flags, attributes.
+
+    Children precede this footer. The next component starts at its end.
+    """
+    needle = sized(name)
+    if data.count(needle) != 1:
+        raise ValueError('Component footer is missing or ambiguous: ' + name)
+    pos = data.index(needle)
+
+    def take(count):
+        nonlocal pos
+        if count < 0 or pos + count > len(data):
+            raise ValueError('Truncated component footer: ' + name)
+        result = data[pos:pos+count]
+        pos += count
+        return result
+
+    def count(limit):
+        value = struct.unpack('<I', take(4))[0]
+        if value > limit:
+            raise ValueError('Invalid component footer count: ' + name)
+        return value
+
+    def string():
+        return take(count(4096)).decode('utf8')
+
+    assert string() == name
+    for _ in range(count(128)):
+        string()
+    string()  # Native script name.
+    take(1)   # Serialized flags.
+    for _ in range(count(128)):
+        string()
+        string()
+    return pos
+
+
 def style_binary(before):
     after=before; changes=[]
-    for name,next_name in [('StoreInfoIcon','StoreInfoIcon2'),('FreeStoreInfoIcon','FreeStoreInfoIconWithChart')]:
-        assert after.count(sized(name))==1 and after.count(sized(next_name))==1
-        start=after.index(sized(name));end=after.index(sized(next_name))
+    for previous,name in [('StoreInfoIconWithChart','StoreInfoIcon'),('StoreInfoIcon2','FreeStoreInfoIcon')]:
+        start=component_end(after, previous)
+        end=component_end(after, name)
+        assert start < after.index(sized(name)) < end
         original=after[start:end];block=original
         assert block.count(sized('two-colunm-item-icon'))==1
         assert not any(sized(alias) in original for alias in STYLE_MAP.values())
