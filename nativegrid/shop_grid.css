@@ -26,9 +26,9 @@
 .shop-grid-stock-icon { position: relative; width: 12px; height: 12px; background-image: textureid(cd_icon_common_instock_item); margin-right: 2px; }
 .shop-grid-owned-icon { position: relative; width: 12px; height: 12px; background-image: textureid(cd_icon_common_inventory_bag); margin-left: 7px; margin-right: 2px; }
 .shop-grid-stock-count { position: relative; width: auto; height: 14px; line-height: 14px; font-size: 12px; display: inline-block; white-space: nowrap; }
-/* The rich-text formatter generates these symbols inside the count row.
-   Translate the symbols directly; parent-label top offsets had no live effect. */
-#ItemAvailableCountWrap.shop-grid-counts .cpp-icon-emoji { translate-y: -18px; }
+/* Confirmed live requirement-container classes. The game flattens descendant
+   selectors, so target this element directly and translate its generated contents. */
+.shop-grid-stock-count.font-text-sub-red-negative { translate-y: -18px; }
 .shop-grid-owned-count { position: relative; width: auto; height: 14px; line-height: 14px; font-size: 12px; display: inline-block; white-space: nowrap; }
 .shop-grid-hover { width: 122px; height: 110px; mask-image: none; }
 .shop-grid-focus-border { position: absolute; top: 50%; left: 50%; width: 100%; height: 100%; box-sizing: border-box; border: 3px solid #f9d598; translate-x: -50%; translate-y: -50%; border-radius: 2px; boundary-anti-aliasing: both; }

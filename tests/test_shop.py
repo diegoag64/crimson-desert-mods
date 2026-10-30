@@ -11,7 +11,14 @@ class ShopChecks(unittest.TestCase):
         for css in ('.a, .b { top: 0px; }', '.a/* comment */, #b { translate-y: -18px; }'):
             with self.assertRaises(ValueError):
                 validate_shop_selectors(css)
-        validate_shop_selectors('.a #b { color: rgba(0, 0, 0, 1); content: "{,}"; } /* .a,.b{} */ .a #c { top: 0px; }')
+        validate_shop_selectors('#b.a { color: rgba(0, 0, 0, 1); content: "{,}"; } /* .a,.b{} */ #c.a { top: 0px; }')
+
+    def test_selector_combinators_refused_after_live_parser_flattening(self):
+        for selector in ('.a .b', '.a > .b', '.a>.b', '.a+.b', '.a~.b',
+                         '#ItemAvailableCountWrap.shop-grid-counts .cpp-icon-emoji'):
+            with self.assertRaises(ValueError):
+                validate_shop_selectors(selector + ' { translate-y: -18px; }')
+        validate_shop_selectors('.item-available-count-tex_.font-text-sub-red-negative { translate-y: -18px; }')
 
     def test_compiled_cards_isolate_shared_styles_and_preserve_bindings(self):
         styles = b''.join(sized(name) for name in STYLE_MAP if name != 'two-colunm-item-icon')

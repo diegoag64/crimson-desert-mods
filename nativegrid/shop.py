@@ -116,16 +116,18 @@ def compact_css(text):
 
 
 def validate_shop_selectors(text):
-    """Keep custom rules within observed game syntax; grouped rules are suspect.
+    """Limit custom rules to one element's ID/classes, with no combinators.
 
-    Both loading-stall revisions introduced comma-separated selectors. None of
-    the 185 extracted stylesheets uses them. Use separate rules until supported
-    behavior is established; this guard does not claim to validate all game CSS.
+    Live inspection found descendant selectors flattened into impossible compound
+    selectors. Grouped rules also appeared in both loading-stall revisions. This
+    narrow allowlist covers our stylesheet, not the game's complete CSS grammar.
     """
     stripped = re.sub(r'"(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\'|/\*.*?\*/', ' ', text, flags=re.S)
     for match in re.finditer(r'([^{}]*)\{', stripped):
         if ',' in match[1]:
             raise ValueError('Grouped shop selectors are unverified; write separate rules')
+        if not re.fullmatch(r'(?:[.#][\w!-]+)+', match[1].strip()):
+            raise ValueError('Shop selectors must target one element using only its ID/classes')
 
 def component_end(data, name):
     """Read the component footer: name, classes, script, flags, attributes.

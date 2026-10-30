@@ -145,6 +145,50 @@ The selector limits translation to emoji descendants of the compact shop count w
 
 Only the stylesheet changes from revision 22. Verify that the other fourteen payloads remain identical. Revision 23 is a targeted layout test, not a confirmed fix: inspect both requirement symbols after launch, along with ordinary counts and the adjacent empty tile. A successful build or replacement log does not establish selector matching or final glyph placement.
 
+### Inspect the live tree before changing another selector
+
+Revision 23 loaded but did not move either requirement icon. Read-only inspection of the open grocer shop on build `26329202` then established the actual tree:
+
+```text
+compact StoreInfoIcon
+  ItemAvailableCountWrap
+    item-available-count-wra_, store-info-count-wra_, cpp-show
+    ItemAvailableCountText
+      item-available-count-tex_, font-text-sub-whit_, font-text-sub-red-negative
+      image: cpp-icon-emoji, condition-fail, cpp-able-layer
+      image: cpp-icon-emoji, cpp-able-layer
+```
+
+The native selector registry contained revision 23's rule as:
+
+```text
+#ItemAvailableCountWrap.cpp-icon-emoji.item-available-count-wra_
+```
+
+The parser flattened the intended descendant selector into a compound selector. No element in the live tree has that ID and both classes. The generated images' matched-rule lists did not contain the rule, and their resolved property maps had no `translate-y` entry. This establishes why revision 23 did not move the icons. It does not establish why revision 22's relative `top` offset had no visible effect.
+
+Revision 24 targets the confirmed parent directly, using a translation instead of a layout offset:
+
+```css
+.shop-grid-stock-count.font-text-sub-red-negative { translate-y: -18px; }
+```
+
+After alias substitution, the selector requires `item-available-count-tex_` and `font-text-sub-red-negative` on one element. Both were present on the live requirement container. The ordinary count-update branch removes the negative-font class, so the scope excludes ordinary numeric counts. Translation should move the container and its generated contents together. Its applied property and final placement still require verification after installation.
+
+`validate_shop_selectors` now accepts only a single compound of ID/class tokens in custom shop CSS. It rejects descendant, child, sibling, grouped, and other unverified selector forms before the build. The regression check includes the exact failing revision 23 shape. This is a narrow supported subset for this mod, not a complete game-CSS parser. The generic CSS compactor preserves whitespace; compaction was not the source of the flattening.
+
+For this audited EXE, the read-only inspection followed these structures:
+
+1. Derive the `UIGamePlayControlCommonInfoDescription` primary vtable from named RTTI; its RVA is `0x59cf598`. Scan readable committed game heap regions for aligned instances. Refresh the region inventory after loading the save. Prioritize the high-address game heap rather than spending the scan budget on low-address graphics buffers; heap addresses change each launch.
+2. Follow the control's owner at `+0x08`. Check the owner's compact card classes, then traverse child pointers at `+0x40` with the count at `+0x48`. Bound counts and traversal depth, and reject unreadable pointers.
+3. The element's style object is at `+0x20`. Its class-vector pointer is at `+0x08`; the vector has a pointer at `+0x00` and count at `+0x08`. Resolve class atom IDs through the string registry rooted at image RVA `0x70cdc60`, whose table pointer is at `+0x58`. Entries are 16 bytes, with the text pointer first.
+4. The style object's matched-rule pointer array is at `+0x10`, with its count at `+0x18`. A rule's selector atom is at `+0xa8`. Inspect the normalized selector, not just the original CSS text.
+5. With the element's `+0x97` dirty bit `0x02` clear, the style object's resolved-property block at `+0x20` is the getter's cached source. The block has 16-byte values at the pointer `+0x70`, a byte-index map at `+0x80`, and map length at `+0x88`; index `0xff` means absent. Property ID 75 is `translate-y`. Confirm IDs through the descriptor table at image RVA `0x70ce0e0` rather than assuming them on other builds.
+
+These observations are process- and build-specific. Recheck the executable fingerprint and process liveness before reads; never reuse object addresses across launches. Use only `PROCESS_QUERY_INFORMATION | PROCESS_VM_READ`. Do not write to these structures or invoke game functions as part of inspection. Keep raw snapshots local and untracked.
+
+For revision 24, require all three forms of evidence: the direct compound appears in the requirement container's matched rules, its resolved translation is -18 layout pixels, and the rendered icons fit below the name. Check that an ordinary item retains its unshifted count row. Offline fixtures alone cannot satisfy these checks.
+
 ## Verify and keep a rollback checkpoint
 
 Build into a new ignored directory. Run the Python checks, native fixtures, installer fixtures, and publication audit described in [the build guide](build.md). Add new source or documentation paths to both `.gitignore` and `tracked-files.txt`. Stage explicit paths and commit each fix separately.
