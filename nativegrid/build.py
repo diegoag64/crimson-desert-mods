@@ -38,7 +38,8 @@ def output_directory(path, game=None):
     return output
 
 
-def build(game, output, gcc, experimental_shop=False, experimental_refinement=False, experimental_crafting=False):
+def build(game, output, gcc, experimental_shop=False, experimental_refinement=False, experimental_crafting=False,
+          experimental_extraction=False):
     from .archive import Pamt, decrypt
     import lz4.block
 
@@ -46,6 +47,12 @@ def build(game, output, gcc, experimental_shop=False, experimental_refinement=Fa
     matches = [record for record in SUPPORTED_BUILDS if record['exe_sha256'] == exe_hash]
     require(len(matches) == 1, 'Unsupported or ambiguous executable fingerprint')
     support = matches[0]
+    require(not experimental_extraction or experimental_crafting,
+            'Extraction builds must preserve the working crafting package: add --experimental-crafting')
+    extraction_pins = support.get('extraction_revisions', {}).get('32', {}) if experimental_extraction else {}
+    if experimental_extraction:
+        from .extraction import EXTRACTION_PATHS, transform as extraction_transform
+        require(set(extraction_pins) == set(EXTRACTION_PATHS), 'No audited extraction assets for this game build')
     require(not experimental_crafting or experimental_refinement,
             'Crafting builds must preserve the working refinement package: add --experimental-refinement')
     crafting_pins = support.get('crafting_revisions', {}).get('31', {}) if experimental_crafting else {}
@@ -96,10 +103,12 @@ def build(game, output, gcc, experimental_shop=False, experimental_refinement=Fa
         paths += list(SHOP_PATHS)
     paths += list(refinement_pins)
     paths += list(crafting_pins)
+    paths += list(extraction_pins)
     pins = dict(support['shop_assets'] if experimental_shop else support['assets'])
     pins.update(sell_pins)
     pins.update(refinement_pins)
     pins.update(crafting_pins)
+    pins.update(extraction_pins)
     if requirement_support:
         paths.append(REQUIREMENT_PATH)
         pins[REQUIREMENT_PATH] = requirement_support['asset']
@@ -130,6 +139,9 @@ def build(game, output, gcc, experimental_shop=False, experimental_refinement=Fa
         if path in crafting_pins:
             after = crafting_transform(path, before)
             require(len(after) == len(before), 'Crafting asset must support fixed-buffer reads: ' + path)
+        if path in extraction_pins:
+            after = extraction_transform(path, before)
+            require(len(after) == len(before), 'Extraction asset must support fixed-buffer reads: ' + path)
         require(hashlib.sha256(after).hexdigest() == pins[path]['replacement_sha256'], 'Transform differs from pinned replacement: ' + path)
         payloads.append((path, before, after))
         records.append(dict(path=path, size=len(before), replacement_size=len(after),
@@ -145,6 +157,8 @@ def build(game, output, gcc, experimental_shop=False, experimental_refinement=Fa
         revision = 30
     if experimental_crafting:
         revision = 31
+    if experimental_extraction:
+        revision = 32
     manifest = dict(schema=1, revision=revision, experimental_shop=experimental_shop,
                     status='built_not_installed', game_build=support['game_build'],
                     exe_sha256=support['exe_sha256'], master_sha256=support['master_sha256'], pamt_sha256=support['pamt_sha256'],
@@ -177,6 +191,11 @@ def build(game, output, gcc, experimental_shop=False, experimental_refinement=Fa
                         crafting_tile_width=124, crafting_tile_height=106,
                         crafting_status='experimental_no_live_validation')
         (output / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
+    if experimental_extraction:
+        manifest.update(experimental_extraction=True, extraction_columns=3, extraction_rows=4,
+                        extraction_tile_width=124, extraction_tile_height=106,
+                        extraction_status='experimental_no_live_validation')
+        (output / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
     print(f'Built revision {manifest["revision"]}: {len(payloads)} exact-validated payloads; {len(results)} fixture suites passed. {output}')
     return manifest
 
@@ -192,6 +211,7 @@ def main():
     parser.add_argument('--experimental-shop', action='store_true', help='Include experimental 6 by 3 NPC buy-store cards')
     parser.add_argument('--experimental-refinement', action='store_true', help='Include experimental 3 by 4 refinement gear cards; requires --experimental-shop')
     parser.add_argument('--experimental-crafting', action='store_true', help='Include experimental 3 by 4 crafting recipe cards; requires --experimental-refinement')
+    parser.add_argument('--experimental-extraction', action='store_true', help='Include experimental 3 by 4 extraction item cards; requires --experimental-crafting')
     args = parser.parse_args()
     require(args.test_only or args.game is not None, '--game is required unless --test-only is used')
     gcc = shutil.which(args.gcc)
@@ -201,7 +221,8 @@ def main():
     if args.test_only:
         test(output, gcc, MINHOOK)
     else:
-        build(args.game.resolve(), output, gcc, args.experimental_shop, args.experimental_refinement, args.experimental_crafting)
+        build(args.game.resolve(), output, gcc, args.experimental_shop, args.experimental_refinement,
+              args.experimental_crafting, args.experimental_extraction)
 
 
 if __name__ == '__main__':

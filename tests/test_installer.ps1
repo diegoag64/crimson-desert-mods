@@ -164,6 +164,34 @@ Assert-Throws { Invoke-WrapperVerify } 'revision 31 refuses resized crafting pay
 $candidate.payloads[-1].replacement_size--
 $candidate.payloads = @($candidate.payloads | Select-Object -SkipLast 1)
 Assert-Throws { Invoke-WrapperVerify } 'revision 31 refuses missing crafting payload'
+# Restore the removed crafting payload before testing the combined extraction package.
+$candidate.payloads = @($support.refinement_revisions.'30'.PSObject.Properties | ForEach-Object {
+    [pscustomobject]@{path=$_.Name; original_sha256=$_.Value.original_sha256; replacement_sha256=$_.Value.replacement_sha256; size=100; replacement_size=100}
+}) + @($support.crafting_revisions.'31'.PSObject.Properties | ForEach-Object {
+    [pscustomobject]@{path=$_.Name; original_sha256=$_.Value.original_sha256; replacement_sha256=$_.Value.replacement_sha256; size=100; replacement_size=100}
+}) + @($support.extraction_revisions.'32'.PSObject.Properties | ForEach-Object {
+    [pscustomobject]@{path=$_.Name; original_sha256=$_.Value.original_sha256; replacement_sha256=$_.Value.replacement_sha256; size=100; replacement_size=100}
+})
+$candidate.revision = 32
+$candidate | Add-Member -NotePropertyName experimental_extraction -NotePropertyValue $true
+Invoke-WrapperVerify
+Write-Output 'PASS: revision 32 accepts extraction and preserved crafting/refinement pins'
+$candidate.experimental_extraction = $false
+Assert-Throws { Invoke-WrapperVerify } 'revision 32 requires extraction flag'
+$candidate.experimental_extraction = $true
+$extractHash = $candidate.payloads[-1].replacement_sha256
+$candidate.payloads[-1].replacement_sha256 = '0' * 64
+Assert-Throws { Invoke-WrapperVerify } 'revision 32 refuses changed extraction stylesheet'
+$candidate.payloads[-1].replacement_sha256 = $extractHash
+$candidate.payloads[-1].replacement_size++
+Assert-Throws { Invoke-WrapperVerify } 'revision 32 refuses resized extraction payload'
+$candidate.payloads[-1].replacement_size--
+$candidate.experimental_crafting = $false
+Assert-Throws { Invoke-WrapperVerify } 'revision 32 still requires crafting guards'
+$candidate.experimental_crafting = $true
+$candidate.payloads = @($candidate.payloads | Select-Object -SkipLast 1)
+Assert-Throws { Invoke-WrapperVerify } 'revision 32 refuses missing extraction payload'
+$candidate.PSObject.Properties.Remove('experimental_extraction')
 $candidate.PSObject.Properties.Remove('experimental_crafting')
 $candidate.revision = 25
 $candidate.fixture_tests_passed = 7

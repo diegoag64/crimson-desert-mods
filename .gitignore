@@ -79,3 +79,5 @@
 !/nativegrid/fixtures/refinement_fixture.c
 !/nativegrid/crafting.py
 !/tests/test_crafting.py
+!/nativegrid/extraction.py
+!/tests/test_extraction.py

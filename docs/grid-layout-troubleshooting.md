@@ -283,7 +283,17 @@ Crafting wraps `ProductionItemIcon` inside `CraftListItemIcon`. Both have `item-
 
 The document stylesheet has only 5,878 bytes available for either read hook. The transform removes five audited unused rules before appending the shared card layout: three decoration IDs that occur only in commented-out source markup, and two sequence rules whose class does not occur in the document. Their names are absent from the compiled tree. The transform checks those absences and requires exactly one copy of each removed rule. Active material, tab, background, and key-guide rules remain intact. Do not remove active rules merely to fit a buffer; re-audit changed assets and retain exact pins.
 
-Revision 31's eight native suites, 32 Python tests, and 31 installer cases pass. All eighteen existing payload records match revision 30. These checks establish transform scope and runtime fixture behavior, not the visible Crafting result. After installation, inspect several categories, a long recipe name, unavailable recipes, scrolling, and recipe variants without crafting an item. Screens that reuse `CookingView3` also receive these cards and need separate live coverage.
+Revision 31's eight native suites, 32 Python tests, and 31 installer cases pass. All eighteen existing payload records match revision 30. These checks establish transform scope and runtime fixture behavior, not the visible Crafting result. The user confirmed the revision 31 Crafting layout after installation. Broader checks still include several categories, a long recipe name, unavailable recipes, scrolling, and recipe variants without crafting an item. Screens that reuse `CookingView3` also receive these cards and need separate live coverage.
+
+## Apply the gear grid to Extraction
+
+Read-only inspection of the open Extraction menu on build `26329202` found `UIGamePlayControlRootItemExtract` and its `InventoryContent` item list. The list creates the same `ProductionItemIcon` cards used by Refinement. Its compiled owner binding is also `#InventoryContent`, with one column and four rows. Revision 32 reuses the guarded Refinement transform to change only that column value and append the same card stylesheet.
+
+The original Extraction viewport is 350 by 428 CSS pixels. Three card pitches need 384 pixels horizontally; four row pitches need 432 pixels vertically. Shrinking the cards without widening this viewport would leave the third column clipped, and the old height could clip the last row. The extraction transform changes the exact `.select-itemlist-wrap` rule to 390 by 435 pixels. The title already has a 390-pixel width. Its `ItemUIContainerWrap` inherits the wider viewport and keeps its existing 35-pixel top offset.
+
+`ShowDetailContentList` is the later extraction-level selector, with one column and nine rows. `ExtractResultList` is the separate result list. Neither receives the column change. Original action bindings, including `ExtractStart`, remain byte-identical. The existing Refinement badge hook remains scoped to the Refinement root and does not hide Extraction badges.
+
+The new package adds three exact-pinned, equal-length assets. All twenty-one revision 31 payloads and the native runtime pins remain unchanged. Eight native suites, 35 Python tests, and 37 installer cases pass. These checks do not establish the visible Extraction result. After installation, inspect item names, tier markers, the third column, the bottom row, scrolling, and the later level/result layout without executing extraction. Keep revision 31 available for rollback.
 
 ## Verify and keep a rollback checkpoint
 

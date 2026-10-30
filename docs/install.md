@@ -10,13 +10,13 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\NativeGrid.ps1 -Acti
 
 Verification checks the package hashes, supported game pins, and existing owned files. It writes nothing to the game. Conflicting files stop the operation.
 
-Revision 15 through 31 shop packages also require the pinned English localization index, `0020/0.pamt`. This is a read-only compatibility check. Installation still changes only the three files listed below. Revisions 15 and 17 failed live loading tests. Revisions 16 and 18 through 23 loaded and displayed icons-only requirements, but spacing remained unresolved. Revision 24 uses a direct container selector after live inspection proved that revision 23's descendant selector could not match. The user confirmed revision 24's spacing fix in the live shop. Preserve `build/shop-24-live-container-translation` as the working shop checkpoint. Preserve revision 23 and its installation rollback journal, and retain revision 16 as an earlier checkpoint.
+Revision 15 through 32 shop packages also require the pinned English localization index, `0020/0.pamt`. This is a read-only compatibility check. Installation still changes only the three files listed below. Revisions 15 and 17 failed live loading tests. Revisions 16 and 18 through 23 loaded and displayed icons-only requirements, but spacing remained unresolved. Revision 24 uses a direct container selector after live inspection proved that revision 23's descendant selector could not match. The user confirmed revision 24's spacing fix in the live shop. Preserve `build/shop-24-live-container-translation` as the working shop checkpoint. Preserve revision 23 and its installation rollback journal, and retain revision 16 as an earlier checkpoint.
 
 ## Install a package
 
-Revision 30 is installed, and the user confirmed its Refinement layout. Preserve `build/refinement-30-whole-label` as the current working checkpoint and `build/rollback/rollback-049fa3ea947f492498d1fa876df82eed` as its installation rollback journal. Earlier packages remain available.
+Revision 31 is installed, and the user confirmed its Crafting grid. Preserve `build/crafting-31-three-column` as the current working checkpoint and `build/rollback/rollback-8df321fb549e4ad6bfc9f59b5fddc53c` as its installation rollback journal. Revision 30 and earlier packages remain available.
 
-Revision 31 adds the experimental Crafting grid and preserves all eighteen revision 30 payloads. It is built and checked offline, but not installed or live-verified. After closing the game, use `build/crafting-31-three-column` as `-Package` and `build/refinement-30-whole-label` as `-PreviousPackage`.
+Revision 32 adds the experimental Extraction item grid and preserves all twenty-one revision 31 payloads. It is built and checked offline, but not installed or live-verified. After closing the game, use `build/extraction-32-three-column` as `-Package` and `build/crafting-31-three-column` as `-PreviousPackage`.
 
 Close the game. Keep archive-manager mods unmounted. Run the same command with `-Action Install`.
 
