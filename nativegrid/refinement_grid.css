@@ -3,7 +3,7 @@
 .item-icon-wrap.two-colunm-item-icon3 { width: 124px; height: 106px; display: block; }
 #ItemIconImg.two-colunm-item-icon-img2 { position: absolute; left: 0px; top: 4px; width: 124px; height: 76px; background-size: 52px 52px; background-position: 36px 20px; background-repeat: no-repeat; mask-gradient-end-opacity: 1; }
 #ItemIconTitleWrap.product-item1 { position: absolute; left: 4px; top: 81px; width: 116px; max-width: 116px; height: 20px; margin-left: 0px; overflow: hidden; }
-#ItemIconTitle.product-item-icon-title { font-size: 12px; line-height: 20px; min-width: 116px; text-align: center; justify-content: center; }
+#ItemIconTitle.product-item-icon-title { font-size: 12px; line-height: 20px; min-width: 116px; text-align: center; }
 #ItemIconBg.two-colunm-item3 { height: 104px; }
 /* Percentage geometry also fits the unchanged ingredient cards in this document. */
 #ItemIconBgType.two-colunm-item { width: 100%; height: 100%; }
@@ -14,3 +14,6 @@
 #ItemIconEmoji.product-item-icon { display: none; }
 /* The material panel and native disabled shading retain the unavailable state. */
 #ItemIconDisableTextWrap.product-item1 { display: none; }
+
+/* Inline symbols have zero-width anchors; never center their glyphs independently. */
+.cpp-icon-emoji { text-align: left; }

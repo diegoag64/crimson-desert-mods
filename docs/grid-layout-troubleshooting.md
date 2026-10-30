@@ -249,6 +249,14 @@ Live inspection after revision 27 found three independent card elements:
 
 These rules exist only in the refinement document stylesheet. No shared name formatter, localization record, material requirement, or native hook changes. Check a short name, a long name, the contribution ring, and an item with insufficient materials after installation. The expected result is one emblem, no card warning overflow, centered short names, and readable long names during focus/scrolling. Revision 28's fixture results do not establish those visible outcomes.
 
+### An inline emblem can overlap a centered name even after the frame copy is hidden
+
+Revision 28's live ring had `display: none` on `ItemIconEmoji`; its frame overlay was correctly hidden. The remaining emblem was a generated `cpp-icon-emoji` child of `ItemIconTitle`, not a second frame copy. That child had absolute positioning, zero layout width/height, and inherited centered text alignment. The title also had `justify-content: center`. This combined independent symbol placement with centered name rendering.
+
+Revision 29 removes the title's flex centering while retaining its 116-pixel minimum width and centered text. It sets `text-align: left` on generated `cpp-icon-emoji` elements within the refinement document so each glyph uses its own anchor origin. This also affects generated symbols elsewhere in that document, so check tooltip and material labels when validating. The frame overlay remains hidden. Runtime hooks, material warning rules, and all other asset payloads match revision 28. The visible result remains unverified until the new package runs.
+
+The same investigation found no tier texture on the Pailunese Signet card, although its tier element had the intended size and position. Its `CommonInfoDescription` field at `+0x8ca` was signed 16-bit zero. The neighboring dagger reported two and had a background texture. The native code near RVA `0xe053f2` reads this field to format `cd_icon_item_tier_%#`; the unsuccessful texture path removes the background property near `0xe056c4`. A blank level-zero slot is therefore different from a clipped nonzero marker. Do not add an I texture just because the refinement preview shows the proposed next level. No game item fields were changed during inspection or by this revision.
+
 ## Verify and keep a rollback checkpoint
 
 Build into a new ignored directory. Run the Python checks, native fixtures, installer fixtures, and publication audit described in [the build guide](build.md). Add new source or documentation paths to both `.gitignore` and `tracked-files.txt`. Stage explicit paths and commit each fix separately.
