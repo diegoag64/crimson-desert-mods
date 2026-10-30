@@ -38,6 +38,8 @@ The build requires the exact EXE, master-index, UI-index, and original asset has
 
 The output includes `manifest.json`, three install files, licenses, fixture results, runtime log paths, and generated headers. Keep the whole package for verification and rollback. Runtime logs are written to the package's absolute path, so keep that directory in place after installation. Different output paths can produce different binary hashes.
 
+To include the experimental six-column NPC buy-store grid, add `--experimental-shop` and choose another output directory, such as `build\shop-6`. The default remains inventory only. The shop transforms rename scoped component styles while retaining native script and binding attributes. They do not add purchase logic. Shop behavior still needs an active runtime and live UI validation.
+
 The updated local EXE is refused before extraction or compilation. A full clean build from the current installation awaits compatibility evidence. Publication checks instead verified all seven transforms against preserved revision-5 originals and ran the native fixture build from the curated source tree. These checks do not establish compatibility with the updated game.
 
 ## Audit files before publication

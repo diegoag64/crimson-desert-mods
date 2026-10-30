@@ -61,3 +61,6 @@
 *.zip
 *.7z
 .env*
+!/nativegrid/shop.py
+!/nativegrid/shop_grid.css
+!/tests/test_shop.py

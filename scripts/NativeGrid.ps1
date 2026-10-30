@@ -12,7 +12,7 @@ $Game = (Resolve-Path -LiteralPath $Game).Path
 $Package = (Resolve-Path -LiteralPath $Package).Path
 $support = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\nativegrid\supported_build.json') -Raw | ConvertFrom-Json
 $manifest = Get-Content -LiteralPath (Join-Path $Package 'manifest.json') -Raw | ConvertFrom-Json
-if ($manifest.schema -ne 1 -or $manifest.revision -ne 5 -or $manifest.fixture_tests_passed -lt 6 -or -not $manifest.variable_length_resources) { throw 'Unsupported or untested package.' }
+if ($manifest.schema -ne 1 -or $manifest.revision -notin @(5,6) -or $manifest.fixture_tests_passed -lt 6 -or -not $manifest.variable_length_resources) { throw 'Unsupported or untested package.' }
 foreach ($key in @('exe_sha256','master_sha256','pamt_sha256')) {
     if ($manifest.$key -ne $support.$key) { throw "Package is not pinned to the supported game build: $key" }
 }

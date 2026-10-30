@@ -14,3 +14,5 @@ This repository contains source, transform rules, hash pins, fixtures, and build
 - [Third-party dependencies](THIRD_PARTY.md)
 
 No license has been selected for the project code. The third-party components retain their own licenses.
+
+An optional experimental NPC buy-store layout uses six columns and three rows of 124 by 112 pixel cards. Build it with `--experimental-shop`. It preserves native purchase and quantity handlers. There is no valid live shop-layout test yet: the prior shop package disabled itself after the game update.

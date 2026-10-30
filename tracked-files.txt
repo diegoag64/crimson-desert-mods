@@ -20,6 +20,8 @@ nativegrid/licenses/Ultimate-ASI-Loader.txt
 nativegrid/pe.py
 nativegrid/runtime/native_grid.c
 nativegrid/runtime/native_grid_flexible_resolver.h
+nativegrid/shop.py
+nativegrid/shop_grid.css
 nativegrid/supported_build.json
 nativegrid/tests.py
 requirements.txt
@@ -28,4 +30,5 @@ scripts/NativeGrid.ps1
 scripts/audit_publication.py
 tests/test_core.py
 tests/test_installer.ps1
+tests/test_shop.py
 tracked-files.txt

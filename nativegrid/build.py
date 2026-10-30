@@ -37,7 +37,7 @@ def output_directory(path, game=None):
     return output
 
 
-def build(game, output, gcc):
+def build(game, output, gcc, experimental_shop=False):
     from .archive import Pamt, decrypt
     import lz4.block
 
@@ -52,8 +52,13 @@ def build(game, output, gcc):
     methods = package_methods(exe) + [0x1501310]
     require(methods == SUPPORT['method_rvas'], 'Derived package-worker methods differ from supported build')
     entries = {entry.path: entry for entry in Pamt.parse((game / '0012/0.pamt').read_bytes()).entries()}
+    paths = list(INVENTORY_PATHS)
+    if experimental_shop:
+        from .shop import SHOP_PATHS, transform as shop_transform
+        paths += list(SHOP_PATHS)
+    pins = SUPPORT['shop_assets'] if experimental_shop else SUPPORT['assets']
     payloads, records = [], []
-    for path in INVENTORY_PATHS:
+    for path in paths:
         entry = entries[path]
         require(entry.flags == 0x32, 'Unexpected asset encoding: ' + path)
         with (game / f'0012/{entry.chunk}.paz').open('rb') as stream:
@@ -62,9 +67,11 @@ def build(game, output, gcc):
         require(len(packed) == entry.stored, 'Incomplete archive read: ' + path)
         before = lz4.block.decompress(decrypt(packed, path.rsplit('/', 1)[1]), uncompressed_size=entry.original)
         require(len(before) == entry.original, 'Decoded length mismatch: ' + path)
-        require(hashlib.sha256(before).hexdigest() == SUPPORT['assets'][path]['original_sha256'], 'Original asset changed: ' + path)
-        after = transform(path, before)
-        require(hashlib.sha256(after).hexdigest() == SUPPORT['assets'][path]['replacement_sha256'], 'Inventory transform differs from verified revision 5: ' + path)
+        require(hashlib.sha256(before).hexdigest() == pins[path]['original_sha256'], 'Original asset changed: ' + path)
+        after = transform(path, before) if path in INVENTORY_PATHS else before
+        if experimental_shop and (path in SHOP_PATHS or path.endswith('/itemicon.css')):
+            after = shop_transform(path, after)
+        require(hashlib.sha256(after).hexdigest() == pins[path]['replacement_sha256'], 'Transform differs from pinned replacement: ' + path)
         payloads.append((path, before, after))
         records.append(dict(path=path, size=len(before), replacement_size=len(after),
                             original_sha256=hashlib.sha256(before).hexdigest(), replacement_sha256=hashlib.sha256(after).hexdigest()))
@@ -74,17 +81,22 @@ def build(game, output, gcc):
     # Match the tested loader configuration, including Windows line endings.
     (output / 'winmm.ini').write_bytes(b'[GlobalSets]\r\nDebugLog=1\r\nLoadExtraPlugins=\r\n[FileLoader]\r\nOverloadFromFolder=\r\n')
     shutil.copytree(SOURCE / 'licenses', output / 'licenses')
-    manifest = dict(schema=1, revision=5, status='built_not_installed', game_build=SUPPORT['game_build'],
+    manifest = dict(schema=1, revision=6 if experimental_shop else 5, experimental_shop=experimental_shop,
+                    status='built_not_installed', game_build=SUPPORT['game_build'],
                     exe_sha256=SUPPORT['exe_sha256'], master_sha256=SUPPORT['master_sha256'], pamt_sha256=SUPPORT['pamt_sha256'],
                     grid_columns=8, grid_rows=11, storage_grid_columns=8, storage_grid_rows=11,
                     tile_width=64, tile_height=62.5, list_toggle=False, resource_replacement=True,
                     variable_length_resources=True, fixture_tests_passed=len(results), payloads=records,
-                    live_validation='Revision 5 inventory and Private Storage user-verified; this rebuilt binary has no new live test.',
+                    live_validation='Revision 5 inventory and Private Storage user-verified on build 26317560. This rebuilt binary and experimental shop have no live validation.',
                     files=[dict(name=name, sha256=digest(output / name)) for name in ('NativeGrid.asi', 'winmm.dll', 'winmm.ini')])
     (output / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
     for path, expected in fingerprints.items():
         require(digest(game / path) == expected, 'Game input changed during build: ' + path)
-    print(f'Built revision 5: {len(payloads)} exact-validated payloads; {len(results)} fixture suites passed. {output}')
+    if experimental_shop:
+        manifest.update(shop_columns=6, shop_rows=3, shop_tile_width=124, shop_tile_height=112,
+                        shop_status='experimental_no_live_validation', shop_purchase_behavior='original native handlers and quantity selection')
+        (output / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
+    print(f'Built revision {manifest["revision"]}: {len(payloads)} exact-validated payloads; {len(results)} fixture suites passed. {output}')
     return manifest
 
 
@@ -96,6 +108,7 @@ def main():
     parser.add_argument('--out', type=Path, required=True, help='New or empty ignored output directory')
     parser.add_argument('--gcc', default='gcc', help='Path to MinGW-w64 x64 GCC')
     parser.add_argument('--test-only', action='store_true', help='Run native fixture suites without game files')
+    parser.add_argument('--experimental-shop', action='store_true', help='Include experimental 6 by 3 NPC buy-store cards')
     args = parser.parse_args()
     require(args.test_only or args.game is not None, '--game is required unless --test-only is used')
     gcc = shutil.which(args.gcc)
@@ -105,7 +118,7 @@ def main():
     if args.test_only:
         test(output, gcc, MINHOOK)
     else:
-        build(args.game.resolve(), output, gcc)
+        build(args.game.resolve(), output, gcc, args.experimental_shop)
 
 
 if __name__ == '__main__':
