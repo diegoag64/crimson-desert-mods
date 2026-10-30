@@ -68,9 +68,6 @@ STYLE_NAMES={
     'slot-bg-item-list-hover':'shop-grid-hover',
     'list-item-focus-line':'shop-grid-focus-border',
     'item-icon-disabled-action-layer-colunm':'shop-grid-disabled',
-    'item-icon-bg-diagonal-freestore':'shop-grid-empty-frame',
-    'item-icon-bg-diagonal-bg':'shop-grid-empty-art',
-    'coin-money-label':'shop-grid-requirement',
 }
 
 # Some consumers call the fixed-buffer read directly. Keep every serialized
@@ -189,8 +186,7 @@ def style_template(before):
             coin=re.search(r'<widget id="ItemIconPrice".*?</widget>',block,re.S);assert coin
             additions=''
             for target,style in [('GoldCoinMark','shop-grid-coinicon'),('SilverCoinMark','shop-grid-coinicon'),('BronzeCoinMark','shop-grid-coinicon'),
-                ('GoldCoinWarp','shop-grid-coinwrap'),('SilverCoinWarp','shop-grid-coinwrap'),('BronzeCoinWarp','shop-grid-coinwrap'),('DefaultCoinWrap','shop-grid-coinlist'),
-                ('CoinMoneyLabel','shop-grid-requirement'),('CoinMoneyImpossibleLabel','shop-grid-requirement')]:
+                ('GoldCoinWarp','shop-grid-coinwrap'),('SilverCoinWarp','shop-grid-coinwrap'),('BronzeCoinWarp','shop-grid-coinwrap'),('DefaultCoinWrap','shop-grid-coinlist')]:
                 additions+=f'<override selector="#{target}" override-type="merge" css="{CSS_ALIASES[style]}"></override>\n'
             block=block[:coin.end()-9]+additions+block[coin.end()-9:]
         for attr in ['selector-[\\w-]+','script','tabindex','tabIndexGroup']:

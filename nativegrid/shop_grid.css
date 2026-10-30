@@ -43,13 +43,3 @@
 .shop-grid-owned-count.shop-grid-font-sub { font-size: 12px; line-height: 14px; }
 .shop-grid-owned-count.shop-grid-font-minor { font-size: 12px; line-height: 14px; }
 .shop-grid-disabled { position: absolute; left: 0px; top: 0px; width: 124px; height: 112px; opacity: 0.2; background-color: #464646; }
-
-/* Fit the empty-slot texture inside the card rather than cropping a wide row. */
-#ItemIconBgDiagonal.shop-grid-empty-frame { position: absolute; left: 1px; top: 1px; width: 122px; height: 110px; margin: 0px; padding: 0px; overflow-x: hidden; overflow-y: hidden; }
-#ItemIconBgDiagonalBg.shop-grid-empty-art { position: absolute; left: 0px; top: 0px; width: 122px; height: 110px; background-image: textureid(cd_image_item_emptyslot_bg_00); background-repeat: stretch; background-color: #d2d2d2; background-blend-mode: multiply; }
-
-/* Native requirement labels contain inline images. Suppress only their glyphs;
-   keep the label, its inline icons, native visibility, and requirement bindings. */
-.shop-grid-requirement { position: relative; width: auto; max-width: 116px; height: 18px; margin: 0px; display: flex; align-items: center; white-space: nowrap; font-size: 0px; line-height: 18px; text-shadow: none; }
-#CoinMoneyLabel.shop-grid-requirement { font-size: 0px; line-height: 18px; }
-#CoinMoneyImpossibleLabel.shop-grid-requirement { font-size: 0px; line-height: 18px; }

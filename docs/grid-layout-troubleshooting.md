@@ -59,7 +59,7 @@ The earlier shop code sliced from a component name to the next name. That change
 
 Build into a new ignored directory. Run the Python checks, native fixtures, installer fixtures, and publication audit described in [the build guide](build.md). Add new source or documentation paths to both `.gitignore` and `tracked-files.txt`. Stage explicit paths and commit each fix separately.
 
-The sell fix must preserve the existing inventory and buy-menu payload hashes. A combined build should add the two sell assets without changing the pending buy-menu refinements.
+The sell fix must preserve the existing inventory and buy-menu payload hashes. Revision 12 bundled unverified buy-menu refinements and failed to launch. Its log ended before loading either sell asset. Revision 13 instead adds only the two sell assets to the twelve exact revision 10 payloads. This isolates the sell fix from the unresolved styling changes. No crash record established the exact cause of the revision 12 failure.
 
 Close the game before replacing the plugin. Follow [the installation guide](install.md) and supply the currently installed package as `-PreviousPackage`. Preserve both packages and the rollback journal. Do not restore old signed game archives after a Steam update.
 

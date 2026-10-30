@@ -13,7 +13,7 @@ $Package = (Resolve-Path -LiteralPath $Package).Path
 $supports = @((Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\nativegrid\supported_build.json') -Raw | ConvertFrom-Json))
 $supports += @(Get-ChildItem -LiteralPath (Join-Path $PSScriptRoot '..\nativegrid\builds') -Filter '*.json' -File | ForEach-Object { Get-Content -LiteralPath $_.FullName -Raw | ConvertFrom-Json })
 $manifest = Get-Content -LiteralPath (Join-Path $Package 'manifest.json') -Raw | ConvertFrom-Json
-if ($manifest.schema -ne 1 -or $manifest.revision -notin @(5,6,7,8,9,10,11,12) -or $manifest.fixture_tests_passed -lt 6 -or -not $manifest.variable_length_resources) { throw 'Unsupported or untested package.' }
+if ($manifest.schema -ne 1 -or $manifest.revision -notin @(5,6,7,8,9,10,11,12,13) -or $manifest.fixture_tests_passed -lt 6 -or -not $manifest.variable_length_resources) { throw 'Unsupported or untested package.' }
 $supportedMatches = @($supports | Where-Object exe_sha256 -eq $manifest.exe_sha256)
 if ($supportedMatches.Count -ne 1) { throw 'Unknown or ambiguous supported game build.' }
 $support = $supportedMatches[0]

@@ -57,7 +57,7 @@
     },
     "ui/xml/gamemain/title/itemicon.css": {
       "original_sha256": "f21d01dc72a819594a9113b604530e7dc7ae6638061e4db589c5ad8fff1f9b22",
-      "replacement_sha256": "5294e174c5deec533f4d2f01f8be07b20958b8b568dd30c8cb3753797c837384"
+      "replacement_sha256": "ef4f501b8f203a3ce8b6f3f8deee8f90c7dcb162df075041627fc3a145549d00"
     },
     "ui/bin__/warehouseview2_game.uibinary": {
       "original_sha256": "e563c124d4a243a48477fc43d0a58cb78fc86dcd7f597c2cd6f2694b3e8dba79",
@@ -73,15 +73,15 @@
     },
     "ui/bin__/itemicon_component_game.uibinary": {
       "original_sha256": "c7e8212d5ea5dd86f1e85fe8ba7243702e03cdae464cc7f74c40c281b883e8df",
-      "replacement_sha256": "0cbc7f412eeafadafc6ebd7fa79bb2c35bd5efc056a873808709e7ec2ab35173"
+      "replacement_sha256": "4d14de505d8f1204d291899acb34cfc93594d4bfa01815c842bc770add5a0867"
     },
     "ui/bin__/itemicon_game.uibinary": {
       "original_sha256": "383145a646b353aa75ea43b24a5e0b885a1fb6c09a084567c64e251f4cfae5eb",
-      "replacement_sha256": "5a6bb27b713fbabe6fab68316be40279c64e577898a22eeacd09257ad20d5508"
+      "replacement_sha256": "c9f374d5128404770dbb396308089fdf0dcda20486db6d9abf3d824e7f546a39"
     },
     "ui/xml/gamemain/template/itemicon.thtml": {
       "original_sha256": "d84c8b9b184423e3fd0d4393d9afd8f5f1ccc1731e32ac5152786c78aa05a586",
-      "replacement_sha256": "c8645c929f00a798ff11c99c7d95ad1bb2e7e6c5b806a063d05f668aa16efc5f"
+      "replacement_sha256": "88f6aa02d73dfcb80957dac06823f6eeac72f9f7b7001ef42b000d4ea69104c8"
     },
     "ui/xml/gamemain/play/npcstorebuyview2.html": {
       "original_sha256": "c4a48f49dd2a457e840c61dd2706eabffbd8854607d9496903b3261cec8d8cf6",
