@@ -1,6 +1,11 @@
-/* Build-pinned presentation filter. Never writes a game object or polls a UI tree. */
-typedef void (*ElementStateFn)(void *,const unsigned char *,unsigned char);
-static ElementStateFn original_element_state;
+/* Build-pinned presentation filter. Native helpers own class storage and layout. */
+typedef void (*StyleRefreshFn)(void *);
+typedef unsigned char (*AddClassFn)(void *,const uint32_t *);
+typedef void (*SortClassesFn)(void *);
+static StyleRefreshFn original_style_refresh;
+static AddClassFn refinement_add_class;
+static SortClassesFn refinement_sort_classes;
+static const uint32_t *refinement_hidden_atom;
 
 static int refinement_read(uintptr_t base,size_t offset,void *out,size_t size) {
     if (base<0x10000 || base>UINTPTR_MAX-offset-size) return 0;
@@ -38,12 +43,28 @@ static int refinement_equipped_badge(uintptr_t badge) {
     }
     return 0;
 }
-static void hooked_element_state(void *element,const unsigned char *state,unsigned char enabled) {
+static void hooked_style_refresh(void *style) {
     DWORD saved_error=GetLastError();
-    unsigned char kind=0;
-    /* State 5 is !cpp-none: replace only native Show with native Hide. */
-    if (enabled==0 && read_memory((uintptr_t)state,&kind,1) && kind==5 &&
-        refinement_equipped_badge((uintptr_t)element)) enabled=1;
+    uintptr_t badge=refinement_pointer((uintptr_t)style,0);
+    uint32_t atom=0;
+    if (refinement_pointer(badge,0x20)==(uintptr_t)style &&
+        refinement_equipped_badge(badge) &&
+        read_memory((uintptr_t)refinement_hidden_atom,&atom,sizeof(atom)) && atom) {
+        uintptr_t vector=refinement_pointer((uintptr_t)style,8);
+        uint32_t count=0,capacity=0,classes[256];
+        if (refinement_read(vector,8,&count,4) && refinement_read(vector,12,&capacity,4) &&
+            count<=256 && capacity>=count && capacity<=4096 &&
+            (!count || read_memory(refinement_pointer(vector,0),classes,count*4))) {
+            unsigned i=0;
+            while (i<count && classes[i]!=atom) i++;
+            if (i==count && refinement_add_class((void *)vector,refinement_hidden_atom)) {
+                refinement_sort_classes((void *)vector);
+#ifdef REFINEMENT_REPORT_HIDE
+                REFINEMENT_REPORT_HIDE();
+#endif
+            }
+        }
+    }
     SetLastError(saved_error);
-    original_element_state(element,state,enabled);
+    original_style_refresh(style);
 }

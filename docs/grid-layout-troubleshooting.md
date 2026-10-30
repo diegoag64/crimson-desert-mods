@@ -221,19 +221,23 @@ Do not perform a refinement merely to validate layout. The test can inspect navi
 
 ### Imported child styles can defeat the compact card rules
 
-Revision 25 changed the card root to 124 by 106 pixels, but read-only inspection found an 88-by-88 image, a 270-pixel title wrapper, and a 17-pixel name font. The intended child rules were not the resolved values. A smaller root alone therefore did not establish centered artwork or contained names.
+Revision 25 changed the card root to 124 by 106 pixels, but live inspection found an 88-by-88 image and a 270-pixel title wrapper. The intended child rules were not the resolved values. Revision 26's direct ID/class selectors successfully changed those dimensions to 52 by 52 and 116 pixels. Check the child properties, not just the root, when a compact card still looks wrong.
 
-Revision 26 targets `#ItemIconImg.two-colunm-item-icon-img2`, `#ItemIconTitleWrap.product-item1`, and `#ItemIconTitle.product-item-icon-title`. The ID/class compounds give these rules priority over imported class-only rules without descendant selectors. The image occupies x=36 through x=88 in a 124-pixel card, leaving 36 pixels on each side. Its y=24 position reserves room for badges in the Inventory tab. The title wrapper is 116 pixels wide with four-pixel side margins, a 20-pixel height, and clipped overflow. The name font is 12 pixels. Tier and badge geometry use equivalent direct ID/class selectors.
+Revision 26 also exposed a containment error: `ItemTierTexture` is a child of `ItemIconImg`. Its left offset of -30 placed the upgrade indicator outside the smaller image box. The live node still existed without a hidden class, but the indicator was absent from the screenshot. Moving a child toward the card's corner does not move its containing box.
 
-To diagnose another centering failure, inspect the child's matched rules and resolved dimensions, position, and margins. Do not infer image dimensions from the card root. Verify the active payload hash before another edit. The post-install targets are image width/height 52, left 36, top 24, title width 116, and font size 12. Those targets are not yet measured live for revision 26.
+Revision 27 uses a 124-by-76 image container at x=0, y=4. The background artwork is explicitly 52 by 52 at x=36, y=20 inside that container: its card position remains x=36, y=24. The upgrade indicator uses its original 19.8-by-37 size at x=4, y=4 inside the container. Both fit inside the box. The horizontal mask now has opacity one at both ends so it does not fade the indicator. Title containment and the other card geometry stay unchanged.
 
-### Hide the badge according to the native refinement tab
+For a recurrence, inspect the actual parent, its resolved dimensions, and any mask before changing child offsets. Verify the active payload hash. After installing revision 27, check the resolved image box, background size/position, and tier bounds, then confirm the visible marks on several upgraded items. The artwork and indicator geometry are not yet live-verified for revision 27.
 
-The Equipped Gear tab contains only equipped items. The Inventory tab can also include equipped items, so a blanket CSS hide is incorrect. The live trees do not expose a tab-specific ancestor class on the badge. Revision 26 therefore uses the narrowly scoped [native badge filter](runtime.md#refinement-badge-filter-in-revision-26), based on the audited native list flag.
+### Follow the actual native badge visibility path
 
-After installation, inspect both tabs in one session. Equipped Gear badges must remain hidden through selection and scrolling; an equipped item in Inventory must retain its badge. Return to Equipped Gear to test reused cards. Read-only inspection can check the badge's `!cpp-none` state and the list flag. Do not refine an item just to test presentation. Keep the full names and stats available in the comparison panel.
+The Equipped Gear tab contains only equipped items. Inventory can also contain equipped items, so a blanket CSS hide is incorrect. The live trees expose no tab-specific ancestor class on the badge.
 
-Only the refinement stylesheet differs among revision 25 and 26's eighteen payloads. Revision 26 also adds the optional state-setter hook. Eight native suites, 26 Python checks, and 15 installer cases pass, including changed-pin refusals and acceptance of the original revision 25 rollback. Live confirmation remains pending.
+Revision 26's ownership and native tab-flag checks matched the live card, but its hooked state setter was not the visibility path used by the item-card code. The earlier state-5 interpretation was wrong. Native item updates remove `!cpp-none` through both a helper and an inlined path, then refresh the style. Revision 27 restores the class before that common refresh only when the exact badge, refinement root, gear list, and equipped-only flag match. See the [native audit and guards](runtime.md#refinement-badge-filter).
+
+After installation, check for `REFINEMENT: kept Equipped Gear badge hidden during native style refresh.` in the package log. Check both tabs in one session, including selection, scrolling, and returning to Equipped Gear. Read-only inspection can verify the badge's class and tab flag. An equipped item in Inventory must retain native badge behavior. Do not refine an item to validate presentation.
+
+Revision 27 changes only the refinement stylesheet among the eighteen payloads and replaces the optional native badge hook. Eight native suites, 27 Python checks, and 20 installer cases pass. These checks cover the new class path and preserve verification of earlier packages. Live confirmation remains pending. Keep revision 25 as the refinement rollback checkpoint.
 
 ## Verify and keep a rollback checkpoint
 

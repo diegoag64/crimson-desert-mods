@@ -12,19 +12,27 @@ For build `26329202`, slot 5 is at RVA `0x15859a0`, slot 4 is at `0x15858e0`, an
 
 The revision-5 inventory layout is user-verified on build `26317560`. Revision 7 has offline compatibility evidence and fixture checks, with live UI validation pending. A rebuilt binary still needs its own live check. The user confirmed the compact shop layout and revision 24 requirement spacing; broader purchase-flow testing remains pending. The runtime does not add a list-mode toggle.
 
-## Refinement badge filter in revision 26
+## Refinement badge filter
 
-Only `--experimental-refinement` packages enable this third hook. Build `26329202` uses the native element-state setter at RVA `0x41d6a40`, with signature `void(void *element, const unsigned char *state, unsigned char enabled)`. State 5 controls `!cpp-none`: zero shows the element, and one hides it. Native Show/Hide callers and the setter body establish this contract. The package pins the 24-byte method prefix in `refinement_runtime`; the runtime checks it before creating any hooks.
+Revision 26's live test failed: Equipped badges remained visible. Its state-setter hook was active, and the ownership and tab checks matched live objects, but the item-card code bypasses that setter. The earlier claim that state 5 represented `!cpp-none` was incorrect. Do not use that state mapping for visibility fixes.
 
-The filter changes a Show request to Hide only when all these checks pass:
+On build `26329202`, the native item updates near RVAs `0xe05b02` and `0xe1b597` obtain the badge from the description control's `+0x358` field. One path removes `!cpp-none` through a helper; the other removes it inline. Both refresh the style afterward. Live atom lookup identifies the global at RVA `0x71066b8` as `!cpp-none`. Its numeric atom ID is process-specific and is not hard-coded.
 
-- The badge's direct parent has a `CommonInfoDescription` control (vtable RVA `0x59cf598`) whose owner is that parent and whose equipped-mark binding at `+0x358` is the input badge.
+Revision 27 replaces the state-setter hook with the style-refresh hook at RVA `0x388f5a0`, signature `void(void *style)`. Before the original refresh, the filter restores `!cpp-none` only on the Equipped Gear badge. It uses the native class-vector insertion helper at `0x3892c50`, signature `unsigned char(void *vector, const uint32_t *atom)`, followed by the native sorting helper at `0x3893680`, signature `void(void *vector)`, only when insertion succeeds. These helpers do not call style refresh, so this sequence does not recursively enter the hook. The original refresh runs once afterward.
+
+The filter requires all these checks:
+
+- The style's owner at `+0x00` points to an element whose style at `+0x20` points back.
+- That element's direct parent has a `CommonInfoDescription` control (vtable RVA `0x59cf598`) whose owner is the parent and whose equipped-mark binding at `+0x358` is the input badge.
 - A bounded parent walk finds a `Common_ItemList` control (vtable RVA `0x5a406b0`) and then a `RootItemEnchant` control (vtable RVA `0x5a72340`). Each control points back to its owning element.
-- The refinement root's gear-list binding at `+0x1a0` identifies that list. This excludes ingredient lists and other menus.
+- The refinement root's gear-list binding at `+0x1a0` identifies that list, excluding ingredient lists and other menus.
 - The list's equipped-only flag at `+0x21f` is exactly one.
+- The hidden-class atom is initialized, and the class vector has readable entries and bounded count/capacity.
 
-Element parents are at `+0x38`, native controls at `+0xe0`, and control owners at `+0x08`. Reads are bounded and use `ReadProcessMemory` on the current process. Unknown flags, missing owners, unreadable pointers, and cycles preserve the native request. Traversal stops after twelve ancestors. The filter allocates nothing, stores no UI addresses, writes no game objects, and performs no background polling. It forwards the original state pointer and preserves `LastError` around inspection. The native setter performs the actual visibility and layout update on its calling thread.
+Element parents are at `+0x38`, native controls at `+0xe0`, and control owners at `+0x08`. Parent traversal stops after twelve ancestors. Unknown flags, missing owners, unreadable pointers, cycles, and invalid vectors preserve the native refresh. The plugin uses native helpers for class-vector changes and allocation; it does not write object fields directly or poll the tree. It stores no UI addresses between calls and preserves `LastError` around inspection and helper calls.
 
-Read-only comparison of the two live tabs found `+0x21f` set for Equipped Gear and clear for Inventory. The native tab callback sets this flag before refreshing the list. The Inventory list can include equipped items through its separate `+0x21a` flag, so hiding every refinement badge would remove useful information. The filter respects each new Show/Hide request when cards are reused after a tab switch.
+Read-only comparison found `+0x21f` set for Equipped Gear and clear for Inventory. The tab callback sets this flag before refreshing the list. Inventory can include equipped items through its separate `+0x21a` flag. In that tab, the plugin leaves native class changes alone, so an equipped item can show its badge. If `!cpp-none` is already present, the plugin skips insertion and sorting.
 
-The builder verifies the method prefix and all three RTTI names against the exact supported EXE. The optional hook joins the existing read hooks in queued activation, and initialization failures remove the hooks created by this plugin. A synthetic MinHook fixture checks 22 cases through an actual trampoline. These checks establish forwarding and filtering behavior in fixtures, not successful live UI rendering. Revision 26 still requires a live test; revision 25 has no element-state hook and remains the rollback package.
+The full EXE hash and the three method prefixes gate activation. The builder also validates the three RTTI names and the atom's writable image section. Revision 27's pins live in `refinement_runtime_revisions.27`; revision 26's metadata remains unchanged for package verification. Only refinement packages compile this hook. The first eight corrections log `REFINEMENT: kept Equipped Gear badge hidden during native style refresh.`
+
+The synthetic MinHook fixture checks 27 cases through a real trampoline, including both native removal paths, tab switches, idempotence, failed insertion, helper ordering, invalid graphs, and `LastError`. It does not execute game code. Revision 27 has passed these fixtures but still requires live confirmation. Keep revision 25, which retains the indicators and has no presentation hook, as the refinement rollback checkpoint.

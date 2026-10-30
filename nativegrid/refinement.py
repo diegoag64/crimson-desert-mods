@@ -17,10 +17,15 @@ REFINEMENT_PATHS = (
 def audit_runtime(exe, pins):
     """Verify the separately audited presentation method and native owner types."""
     pe = PE(exe)
-    prefix = bytes.fromhex(pins['state_prefix'])
-    raw = pe.raw(pins['state_rva'])
-    if len(prefix) != 24 or exe[raw:raw+24] != prefix:
-        raise ValueError('Refinement state method fingerprint differs from audit')
+    for name in ('refresh', 'add_class', 'sort_classes'):
+        method = pins['methods'][name]
+        prefix = bytes.fromhex(method['prefix'])
+        raw = pe.raw(method['rva'])
+        if len(prefix) != 24 or exe[raw:raw+24] != prefix:
+            raise ValueError('Refinement method fingerprint differs from audit: ' + name)
+    section = pe.section(pins['hidden_atom_rva'])
+    if not section or not section['flags'] & 0x80000000:
+        raise ValueError('Refinement hidden-class atom is outside writable image data')
     for name in ('description', 'list', 'root'):
         vt = pins[name + '_vtable']
         locator = struct.unpack_from('<Q', exe, pe.raw(vt['rva'] - 8))[0] - pe.base

@@ -36,7 +36,13 @@ static void write_log(const char *text) {
     WriteFile(log_file,text,(DWORD)strlen(text),&written,NULL);
     ReleaseSRWLockExclusive(&log_lock);
 }
-#ifdef REFINEMENT_STATE_RVA
+#ifdef REFINEMENT_REFRESH_RVA
+static LONG refinement_hides;
+static void refinement_report_hide(void) {
+    if (InterlockedIncrement(&refinement_hides)<=8)
+        write_log("REFINEMENT: kept Equipped Gear badge hidden during native style refresh.\r\n");
+}
+#define REFINEMENT_REPORT_HIDE refinement_report_hide
 #include "native_grid_refinement.h"
 #endif
 #include "native_grid_flexible_resolver.h"
@@ -174,12 +180,19 @@ __declspec(dllexport) void InitializeASI(void) {
     if (!full || !read_memory(image_base+RESIZE_RVA,prefix,sizeof(prefix)) ||
         memcmp(prefix,expected_resize_prefix,sizeof(prefix))) {write_log("DISABLED: full read or resize fingerprint mismatch.\r\n"); return;}
     resize_buffer=(ResizeFn)(image_base+RESIZE_RVA);
-#ifdef REFINEMENT_STATE_RVA
-    void *element_state=(void *)(image_base+REFINEMENT_STATE_RVA);
-    if (!read_memory((uintptr_t)element_state,prefix,sizeof(prefix)) ||
-        memcmp(prefix,expected_element_state_prefix,sizeof(prefix))) {
-        write_log("DISABLED: refinement state method fingerprint mismatch.\r\n"); return;
+#ifdef REFINEMENT_REFRESH_RVA
+    void *style_refresh=(void *)(image_base+REFINEMENT_REFRESH_RVA);
+    if (!read_memory((uintptr_t)style_refresh,prefix,sizeof(prefix)) ||
+        memcmp(prefix,expected_refinement_refresh_prefix,sizeof(prefix)) ||
+        !read_memory(image_base+REFINEMENT_ADD_CLASS_RVA,prefix,sizeof(prefix)) ||
+        memcmp(prefix,expected_refinement_add_class_prefix,sizeof(prefix)) ||
+        !read_memory(image_base+REFINEMENT_SORT_CLASSES_RVA,prefix,sizeof(prefix)) ||
+        memcmp(prefix,expected_refinement_sort_classes_prefix,sizeof(prefix))) {
+        write_log("DISABLED: refinement style/helper fingerprint mismatch.\r\n"); return;
     }
+    refinement_add_class=(AddClassFn)(image_base+REFINEMENT_ADD_CLASS_RVA);
+    refinement_sort_classes=(SortClassesFn)(image_base+REFINEMENT_SORT_CLASSES_RVA);
+    refinement_hidden_atom=(const uint32_t *)(image_base+REFINEMENT_HIDDEN_ATOM_RVA);
 #endif
     MH_STATUS status=MH_Initialize();
     if (status!=MH_OK && status!=MH_ERROR_ALREADY_INITIALIZED) return;
@@ -187,26 +200,26 @@ __declspec(dllexport) void InitializeASI(void) {
     if (status!=MH_OK) {write_log("DISABLED: hook creation failed.\r\n"); return;}
     status=MH_CreateHook(full,hooked_full,(void **)&original_full);
     if (status!=MH_OK) {MH_RemoveHook(target); write_log("DISABLED: full-read hook creation failed.\r\n"); return;}
-#ifdef REFINEMENT_STATE_RVA
-    status=MH_CreateHook(element_state,hooked_element_state,(void **)&original_element_state);
+#ifdef REFINEMENT_REFRESH_RVA
+    status=MH_CreateHook(style_refresh,hooked_style_refresh,(void **)&original_style_refresh);
     if (status!=MH_OK) {MH_RemoveHook(full);MH_RemoveHook(target);write_log("DISABLED: refinement hook creation failed.\r\n");return;}
 #endif
     HMODULE pinned=NULL;
     if (!GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS|GET_MODULE_HANDLE_EX_FLAG_PIN,(LPCWSTR)&InitializeASI,&pinned)) goto activation_failed;
     if (MH_QueueEnableHook(target)!=MH_OK || MH_QueueEnableHook(full)!=MH_OK) goto activation_failed;
-#ifdef REFINEMENT_STATE_RVA
-    if (MH_QueueEnableHook(element_state)!=MH_OK) goto activation_failed;
+#ifdef REFINEMENT_REFRESH_RVA
+    if (MH_QueueEnableHook(style_refresh)!=MH_OK) goto activation_failed;
 #endif
     if (MH_ApplyQueued()!=MH_OK) goto activation_failed;
     InterlockedExchange(&active,1);
     char line[200]; snprintf(line,sizeof(line),"ACTIVE: ResourceLoadWorker_Package slots 5/4 RVA=%llx/%llx payloads=%u.\r\n",(unsigned long long)((uintptr_t)target-image_base),(unsigned long long)((uintptr_t)full-image_base),PAYLOAD_COUNT); write_log(line);
-#ifdef REFINEMENT_STATE_RVA
-    write_log("ACTIVE: refinement Equipped Gear badge filter; native state setter, bounded owner checks.\r\n");
+#ifdef REFINEMENT_REFRESH_RVA
+    write_log("ACTIVE: refinement Equipped Gear badge filter; native class refresh, bounded owner checks.\r\n");
 #endif
     return;
 activation_failed:
-#ifdef REFINEMENT_STATE_RVA
-    MH_DisableHook(element_state);MH_RemoveHook(element_state);
+#ifdef REFINEMENT_REFRESH_RVA
+    MH_DisableHook(style_refresh);MH_RemoveHook(style_refresh);
 #endif
     MH_DisableHook(full);MH_DisableHook(target);MH_RemoveHook(full);MH_RemoveHook(target);
     write_log("DISABLED: activation failed.\r\n");

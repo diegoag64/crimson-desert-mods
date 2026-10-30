@@ -43,8 +43,11 @@ class RefinementChecks(unittest.TestCase):
 
     def runtime_fixture(self):
         data = bytearray(4096)
-        pins = {'state_rva': 64, 'state_prefix': bytes(range(24)).hex()}
-        data[64:88] = bytes(range(24))
+        pins = {'hidden_atom_rva': 2048, 'methods': {}}
+        for i, name in enumerate(('refresh', 'add_class', 'sort_classes')):
+            rva = 64 + 32*i
+            pins['methods'][name] = {'rva': rva, 'prefix': bytes(range(24)).hex()}
+            data[rva:rva+24] = bytes(range(24))
         for i, name in enumerate(('description', 'list', 'root')):
             vt, locator, td = 256+i*512, 320+i*512, 384+i*512
             pins[name+'_vtable'] = {'rva': vt, 'type': '.?AV' + name + '@@'}
@@ -58,6 +61,7 @@ class RefinementChecks(unittest.TestCase):
         # Synthetic PE mapping isolates the fingerprint/RTTI guard from PE parsing.
         with patch('nativegrid.refinement.PE') as pe:
             pe.return_value.base = 0x140000000
+            pe.return_value.section.return_value = {"flags": 0xc0000040}
             pe.return_value.raw.side_effect = lambda rva: rva
             audit_runtime(data, pins)
 
@@ -65,14 +69,16 @@ class RefinementChecks(unittest.TestCase):
         self.run_audit(*self.runtime_fixture())
 
     def test_runtime_rejects_changed_method_and_short_pin(self):
-        data, pins = self.runtime_fixture()
-        data[64] ^= 1
-        with self.assertRaisesRegex(ValueError, 'method fingerprint'):
-            self.run_audit(data, pins)
-        data, pins = self.runtime_fixture()
-        pins['state_prefix'] = pins['state_prefix'][:-2]
-        with self.assertRaisesRegex(ValueError, 'method fingerprint'):
-            self.run_audit(data, pins)
+        for i, name in enumerate(('refresh', 'add_class', 'sort_classes')):
+            with self.subTest(name=name):
+                data, pins = self.runtime_fixture()
+                data[64+32*i] ^= 1
+                with self.assertRaisesRegex(ValueError, 'method fingerprint'):
+                    self.run_audit(data, pins)
+                data, pins = self.runtime_fixture()
+                pins['methods'][name]['prefix'] = pins['methods'][name]['prefix'][:-2]
+                with self.assertRaisesRegex(ValueError, 'method fingerprint'):
+                    self.run_audit(data, pins)
 
     def test_runtime_rejects_each_changed_native_owner_type(self):
         for i, name in enumerate(('description', 'list', 'root')):
@@ -81,6 +87,15 @@ class RefinementChecks(unittest.TestCase):
                 data[384+i*512+16] ^= 1
                 with self.assertRaisesRegex(ValueError, name):
                     self.run_audit(data, pins)
+
+    def test_runtime_rejects_atom_outside_writable_image_data(self):
+        data, pins = self.runtime_fixture()
+        for section in (None, {'flags': 0x40000040}):
+            with patch('nativegrid.refinement.PE') as pe:
+                pe.return_value.raw.side_effect = lambda rva: rva
+                pe.return_value.section.return_value = section
+                with self.assertRaisesRegex(ValueError, 'writable image data'):
+                    audit_runtime(data, pins)
 
 
 if __name__ == '__main__':
