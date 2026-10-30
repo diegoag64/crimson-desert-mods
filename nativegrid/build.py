@@ -38,7 +38,7 @@ def output_directory(path, game=None):
     return output
 
 
-def build(game, output, gcc, experimental_shop=False):
+def build(game, output, gcc, experimental_shop=False, experimental_refinement=False):
     from .archive import Pamt, decrypt
     import lz4.block
 
@@ -46,6 +46,12 @@ def build(game, output, gcc, experimental_shop=False):
     matches = [record for record in SUPPORTED_BUILDS if record['exe_sha256'] == exe_hash]
     require(len(matches) == 1, 'Unsupported or ambiguous executable fingerprint')
     support = matches[0]
+    require(not experimental_refinement or experimental_shop,
+            'Refinement builds must preserve the working shop package: add --experimental-shop')
+    refinement_pins = support.get('refinement_assets', {}) if experimental_refinement else {}
+    if experimental_refinement:
+        from .refinement import REFINEMENT_PATHS, transform as refinement_transform
+        require(set(refinement_pins) == set(REFINEMENT_PATHS), 'No audited refinement assets for this game build')
     fingerprints = {
         'bin64/CrimsonDesert.exe': support['exe_sha256'],
         'meta/0.papgt': support['master_sha256'],
@@ -80,8 +86,10 @@ def build(game, output, gcc, experimental_shop=False):
     if experimental_shop:
         from .shop import SHOP_PATHS, transform as shop_transform
         paths += list(SHOP_PATHS)
+    paths += list(refinement_pins)
     pins = dict(support['shop_assets'] if experimental_shop else support['assets'])
     pins.update(sell_pins)
+    pins.update(refinement_pins)
     if requirement_support:
         paths.append(REQUIREMENT_PATH)
         pins[REQUIREMENT_PATH] = requirement_support['asset']
@@ -106,6 +114,9 @@ def build(game, output, gcc, experimental_shop=False):
             require(len(after) == len(before), 'Shop asset must support fixed-buffer reads: ' + path)
         if is_requirement:
             after = requirement_transform(before)
+        if path in refinement_pins:
+            after = refinement_transform(path, before)
+            require(len(after) == len(before), 'Refinement asset must support fixed-buffer reads: ' + path)
         require(hashlib.sha256(after).hexdigest() == pins[path]['replacement_sha256'], 'Transform differs from pinned replacement: ' + path)
         payloads.append((path, before, after))
         records.append(dict(path=path, size=len(before), replacement_size=len(after),
@@ -117,6 +128,8 @@ def build(game, output, gcc, experimental_shop=False):
     (output / 'winmm.ini').write_bytes(b'[GlobalSets]\r\nDebugLog=1\r\nLoadExtraPlugins=\r\n[FileLoader]\r\nOverloadFromFolder=\r\n')
     shutil.copytree(SOURCE / 'licenses', output / 'licenses')
     revision = 24 if requirement_support else (14 if sell_pins or experimental_shop else (7 if support['game_build'] == '26329202' else 5))
+    if experimental_refinement:
+        revision = 25
     manifest = dict(schema=1, revision=revision, experimental_shop=experimental_shop,
                     status='built_not_installed', game_build=support['game_build'],
                     exe_sha256=support['exe_sha256'], master_sha256=support['master_sha256'], pamt_sha256=support['pamt_sha256'],
@@ -138,6 +151,11 @@ def build(game, output, gcc, experimental_shop=False):
         manifest.update(shop_columns=6, shop_rows=3, shop_tile_width=124, shop_tile_height=112,
                         shop_status='experimental_no_live_validation', shop_purchase_behavior='original native handlers and quantity selection')
         (output / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
+    if experimental_refinement:
+        manifest.update(experimental_refinement=True, refinement_columns=3, refinement_rows=4,
+                        refinement_tile_width=124, refinement_tile_height=106,
+                        refinement_status='experimental_no_live_validation')
+        (output / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
     print(f'Built revision {manifest["revision"]}: {len(payloads)} exact-validated payloads; {len(results)} fixture suites passed. {output}')
     return manifest
 
@@ -151,6 +169,7 @@ def main():
     parser.add_argument('--gcc', default='gcc', help='Path to MinGW-w64 x64 GCC')
     parser.add_argument('--test-only', action='store_true', help='Run native fixture suites without game files')
     parser.add_argument('--experimental-shop', action='store_true', help='Include experimental 6 by 3 NPC buy-store cards')
+    parser.add_argument('--experimental-refinement', action='store_true', help='Include experimental 3 by 4 refinement gear cards; requires --experimental-shop')
     args = parser.parse_args()
     require(args.test_only or args.game is not None, '--game is required unless --test-only is used')
     gcc = shutil.which(args.gcc)
@@ -160,7 +179,7 @@ def main():
     if args.test_only:
         test(output, gcc, MINHOOK)
     else:
-        build(args.game.resolve(), output, gcc, args.experimental_shop)
+        build(args.game.resolve(), output, gcc, args.experimental_shop, args.experimental_refinement)
 
 
 if __name__ == '__main__':

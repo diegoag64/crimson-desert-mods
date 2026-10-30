@@ -14,6 +14,8 @@ Revision 15 through 24 shop packages also require the pinned English localizatio
 
 ## Install a package
 
+Revision 25 is an optional refinement test, prepared but not installed or live-verified. Its installer also checks the three refinement payload hashes against the supported build. To install it after closing the game, use `build/refinement-25-three-column` as `-Package` and `build/shop-24-live-container-translation` as `-PreviousPackage`. Keep revision 24 as the working rollback checkpoint.
+
 Close the game. Keep archive-manager mods unmounted. Run the same command with `-Action Install`.
 
 The installer owns exactly `bin64\NativeGrid.asi`, `bin64\winmm.dll`, and `bin64\winmm.ini`. It refuses other ASIs because the loader is shared. It preserves previous files and a transaction journal under `build\rollback` before changing any installed files. Game archives, indexes, and saves are never written.

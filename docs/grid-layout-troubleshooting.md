@@ -191,6 +191,34 @@ When diagnosing a recurrence, check all three forms of evidence: the direct comp
 
 On October 30, 2026, revision 24 was installed and its installed-file verification passed. The user then confirmed that the spacing was fixed in the live shop. This establishes the visible result for that screen; no post-install property-map measurement was taken. Preserve revision 24 as the working checkpoint. The successful change uses a direct compound selector on the actual requirement container and `translate-y`, rather than a descendant selector or a relative `top` offset.
 
+## Refinement gear list
+
+The refinement menu uses `ItemList.EnchantItemList_Vertical` with `UIGamePlayControlCommon_ItemList`. Its gear widget, `InventoryContent`, specifies one column and four rows. The cards use `ItemIcon.ProductionItemIcon`. The native controller already accepts column and row attributes; revision 25 changes only the gear list's column attribute to three.
+
+Read-only inspection on build `26329202` found four live gear cards with `item-icon-wrap` and `two-colunm-item-icon3`. Their ancestors include the grid panel, `enchant-item-container-wrap`, and the refinement body. Their style context differs from those of the inventory, storage, and shop documents. An archive search of the source HTML, templates, and CSS found only `itemenchantpanel.html` importing `itemenchantpanel.css`.
+
+The stylesheet override therefore belongs in `itemenchantpanel.css`, not in the shared item stylesheet. Existing direct compound selectors identify the production card, image, title, and equipped badge. No descendant selectors or template renames are needed. Percentage-based background and hover rules also fit the unchanged ingredient cards within the same document.
+
+The first layout uses a 124-by-106-pixel card with the original two-pixel horizontal margins and bottom margin. Three column pitches occupy 384 layout pixels, the same width as the original single card including margins. Four row pitches retain the original 432-pixel height. The 52-pixel image sits below the equipped badge, and the name retains native horizontal scrolling. Native focus, disabled, selected, and equipped visibility states remain attached.
+
+The transform changes these three files:
+
+- `itemenchantpanel_game.uibinary`: one byte changes the column count, guarded by the following `#InventoryContent` binding.
+- `itemenchantpanel.html`: the same column change in the exact gear widget. Material-list attributes remain intact.
+- `itemenchantpanel.css`: compact existing rules, append refinement overrides, and pad to the original byte length.
+
+All fifteen revision 24 payloads remain identical. The game executable, indexes, runtime hooks, native scripts, comparison panels, and refinement actions are unchanged. The new original and replacement asset hashes are pinned separately. The builder refuses unsupported refinement builds, and the installer checks the new payload pins.
+
+Revision 25 has passed seven native suites, 23 Python tests, ten installer cases, and package verification. This is offline evidence. The new layout still needs a live test:
+
+1. Open Refinement and confirm three columns, fitted artwork, readable names, equipped badges, and refinement marks.
+2. Move selection across columns and rows. Confirm that both comparison and material panels follow the selected item.
+3. Switch between equipped and available gear. Scroll beyond twelve items if the inventory has enough eligible gear.
+4. Check mouse hover and keyboard or controller focus. Check that the material-selection screen still displays its list correctly.
+5. Confirm that inventory, buy, and sell screens retain their working layout.
+
+Do not perform a refinement merely to validate layout. The test can inspect navigation and previews without consuming materials. If the layout fails, inspect the live classes and resolved properties before changing another rule. Preserve revision 24 for rollback.
+
 ## Verify and keep a rollback checkpoint
 
 Build into a new ignored directory. Run the Python checks, native fixtures, installer fixtures, and publication audit described in [the build guide](build.md). Add new source or documentation paths to both `.gitignore` and `tracked-files.txt`. Stage explicit paths and commit each fix separately.

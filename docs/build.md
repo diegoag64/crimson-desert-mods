@@ -42,6 +42,14 @@ To include the experimental six-column NPC buy-store grid, add `--experimental-s
 
 The current build uses allocator RVA `0x1501e20` and verifies the direct call at full-read RVA plus `0x80`. Current game originals are extracted afresh, including the two component binaries changed by the update. The new pins follow a separate offline method and allocator audit. An unknown EXE or changed asset is refused. Successful offline builds do not establish the visible in-game result.
 
+To add the experimental refinement gear grid on build `26329202`, use both `--experimental-shop` and `--experimental-refinement`. For example:
+
+```powershell
+.venv\Scripts\python.exe -m nativegrid.build --game "E:\Steam\steamapps\common\Crimson Desert" --gcc C:\msys64\ucrt64\bin\gcc.exe --out build\refinement-new --experimental-shop --experimental-refinement
+```
+
+Revision 25 adds three refinement assets to revision 24's fifteen payloads. The new assets have exact original and replacement hashes in `refinement_assets`. Their lengths stay unchanged so either read hook can replace them. The default shop build remains revision 24. See [refinement grid troubleshooting](grid-layout-troubleshooting.md#refinement-gear-list) for scope and live checks.
+
 On build `26329202`, experimental shop packages also read `0020/0.pamt` and the English `localstringinfo.paloc` resource. The `shop_requirements` metadata pins this index and both resource hashes. The installer verifies the additional index before replacement. The localization transform changes three short requirement labels to their original inline icons and verifies that all other records remain identical. Its compressed envelope changes size, so delivery requires the existing full-read hook. See [requirement-label troubleshooting](grid-layout-troubleshooting.md#requirement-text-overflows-a-shop-card) for the format, scope, and live checks.
 
 ## Audit files before publication

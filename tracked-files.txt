@@ -36,3 +36,9 @@ tests/test_core.py
 tests/test_installer.ps1
 tests/test_shop.py
 tracked-files.txt
+
+nativegrid/refinement.py
+
+nativegrid/refinement_grid.css
+
+tests/test_refinement.py

@@ -69,3 +69,9 @@
 !/tests/test_shop.py
 !/nativegrid/builds/
 !/nativegrid/builds/26329202.json
+
+!/nativegrid/refinement.py
+
+!/nativegrid/refinement_grid.css
+
+!/tests/test_refinement.py
