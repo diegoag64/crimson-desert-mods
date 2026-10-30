@@ -90,7 +90,9 @@ Revision 18 retains the same translation and scope but uses two separate rules:
 .shop-grid-price #CoinMoneyImpossibleLabel { translate-y: -18px; }
 ```
 
-`validate_shop_selectors` rejects grouped selectors in the custom stylesheet before compaction. It ignores commas in declaration values, comments, and quoted strings. This limited guard does not replace live testing or validate every supported game CSS property. Revision 18 is not live-verified; keep revision 16 installed until a new test is authorized.
+`validate_shop_selectors` rejects grouped selectors in the custom stylesheet before compaction. It ignores commas in declaration values, comments, and quoted strings. This limited guard does not replace live testing or validate every supported game CSS property. Revision 18 loaded successfully in the user's test, but its icons did not move. Its log confirms replacement of the stylesheet and compiled item-icon resource. Do not interpret a replacement entry as proof that a selector matched or a positioning property took effect.
+
+Revision 19 replaces that rule with `.coin-money-label.shop-grid-font-minor { top: -18px; }`. Both compiled requirement labels already have these two classes after the existing shop transform, and the original currency rule sets `position: relative`. The compound selector targets the labels directly, without relying on an ancestor match. The build serializes the existing shop font alias to `font-text-minor-whit_`; it does not add a new class, change font metrics, or modify components. This is scoped to the audited compiled shop labels and still needs live placement verification. All fourteen non-stylesheet payloads remain unchanged.
 
 After installation, verify that both requirement icons fit within the locked card, the selected-item panel still explains the restriction, and selecting an unavailable item cannot bypass the original requirement. Also test an ordinary purchasable item and the adjacent empty slot. Offline record checks do not establish runtime delivery or glyph placement.
 
