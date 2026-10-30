@@ -4,16 +4,17 @@ import hashlib
 import json
 from pathlib import Path
 import shutil
-import sys
+import struct
 
 from .dependencies import MINHOOK, prepare
 from .compiler import compile_flexible
 from .inventory import INVENTORY_PATHS, transform
-from .pe import package_methods
+from .pe import PE, package_methods
 from .tests import test
 
 SOURCE = Path(__file__).resolve().parent
 SUPPORT = json.loads((SOURCE / 'supported_build.json').read_text())
+SUPPORTED_BUILDS = [SUPPORT] + [json.loads(path.read_text()) for path in sorted((SOURCE / 'builds').glob('*.json'))]
 
 
 def digest(path):
@@ -41,22 +42,31 @@ def build(game, output, gcc, experimental_shop=False):
     from .archive import Pamt, decrypt
     import lz4.block
 
+    exe_hash = digest(game / 'bin64/CrimsonDesert.exe')
+    matches = [record for record in SUPPORTED_BUILDS if record['exe_sha256'] == exe_hash]
+    require(len(matches) == 1, 'Unsupported or ambiguous executable fingerprint')
+    support = matches[0]
     fingerprints = {
-        'bin64/CrimsonDesert.exe': SUPPORT['exe_sha256'],
-        'meta/0.papgt': SUPPORT['master_sha256'],
-        '0012/0.pamt': SUPPORT['pamt_sha256'],
+        'bin64/CrimsonDesert.exe': support['exe_sha256'],
+        'meta/0.papgt': support['master_sha256'],
+        '0012/0.pamt': support['pamt_sha256'],
     }
     for path, expected in fingerprints.items():
         require(digest(game / path) == expected, 'Unsupported or changed game file: ' + path)
     exe = (game / 'bin64/CrimsonDesert.exe').read_bytes()
-    methods = package_methods(exe) + [0x1501310]
-    require(methods == SUPPORT['method_rvas'], 'Derived package-worker methods differ from supported build')
+    methods = package_methods(exe) + [support['method_rvas'][2]]
+    require(methods == support['method_rvas'], 'Derived package-worker methods differ from supported build')
+    if 'resize_call_offset' in support:
+        call = methods[1] + support['resize_call_offset']
+        raw = PE(exe).raw(call)
+        require(exe[raw] == 0xe8 and call + 5 + struct.unpack_from('<i', exe, raw+1)[0] == methods[2],
+                'Full-read direct resize call differs from audited allocator')
     entries = {entry.path: entry for entry in Pamt.parse((game / '0012/0.pamt').read_bytes()).entries()}
     paths = list(INVENTORY_PATHS)
     if experimental_shop:
         from .shop import SHOP_PATHS, transform as shop_transform
         paths += list(SHOP_PATHS)
-    pins = SUPPORT['shop_assets'] if experimental_shop else SUPPORT['assets']
+    pins = support['shop_assets'] if experimental_shop else support['assets']
     payloads, records = [], []
     for path in paths:
         entry = entries[path]
@@ -81,9 +91,10 @@ def build(game, output, gcc, experimental_shop=False):
     # Match the tested loader configuration, including Windows line endings.
     (output / 'winmm.ini').write_bytes(b'[GlobalSets]\r\nDebugLog=1\r\nLoadExtraPlugins=\r\n[FileLoader]\r\nOverloadFromFolder=\r\n')
     shutil.copytree(SOURCE / 'licenses', output / 'licenses')
-    manifest = dict(schema=1, revision=6 if experimental_shop else 5, experimental_shop=experimental_shop,
-                    status='built_not_installed', game_build=SUPPORT['game_build'],
-                    exe_sha256=SUPPORT['exe_sha256'], master_sha256=SUPPORT['master_sha256'], pamt_sha256=SUPPORT['pamt_sha256'],
+    revision = 7 if support['game_build'] == '26329202' else (6 if experimental_shop else 5)
+    manifest = dict(schema=1, revision=revision, experimental_shop=experimental_shop,
+                    status='built_not_installed', game_build=support['game_build'],
+                    exe_sha256=support['exe_sha256'], master_sha256=support['master_sha256'], pamt_sha256=support['pamt_sha256'],
                     grid_columns=8, grid_rows=11, storage_grid_columns=8, storage_grid_rows=11,
                     tile_width=64, tile_height=62.5, list_toggle=False, resource_replacement=True,
                     variable_length_resources=True, fixture_tests_passed=len(results), payloads=records,

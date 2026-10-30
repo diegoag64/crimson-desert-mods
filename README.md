@@ -4,7 +4,7 @@ A native ASI mod that fits eight columns and eleven rows into the inventory and 
 
 Revision 5 was verified in game by the user on Steam build `26317560`. The runtime replaces exact decoded UI resources in memory and leaves signed archives, indexes, and saves untouched.
 
-Steam has since updated the local game to build `26329202`, EXE version `1.0.0.3446`. That EXE is unsupported here. The installed mod correctly disables itself on its different fingerprint. Compatibility requires a separate audit of the native methods and assets.
+Steam build `26329202`, EXE version `1.0.0.3446`, has separate compatibility pins following an offline audit of the native methods, allocator, and current assets. The builder selects the supported build by its full EXE hash. Revision 7 reapplies the transforms to current originals. Live UI validation on that build is pending.
 
 This repository contains source, transform rules, hash pins, fixtures, and build instructions. It contains no game assets, generated payload headers, or executable downloads. Build packages contain game-derived data and must remain local.
 

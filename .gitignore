@@ -64,3 +64,5 @@
 !/nativegrid/shop.py
 !/nativegrid/shop_grid.css
 !/tests/test_shop.py
+!/nativegrid/builds/
+!/nativegrid/builds/26329202.json

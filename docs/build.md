@@ -34,13 +34,13 @@ Installer fixtures use synthetic files under `build`. They never touch the real 
 .venv\Scripts\python.exe -m nativegrid.build --game "E:\Steam\steamapps\common\Crimson Desert" --gcc C:\msys64\ucrt64\bin\gcc.exe --out build\inventory-5
 ```
 
-The build requires the exact EXE, master-index, UI-index, and original asset hashes in `nativegrid/supported_build.json`. It derives the package-worker methods from named RTTI in the local EXE, checks their known RVAs, generates local payload headers, runs the native fixtures, and compiles `NativeGrid.asi` with `-Wall -Wextra -Werror`. Each replacement must match the hash of the verified revision-5 payload.
+The build selects compatibility metadata by the exact EXE hash. `nativegrid/supported_build.json` preserves build `26317560`; `nativegrid/builds/26329202.json` describes build `26329202`. It also requires the exact master-index, UI-index, original asset, and replacement hashes for that build. It derives the package-worker methods from named RTTI in the local EXE, checks their known RVAs, generates local payload headers, runs the native fixtures, and compiles `NativeGrid.asi` with `-Wall -Wextra -Werror`.
 
 The output includes `manifest.json`, three install files, licenses, fixture results, runtime log paths, and generated headers. Keep the whole package for verification and rollback. Runtime logs are written to the package's absolute path, so keep that directory in place after installation. Different output paths can produce different binary hashes.
 
 To include the experimental six-column NPC buy-store grid, add `--experimental-shop` and choose another output directory, such as `build\shop-6`. The default remains inventory only. The shop transforms rename scoped component styles while retaining native script and binding attributes. They do not add purchase logic. Shop behavior still needs an active runtime and live UI validation.
 
-The updated local EXE is refused before extraction or compilation. A full clean build from the current installation awaits compatibility evidence. Publication checks instead verified all seven transforms against preserved revision-5 originals and ran the native fixture build from the curated source tree. These checks do not establish compatibility with the updated game.
+The current build uses allocator RVA `0x1501e20` and verifies the direct call at full-read RVA plus `0x80`. Current game originals are extracted afresh, including the two component binaries changed by the update. The new pins follow a separate offline method and allocator audit. An unknown EXE or changed asset is refused. Successful offline builds do not establish the visible in-game result.
 
 ## Audit files before publication
 
