@@ -10,7 +10,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\NativeGrid.ps1 -Acti
 
 Verification checks the package hashes, supported game pins, and existing owned files. It writes nothing to the game. Conflicting files stop the operation.
 
-Revision 15 through 17 shop packages also require the pinned English localization index, `0020/0.pamt`. This is a read-only compatibility check. Installation still changes only the three files listed below. Revision 15 failed its live loading test; the user confirmed revision 16 loads and displays icons-only requirements. Preserve revision 16 as the working rollback package while testing revision 17's spacing adjustment.
+Revision 15 through 18 shop packages also require the pinned English localization index, `0020/0.pamt`. This is a read-only compatibility check. Installation still changes only the three files listed below. Revisions 15 and 17 failed live loading tests; the user confirmed revision 16 loads and displays icons-only requirements. Revision 18 tests separate selectors for the spacing adjustment and has no live validation. Preserve revision 16 as the working rollback package.
 
 ## Install a package
 

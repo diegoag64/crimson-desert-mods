@@ -81,6 +81,17 @@ Revision 15 also scoped `coin-money-label` to the shop components and added a 13
 
 Revision 16's icons are visible but sit near the bottom edge of the card. Revision 17 addresses only this gap with `.shop-grid-price #CoinMoneyLabel, .shop-grid-price #CoinMoneyImpossibleLabel { translate-y: -18px; }`. The existing scoped price class limits the rule to shop cards. Translation moves the rendered labels without changing font metrics, flex sizing, native visibility, class names, or source overrides. The property is already used with pixel values in original game styles. All fourteen non-stylesheet payloads must match revision 16. Confirm the final spacing in game; the screenshot estimate is not a layout-engine test.
 
+**Revision 17 failed its live loading test. Do not copy its grouped-selector rule.** The user reported a stall after clicking Play, and revision 16 was restored with installed-file verification. Both revision 15 and 17 introduced comma-separated selectors; a scan of 185 extracted stylesheet files found none in uncommented rule headers. This is evidence for a syntax limitation, not proof of the internal failure mechanism.
+
+Revision 18 retains the same translation and scope but uses two separate rules:
+
+```css
+.shop-grid-price #CoinMoneyLabel { translate-y: -18px; }
+.shop-grid-price #CoinMoneyImpossibleLabel { translate-y: -18px; }
+```
+
+`validate_shop_selectors` rejects grouped selectors in the custom stylesheet before compaction. It ignores commas in declaration values, comments, and quoted strings. This limited guard does not replace live testing or validate every supported game CSS property. Revision 18 is not live-verified; keep revision 16 installed until a new test is authorized.
+
 After installation, verify that both requirement icons fit within the locked card, the selected-item panel still explains the restriction, and selecting an unavailable item cannot bypass the original requirement. Also test an ordinary purchasable item and the adjacent empty slot. Offline record checks do not establish runtime delivery or glyph placement.
 
 ## Verify and keep a rollback checkpoint

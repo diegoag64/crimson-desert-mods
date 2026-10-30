@@ -1,11 +1,17 @@
 """Check shop transform scope and preservation of native handler attributes."""
 import unittest
 import struct
-from nativegrid.shop import style_template, style_binary, transform, STYLE_MAP, compact_css, fit_bytes, component_end
+from nativegrid.shop import style_template, style_binary, transform, STYLE_MAP, compact_css, fit_bytes, component_end, validate_shop_selectors
 from nativegrid.inventory import sized
 
 
 class ShopChecks(unittest.TestCase):
+    def test_grouped_selectors_refused_without_confusing_values_or_strings(self):
+        for css in ('.a, .b { top: 0px; }', '.a/* comment */, #b { translate-y: -18px; }'):
+            with self.assertRaises(ValueError):
+                validate_shop_selectors(css)
+        validate_shop_selectors('.a #b { color: rgba(0, 0, 0, 1); content: "{,}"; } /* .a,.b{} */ .a #c { top: 0px; }')
+
     def test_compiled_cards_isolate_shared_styles_and_preserve_bindings(self):
         styles = b''.join(sized(name) for name in STYLE_MAP if name != 'two-colunm-item-icon')
         bindings = (sized('cpp-item-slot-name') + sized('selector-item-price') + sized('.cpp-item-slot-price')

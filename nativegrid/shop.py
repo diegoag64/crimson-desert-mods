@@ -17,6 +17,7 @@ def transform(path, before):
     if path.endswith('/itemicon.css'):
         # The caller supplies the already transformed inventory stylesheet.
         styles = Path(__file__).with_name('shop_grid.css').read_text(encoding='utf8')
+        validate_shop_selectors(styles)
         styles = re.sub(r'(?<=\.)shop-grid-[\w-]+', lambda m: CSS_ALIASES[m[0]], styles)
         return fit_bytes(compact_css(before.decode('utf-8-sig') + '\n' + styles).encode('utf8'), len(before))
     if path.endswith('npcstorebuyview2_game.uibinary'):
@@ -111,6 +112,19 @@ def compact_css(text):
             pending += ' ' if part.startswith('/*') else part
     flush()
     return ''.join(result).strip()
+
+
+def validate_shop_selectors(text):
+    """Keep custom rules within observed game syntax; grouped rules are suspect.
+
+    Both loading-stall revisions introduced comma-separated selectors. None of
+    the 185 extracted stylesheets uses them. Use separate rules until supported
+    behavior is established; this guard does not claim to validate all game CSS.
+    """
+    stripped = re.sub(r'"(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\'|/\*.*?\*/', ' ', text, flags=re.S)
+    for match in re.finditer(r'([^{}]*)\{', stripped):
+        if ',' in match[1]:
+            raise ValueError('Grouped shop selectors are unverified; write separate rules')
 
 def component_end(data, name):
     """Read the component footer: name, classes, script, flags, attributes.
