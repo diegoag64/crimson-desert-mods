@@ -57,6 +57,8 @@ The earlier shop code sliced from a component name to the next name. That change
 
 ## Requirement text overflows a shop card
 
+Revision 15 is a failed live test, not an installation recommendation. The user reported a loading stall after launch and requested restoration of revision 14. The log recorded the localization replacement, then continued through compiled UI loads and 100,000 raw reads. No captured evidence identifies whether the localization change, card styling, or another cause produced the stall. Preserve that package and its log for investigation; use revision 14 as the working checkpoint.
+
 The Trust and Contract icons are inline emoji tokens inside a localized string. They are not separate child widgets. The native currency control puts that string in `CoinMoneyLabel` or `CoinMoneyImpossibleLabel`. Narrowing the card does not remove its words, and hiding the label removes its icons too.
 
 For English on build `26329202`, revision 15 changes exactly these short-label records in `gamedata/stringtable/binary__/eng/localstringinfo.paloc`:
