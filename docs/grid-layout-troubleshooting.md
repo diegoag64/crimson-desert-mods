@@ -129,7 +129,21 @@ The builder emits the same-length alias `item-available-count-tex_` in place of 
 
 Only the stylesheet payload changes from revision 21. The other fourteen payloads, including localization, compiled cards, sell layout, and inventory resources, must remain byte-identical. Currency-label styles from revision 20 remain unchanged to isolate this test.
 
-For future layout failures, identify the card's script, follow its exact selector lookup, and inspect both the ordinary and unavailable branches. Distinguish the original container from generated icon children. A state applied by another handler is not evidence that the current card has it. Test a locked item, an ordinary item, and the adjacent empty card after a fresh launch. Revision 22 awaits that live test.
+For future layout failures, identify the card's script, follow its exact selector lookup, and inspect both the ordinary and unavailable branches. Distinguish the original container from generated icon children. A state applied by another handler is not evidence that the current card has it. Test a locked item, an ordinary item, and the adjacent empty card after a fresh launch. Revision 22 loaded, but the user's screenshot still shows the icons crossing the bottom border. Its parent `top` rule had no visible effect. The static path identifies a candidate container and state; it does not prove the runtime classes, selector match, or layout-property precedence of the displayed card.
+
+### Target the generated requirement symbols
+
+Revision 23 removes revision 22's parent offset and tests a translation on the generated images:
+
+```css
+#ItemAvailableCountWrap.shop-grid-counts .cpp-icon-emoji { translate-y: -18px; }
+```
+
+The requirement formatter at RVA `0x70b930` calls the image-creation path at `0x70f930`. That path appends the image to the supplied text element at `0x70fb83` and adds atom `0x70ddaa0` (`cpp-icon-emoji`) at `0x70fc10`. A second branch adds the same class at `0x70fee1`. These are generated child elements, not texture layers in the compiled card. Existing game styles also address `.cpp-icon-emoji.condition-fail` for the red requirement tint.
+
+The selector limits translation to emoji descendants of the compact shop count wrapper. Stock and owned-count icons in the template are separate background-image elements without this class. The rule preserves generated sizes, red/white requirement states, native visibility, and purchase logic. It avoids relying on the parent font-state class or its relative `top` behavior. Why the earlier parent rule had no visible effect remains unresolved; no live element inspection established its computed style.
+
+Only the stylesheet changes from revision 22. Verify that the other fourteen payloads remain identical. Revision 23 is a targeted layout test, not a confirmed fix: inspect both requirement symbols after launch, along with ordinary counts and the adjacent empty tile. A successful build or replacement log does not establish selector matching or final glyph placement.
 
 ## Verify and keep a rollback checkpoint
 
