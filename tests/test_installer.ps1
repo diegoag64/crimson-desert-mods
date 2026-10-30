@@ -66,3 +66,48 @@ $manifest.PSObject.Properties.Remove('extra_indexes')
 [IO.File]::WriteAllText((Join-Path $game '0012\0.pamt'), 'changed index')
 Assert-Throws { Invoke-GridChange -Action Install @options -PreviousPackage $previous -PreviousManifest $prior } 'changed game index refuses mutation'
 Write-Output "Synthetic installer fixtures retained at $root"
+
+# Exercise the public revision gate using isolated support metadata and fake game files.
+$wrapper = Join-Path $root 'wrapper'
+foreach ($dir in @('scripts','nativegrid','nativegrid\builds')) { [IO.Directory]::CreateDirectory((Join-Path $wrapper $dir)) | Out-Null }
+foreach ($file in @('NativeGrid.ps1','GridFiles.psm1')) { Copy-Item -LiteralPath (Join-Path $PSScriptRoot ('..\scripts\' + $file)) -Destination (Join-Path $wrapper ('scripts\' + $file)) }
+$support = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\nativegrid\builds\26329202.json') -Raw | ConvertFrom-Json
+$support.exe_sha256 = Get-GridHash (Join-Path $game 'bin64\CrimsonDesert.exe')
+$support.master_sha256 = Get-GridHash (Join-Path $game 'meta\0.papgt')
+$support.pamt_sha256 = Get-GridHash (Join-Path $game '0012\0.pamt')
+$support.shop_requirements.index_sha256 = Get-GridHash $extraPath
+$support | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath (Join-Path $wrapper 'nativegrid\supported_build.json')
+$candidate = New-Manifest $package
+$candidate | Add-Member -NotePropertyMembers @{
+    schema=1; revision=26; fixture_tests_passed=8; variable_length_resources=$true
+    experimental_shop=$true; experimental_refinement=$true
+    refinement_runtime=$support.refinement_runtime
+    extra_indexes=[pscustomobject]@{'0020/0.pamt'=$support.shop_requirements.index_sha256}
+    payloads=@($support.refinement_revisions.'26'.PSObject.Properties | ForEach-Object {
+        [pscustomobject]@{path=$_.Name; original_sha256=$_.Value.original_sha256; replacement_sha256=$_.Value.replacement_sha256; size=100; replacement_size=100}
+    })
+}
+$prior | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath (Join-Path $previous 'manifest.json')
+function Invoke-WrapperVerify {
+    $candidate | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath (Join-Path $package 'manifest.json')
+    & (Join-Path $wrapper 'scripts\NativeGrid.ps1') -Action Verify -Game $game -Package $package -PreviousPackage $previous
+}
+Invoke-WrapperVerify
+Write-Output 'PASS: revision 26 public wrapper accepts exact runtime and asset pins'
+$candidate.refinement_runtime = ($support.refinement_runtime | ConvertTo-Json -Depth 10 | ConvertFrom-Json)
+$candidate.refinement_runtime.state_prefix = '00' * 24
+Assert-Throws { Invoke-WrapperVerify } 'changed refinement method pin refused'
+$candidate.refinement_runtime = ($support.refinement_runtime | ConvertTo-Json -Depth 10 | ConvertFrom-Json)
+$candidate.refinement_runtime.root_vtable.rva++
+Assert-Throws { Invoke-WrapperVerify } 'changed refinement owner pin refused'
+$candidate.refinement_runtime = $support.refinement_runtime
+$candidate.payloads[2].replacement_sha256 = '0' * 64
+Assert-Throws { Invoke-WrapperVerify } 'changed refinement CSS pin refused'
+$candidate.revision = 25
+$candidate.fixture_tests_passed = 7
+$candidate.payloads = @($support.refinement_assets.PSObject.Properties | ForEach-Object {
+    [pscustomobject]@{path=$_.Name; original_sha256=$_.Value.original_sha256; replacement_sha256=$_.Value.replacement_sha256; size=100; replacement_size=100}
+})
+$candidate.PSObject.Properties.Remove('refinement_runtime')
+Invoke-WrapperVerify
+Write-Output 'PASS: revision 25 rollback still accepts its original asset pins without new hook'

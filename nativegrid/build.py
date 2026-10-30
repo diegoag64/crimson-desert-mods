@@ -48,10 +48,12 @@ def build(game, output, gcc, experimental_shop=False, experimental_refinement=Fa
     support = matches[0]
     require(not experimental_refinement or experimental_shop,
             'Refinement builds must preserve the working shop package: add --experimental-shop')
-    refinement_pins = support.get('refinement_assets', {}) if experimental_refinement else {}
+    refinement_pins = support.get('refinement_revisions', {}).get('26', {}) if experimental_refinement else {}
+    refinement_runtime = support.get('refinement_runtime') if experimental_refinement else None
     if experimental_refinement:
         from .refinement import REFINEMENT_PATHS, transform as refinement_transform
         require(set(refinement_pins) == set(REFINEMENT_PATHS), 'No audited refinement assets for this game build')
+        require(refinement_runtime is not None, 'No audited refinement badge filter for this game build')
     fingerprints = {
         'bin64/CrimsonDesert.exe': support['exe_sha256'],
         'meta/0.papgt': support['master_sha256'],
@@ -122,14 +124,14 @@ def build(game, output, gcc, experimental_shop=False, experimental_refinement=Fa
         records.append(dict(path=path, size=len(before), replacement_size=len(after),
                             original_sha256=hashlib.sha256(before).hexdigest(), replacement_sha256=hashlib.sha256(after).hexdigest()))
     results = test(output, gcc, MINHOOK)
-    compile_flexible(output, exe, payloads, methods, gcc, MINHOOK)
+    compile_flexible(output, exe, payloads, methods, gcc, MINHOOK, refinement=refinement_runtime)
     shutil.copyfile(SOURCE.parent / '.deps/loader/winmm.dll', output / 'winmm.dll')
     # Match the tested loader configuration, including Windows line endings.
     (output / 'winmm.ini').write_bytes(b'[GlobalSets]\r\nDebugLog=1\r\nLoadExtraPlugins=\r\n[FileLoader]\r\nOverloadFromFolder=\r\n')
     shutil.copytree(SOURCE / 'licenses', output / 'licenses')
     revision = 24 if requirement_support else (14 if sell_pins or experimental_shop else (7 if support['game_build'] == '26329202' else 5))
     if experimental_refinement:
-        revision = 25
+        revision = 26
     manifest = dict(schema=1, revision=revision, experimental_shop=experimental_shop,
                     status='built_not_installed', game_build=support['game_build'],
                     exe_sha256=support['exe_sha256'], master_sha256=support['master_sha256'], pamt_sha256=support['pamt_sha256'],
@@ -154,6 +156,7 @@ def build(game, output, gcc, experimental_shop=False, experimental_refinement=Fa
     if experimental_refinement:
         manifest.update(experimental_refinement=True, refinement_columns=3, refinement_rows=4,
                         refinement_tile_width=124, refinement_tile_height=106,
+                        refinement_runtime=refinement_runtime,
                         refinement_status='experimental_no_live_validation')
         (output / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
     print(f'Built revision {manifest["revision"]}: {len(payloads)} exact-validated payloads; {len(results)} fixture suites passed. {output}')

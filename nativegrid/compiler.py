@@ -7,11 +7,19 @@ from .pe import PE
 
 SOURCE = Path(__file__).resolve().parent
 
-def compile_flexible(folder,exe_data,payloads,rvas,gcc,minhook,bad=None):
+def compile_flexible(folder,exe_data,payloads,rvas,gcc,minhook,bad=None,refinement=None):
     folder.mkdir(parents=True,exist_ok=True); pe=PE(exe_data)
     header='#define EXPECTED_SHA256 "'+hashlib.sha256(exe_data).hexdigest()+'"\n'
     header+='#define PROBE_LOG L'+json.dumps(str((folder/'runtime.log').resolve()))+'\n'
     header+=f'#define RESIZE_RVA {rvas[2]}u\n'
+    if refinement:
+        from .refinement import audit_runtime
+        audit_runtime(exe_data, refinement)
+        header+=f'#define REFINEMENT_STATE_RVA {refinement["state_rva"]}u\n'
+        for name in ('description', 'list', 'root'):
+            header+=f'#define REFINEMENT_{name.upper()}_VT {refinement[name+"_vtable"]["rva"]}u\n'
+        prefix=bytes.fromhex(refinement['state_prefix'])
+        header+='static const unsigned char expected_element_state_prefix[] = {'+','.join(map(str,prefix))+'};\n'
     for index,name in enumerate(['expected_prefix','expected_full_prefix','expected_resize_prefix']):
         prefix=exe_data[pe.raw(rvas[index]):pe.raw(rvas[index])+24]
         if bad==index:prefix=bytes(24)

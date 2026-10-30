@@ -209,7 +209,7 @@ The transform changes these three files:
 
 All fifteen revision 24 payloads remain identical. The game executable, indexes, runtime hooks, native scripts, comparison panels, and refinement actions are unchanged. The new original and replacement asset hashes are pinned separately. The builder refuses unsupported refinement builds, and the installer checks the new payload pins.
 
-Revision 25 has passed seven native suites, 23 Python tests, ten installer cases, and package verification. This is offline evidence. The new layout still needs a live test:
+Revision 25 passed seven native suites, 23 Python tests, ten installer cases, and package verification. It was then installed, and the user confirmed the three-column grid. The user also reported badge clutter and image alignment problems. Further live checks remain:
 
 1. Open Refinement and confirm three columns, fitted artwork, readable names, equipped badges, and refinement marks.
 2. Move selection across columns and rows. Confirm that both comparison and material panels follow the selected item.
@@ -218,6 +218,22 @@ Revision 25 has passed seven native suites, 23 Python tests, ten installer cases
 5. Confirm that inventory, buy, and sell screens retain their working layout.
 
 Do not perform a refinement merely to validate layout. The test can inspect navigation and previews without consuming materials. If the layout fails, inspect the live classes and resolved properties before changing another rule. Preserve revision 24 for rollback.
+
+### Imported child styles can defeat the compact card rules
+
+Revision 25 changed the card root to 124 by 106 pixels, but read-only inspection found an 88-by-88 image, a 270-pixel title wrapper, and a 17-pixel name font. The intended child rules were not the resolved values. A smaller root alone therefore did not establish centered artwork or contained names.
+
+Revision 26 targets `#ItemIconImg.two-colunm-item-icon-img2`, `#ItemIconTitleWrap.product-item1`, and `#ItemIconTitle.product-item-icon-title`. The ID/class compounds give these rules priority over imported class-only rules without descendant selectors. The image occupies x=36 through x=88 in a 124-pixel card, leaving 36 pixels on each side. Its y=24 position reserves room for badges in the Inventory tab. The title wrapper is 116 pixels wide with four-pixel side margins, a 20-pixel height, and clipped overflow. The name font is 12 pixels. Tier and badge geometry use equivalent direct ID/class selectors.
+
+To diagnose another centering failure, inspect the child's matched rules and resolved dimensions, position, and margins. Do not infer image dimensions from the card root. Verify the active payload hash before another edit. The post-install targets are image width/height 52, left 36, top 24, title width 116, and font size 12. Those targets are not yet measured live for revision 26.
+
+### Hide the badge according to the native refinement tab
+
+The Equipped Gear tab contains only equipped items. The Inventory tab can also include equipped items, so a blanket CSS hide is incorrect. The live trees do not expose a tab-specific ancestor class on the badge. Revision 26 therefore uses the narrowly scoped [native badge filter](runtime.md#refinement-badge-filter-in-revision-26), based on the audited native list flag.
+
+After installation, inspect both tabs in one session. Equipped Gear badges must remain hidden through selection and scrolling; an equipped item in Inventory must retain its badge. Return to Equipped Gear to test reused cards. Read-only inspection can check the badge's `!cpp-none` state and the list flag. Do not refine an item just to test presentation. Keep the full names and stats available in the comparison panel.
+
+Only the refinement stylesheet differs among revision 25 and 26's eighteen payloads. Revision 26 also adds the optional state-setter hook. Eight native suites, 26 Python checks, and 15 installer cases pass, including changed-pin refusals and acceptance of the original revision 25 rollback. Live confirmation remains pending.
 
 ## Verify and keep a rollback checkpoint
 

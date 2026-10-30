@@ -122,5 +122,37 @@
       "original_sha256": "32c7978371e371e524dbb3be6e93c9193adda92516c466e1d455d82578c04502",
       "replacement_sha256": "89c4f0e2f2d33f478d33a34489c97aa8c0f820372684081ed5468f7046be8f33"
     }
+  },
+  "refinement_revisions": {
+    "26": {
+      "ui/bin__/itemenchantpanel_game.uibinary": {
+        "original_sha256": "19755699050a2fdb3500ba2a617148869030d936bd56139b5718a86b184d4f9a",
+        "replacement_sha256": "7f0af72dc141566b771d4aee44fdffd44934519fd7c6baea153a99f2b3d2ab79"
+      },
+      "ui/xml/gamemain/play/itemenchantpanel.html": {
+        "original_sha256": "a9f071c1fedef91c59e85b9934bff7bddb15187b073f90b4237517f877b4128a",
+        "replacement_sha256": "40513b34e5b42be4022de1253241d0229a84c7cb2bbf08f3af14188860d78d95"
+      },
+      "ui/xml/gamemain/play/itemenchantpanel.css": {
+        "original_sha256": "32c7978371e371e524dbb3be6e93c9193adda92516c466e1d455d82578c04502",
+        "replacement_sha256": "28faa9923b8e3ee022383b3d9346d8303e07161bfcc520a7e241694ce1a60314"
+      }
+    }
+  },
+  "refinement_runtime": {
+    "state_rva": 69036608,
+    "state_prefix": "4889742410574883ec20488bf9410fb6f0440fb6024c8bca",
+    "description_vtable": {
+      "rva": 94172568,
+      "type": ".?AVUIGamePlayControlCommonInfoDescription@pa@@"
+    },
+    "list_vtable": {
+      "rva": 94635696,
+      "type": ".?AVUIGamePlayControlCommon_ItemList@uiCommonScript@pa@@"
+    },
+    "root_vtable": {
+      "rva": 94839616,
+      "type": ".?AVUIGamePlayControlRootItemEnchant@uiCommonScript@pa@@"
+    }
   }
 }

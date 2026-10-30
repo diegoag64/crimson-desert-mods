@@ -36,5 +36,13 @@ def test(output, gcc, minhook):
     payloads[1]=(payloads[1][0],payloads[1][1],b'grid')
     compile_flexible(folder,data,payloads,rvas,gcc,minhook)
     run('shorter payload preserves descriptor, terminators and read failures',[],True)
+    refinement_exe=folder/'refinement-fixture.exe'
+    sources=[SOURCE/'fixtures/refinement_fixture.c']+[minhook/'src'/s for s in ['buffer.c','hook.c','trampoline.c','hde/hde64.c']]
+    subprocess.run([str(gcc),'-O2','-Wall','-Wextra','-Werror','-static','-I',str(minhook/'include'),
+                    '-o',str(refinement_exe)]+list(map(str,sources)),check=True,timeout=60)
+    refinement_result=subprocess.run([str(refinement_exe)],capture_output=True,text=True,timeout=25)
+    assert refinement_result.returncode==0, (refinement_result.stdout,refinement_result.stderr)
+    results.append(dict(case='refinement conditional badge detour',passed=True,output=refinement_result.stdout))
+    print('PASS: refinement conditional badge detour',flush=True)
     (output/'fixture-results.json').write_text(json.dumps(results,indent=2)+'\n')
     return results

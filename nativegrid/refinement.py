@@ -1,15 +1,34 @@
 """Experimental refinement gear grid; preserve native item and material handlers."""
 from pathlib import Path
 import re
+import struct
 
 from .inventory import sized
 from .shop import compact_css, fit_bytes, validate_shop_selectors
+from .pe import PE
 
 REFINEMENT_PATHS = (
     'ui/bin__/itemenchantpanel_game.uibinary',
     'ui/xml/gamemain/play/itemenchantpanel.html',
     'ui/xml/gamemain/play/itemenchantpanel.css',
 )
+
+
+def audit_runtime(exe, pins):
+    """Verify the separately audited presentation method and native owner types."""
+    pe = PE(exe)
+    prefix = bytes.fromhex(pins['state_prefix'])
+    raw = pe.raw(pins['state_rva'])
+    if len(prefix) != 24 or exe[raw:raw+24] != prefix:
+        raise ValueError('Refinement state method fingerprint differs from audit')
+    for name in ('description', 'list', 'root'):
+        vt = pins[name + '_vtable']
+        locator = struct.unpack_from('<Q', exe, pe.raw(vt['rva'] - 8))[0] - pe.base
+        type_rva = struct.unpack_from('<I', exe, pe.raw(locator) + 12)[0]
+        start = pe.raw(type_rva) + 16
+        expected = vt['type'].encode('ascii') + b'\0'
+        if exe[start:start+len(expected)] != expected:
+            raise ValueError('Refinement owner type differs from audit: ' + name)
 
 
 def transform(path, before):

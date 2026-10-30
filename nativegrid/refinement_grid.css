@@ -1,12 +1,12 @@
 /* Refinement document only. Three 128px column pitches fill the existing gear area.
    Retain the native 108px row pitch, visibility states, and selection handlers. */
 .item-icon-wrap.two-colunm-item-icon3 { width: 124px; height: 106px; display: block; }
-.two-colunm-item-icon-img2 { position: absolute; left: 36px; top: 24px; width: 52px; height: 52px; }
-.item-icon-title-wrap.product-item1 { position: absolute; left: 4px; top: 81px; width: 116px; max-width: 116px; height: 20px; margin-left: 0px; }
-.product-item-icon-title { font-size: 12px; line-height: 20px; }
+#ItemIconImg.two-colunm-item-icon-img2 { position: absolute; left: 36px; top: 24px; width: 52px; height: 52px; }
+#ItemIconTitleWrap.product-item1 { position: absolute; left: 4px; top: 81px; width: 116px; max-width: 116px; height: 20px; margin-left: 0px; overflow: hidden; }
+#ItemIconTitle.product-item-icon-title { font-size: 12px; line-height: 20px; }
 #ItemIconBg.two-colunm-item3 { height: 104px; }
 /* Percentage geometry also fits the unchanged ingredient cards in this document. */
 #ItemIconBgType.two-colunm-item { width: 100%; height: 100%; }
 .list-item-hover-bg.slot-bg-item-list-hover { width: 100%; height: 100%; mask-image: none; }
-.enchant-equiped-mark { top: 2px; right: 4px; scale-x: 0.75; scale-y: 0.75; }
-.two-colunm-item-tier-texture { left: -30px; top: 0px; width: 14px; height: 26px; }
+#ItemTooltipCompareEquipped.enchant-equiped-mark { top: 2px; right: 4px; scale-x: 0.75; scale-y: 0.75; }
+#ItemTierTexture.two-colunm-item-tier-texture { left: -30px; top: 0px; width: 14px; height: 26px; }
