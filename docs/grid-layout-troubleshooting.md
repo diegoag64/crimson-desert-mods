@@ -187,7 +187,9 @@ For this audited EXE, the read-only inspection followed these structures:
 
 These observations are process- and build-specific. Recheck the executable fingerprint and process liveness before reads; never reuse object addresses across launches. Use only `PROCESS_QUERY_INFORMATION | PROCESS_VM_READ`. Do not write to these structures or invoke game functions as part of inspection. Keep raw snapshots local and untracked.
 
-For revision 24, require all three forms of evidence: the direct compound appears in the requirement container's matched rules, its resolved translation is -18 layout pixels, and the rendered icons fit below the name. Check that an ordinary item retains its unshifted count row. Offline fixtures alone cannot satisfy these checks.
+When diagnosing a recurrence, check all three forms of evidence: the direct compound appears in the requirement container's matched rules, its resolved translation is -18 layout pixels, and the rendered icons fit below the name. Check that an ordinary item retains its unshifted count row. Offline fixtures alone cannot satisfy these checks.
+
+On October 30, 2026, revision 24 was installed and its installed-file verification passed. The user then confirmed that the spacing was fixed in the live shop. This establishes the visible result for that screen; no post-install property-map measurement was taken. Preserve revision 24 as the working checkpoint. The successful change uses a direct compound selector on the actual requirement container and `translate-y`, rather than a descendant selector or a relative `top` offset.
 
 ## Verify and keep a rollback checkpoint
 

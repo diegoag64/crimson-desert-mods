@@ -10,7 +10,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\NativeGrid.ps1 -Acti
 
 Verification checks the package hashes, supported game pins, and existing owned files. It writes nothing to the game. Conflicting files stop the operation.
 
-Revision 15 through 24 shop packages also require the pinned English localization index, `0020/0.pamt`. This is a read-only compatibility check. Installation still changes only the three files listed below. Revisions 15 and 17 failed live loading tests. Revisions 16 and 18 through 23 loaded and displayed icons-only requirements, but spacing remained unresolved. Revision 24 uses a direct container selector after live inspection proved that revision 23's descendant selector could not match. Preserve revision 23 as the currently installed package for upgrade and rollback checks, and retain revision 16 as an earlier working checkpoint.
+Revision 15 through 24 shop packages also require the pinned English localization index, `0020/0.pamt`. This is a read-only compatibility check. Installation still changes only the three files listed below. Revisions 15 and 17 failed live loading tests. Revisions 16 and 18 through 23 loaded and displayed icons-only requirements, but spacing remained unresolved. Revision 24 uses a direct container selector after live inspection proved that revision 23's descendant selector could not match. Revision 24 is now installed, and the user confirmed the spacing fix in the live shop. Use `build/shop-24-live-container-translation` as the current package for future upgrades. Preserve revision 23 and its installation rollback journal, and retain revision 16 as an earlier checkpoint.
 
 ## Install a package
 
