@@ -1,0 +1,41 @@
+{
+  "exe_sha256": "d4855c08998638f07fa8fae08bd6249261f10c8fec2215effc29cb339e7fa525",
+  "master_sha256": "cfa7957e175844fdb9335ec6d4e6624b79fc55e688b821a15958f273bf04cc3a",
+  "pamt_sha256": "db2965a1fb17410d2396de32278c3ccb521b30819dd8fd6ac578b0eaf4438492",
+  "game_build": "26317560",
+  "assets": {
+    "ui/bin__/inventoryequipmentpanel_game.uibinary": {
+      "original_sha256": "5c6884f46e298e07d728a348b971cba602047fd5a93c82a66ed8d8c1793224ea",
+      "replacement_sha256": "4bba96a6b5408a1c7c8d257effe15a585b072bbd791130ffeaaaea7cd5734e7f"
+    },
+    "ui/bin__/inventory2_game.uibinary": {
+      "original_sha256": "76f93337204ba558c88785560db29222b25101a3c2dc0c60c2c95b6cc399a91b",
+      "replacement_sha256": "580bac29f7205f09fae46a0268fa536b45365d24e615367d031a145872a3d193"
+    },
+    "ui/bin__/inventory2_component_game.uibinary": {
+      "original_sha256": "80ef394ce863e461ad77e7ea75a7f19650e76593fb71124a987ba28c9a17a850",
+      "replacement_sha256": "d92fdbe3d39a4042577026bf4e9be098bb452fc73eb6804682e62166a4e531d6"
+    },
+    "ui/xml/gamemain/template/inventory2.thtml": {
+      "original_sha256": "fac77a7dc10bceab4fc316bab9c4304117272cbf6dffff775d5fb0b47277044d",
+      "replacement_sha256": "ca5871c28bd417f4d962543f5b03d5b7fcafc6a7e586f7422df174d799b9a0f1"
+    },
+    "ui/xml/gamemain/title/itemicon.css": {
+      "original_sha256": "f21d01dc72a819594a9113b604530e7dc7ae6638061e4db589c5ad8fff1f9b22",
+      "replacement_sha256": "b29ce76eee03d9980d769c5851ab72f6d1ff19ac2a53342771d8fe547560c547"
+    },
+    "ui/bin__/warehouseview2_game.uibinary": {
+      "original_sha256": "e563c124d4a243a48477fc43d0a58cb78fc86dcd7f597c2cd6f2694b3e8dba79",
+      "replacement_sha256": "5d1bbd024504b01711d0fcbe16770b4d0d473821ae52d715e2dd7e2f7ee86232"
+    },
+    "ui/xml/gamemain/template/itemlist.css": {
+      "original_sha256": "e8c37852513cb0c3399b3264424ad517857321f5e77edf03a9da6af7c161b470",
+      "replacement_sha256": "a8a12c47e9a341459e6cee31078d886a622cf543911bdc68971ee3afabbbd626"
+    }
+  },
+  "method_rvas": [
+    22564336,
+    22564144,
+    22024976
+  ]
+}

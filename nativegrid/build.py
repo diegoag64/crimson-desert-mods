@@ -1,0 +1,112 @@
+"""Build and fixture-test the inventory mod using read-only game inputs."""
+import argparse
+import hashlib
+import json
+from pathlib import Path
+import shutil
+import sys
+
+from .dependencies import MINHOOK, prepare
+from .compiler import compile_flexible
+from .inventory import INVENTORY_PATHS, transform
+from .pe import package_methods
+from .tests import test
+
+SOURCE = Path(__file__).resolve().parent
+SUPPORT = json.loads((SOURCE / 'supported_build.json').read_text())
+
+
+def digest(path):
+    with Path(path).open('rb') as stream:
+        return hashlib.file_digest(stream, 'sha256').hexdigest()
+
+
+def require(condition, message):
+    if not condition:
+        raise ValueError(message)
+
+
+def output_directory(path, game=None):
+    output = Path(path).resolve()
+    if game:
+        game = Path(game).resolve()
+        require(output != game and game not in output.parents and output not in game.parents,
+                'Output and game installation must be separate directories')
+    require(not output.exists() or not any(output.iterdir()), 'Output directory must be new or empty')
+    output.mkdir(parents=True, exist_ok=True)
+    return output
+
+
+def build(game, output, gcc):
+    from .archive import Pamt, decrypt
+    import lz4.block
+
+    fingerprints = {
+        'bin64/CrimsonDesert.exe': SUPPORT['exe_sha256'],
+        'meta/0.papgt': SUPPORT['master_sha256'],
+        '0012/0.pamt': SUPPORT['pamt_sha256'],
+    }
+    for path, expected in fingerprints.items():
+        require(digest(game / path) == expected, 'Unsupported or changed game file: ' + path)
+    exe = (game / 'bin64/CrimsonDesert.exe').read_bytes()
+    methods = package_methods(exe) + [0x1501310]
+    require(methods == SUPPORT['method_rvas'], 'Derived package-worker methods differ from supported build')
+    entries = {entry.path: entry for entry in Pamt.parse((game / '0012/0.pamt').read_bytes()).entries()}
+    payloads, records = [], []
+    for path in INVENTORY_PATHS:
+        entry = entries[path]
+        require(entry.flags == 0x32, 'Unexpected asset encoding: ' + path)
+        with (game / f'0012/{entry.chunk}.paz').open('rb') as stream:
+            stream.seek(entry.offset)
+            packed = stream.read(entry.stored)
+        require(len(packed) == entry.stored, 'Incomplete archive read: ' + path)
+        before = lz4.block.decompress(decrypt(packed, path.rsplit('/', 1)[1]), uncompressed_size=entry.original)
+        require(len(before) == entry.original, 'Decoded length mismatch: ' + path)
+        require(hashlib.sha256(before).hexdigest() == SUPPORT['assets'][path]['original_sha256'], 'Original asset changed: ' + path)
+        after = transform(path, before)
+        require(hashlib.sha256(after).hexdigest() == SUPPORT['assets'][path]['replacement_sha256'], 'Inventory transform differs from verified revision 5: ' + path)
+        payloads.append((path, before, after))
+        records.append(dict(path=path, size=len(before), replacement_size=len(after),
+                            original_sha256=hashlib.sha256(before).hexdigest(), replacement_sha256=hashlib.sha256(after).hexdigest()))
+    results = test(output, gcc, MINHOOK)
+    compile_flexible(output, exe, payloads, methods, gcc, MINHOOK)
+    shutil.copyfile(SOURCE.parent / '.deps/loader/winmm.dll', output / 'winmm.dll')
+    # Match the tested loader configuration, including Windows line endings.
+    (output / 'winmm.ini').write_bytes(b'[GlobalSets]\r\nDebugLog=1\r\nLoadExtraPlugins=\r\n[FileLoader]\r\nOverloadFromFolder=\r\n')
+    shutil.copytree(SOURCE / 'licenses', output / 'licenses')
+    manifest = dict(schema=1, revision=5, status='built_not_installed', game_build=SUPPORT['game_build'],
+                    exe_sha256=SUPPORT['exe_sha256'], master_sha256=SUPPORT['master_sha256'], pamt_sha256=SUPPORT['pamt_sha256'],
+                    grid_columns=8, grid_rows=11, storage_grid_columns=8, storage_grid_rows=11,
+                    tile_width=64, tile_height=62.5, list_toggle=False, resource_replacement=True,
+                    variable_length_resources=True, fixture_tests_passed=len(results), payloads=records,
+                    live_validation='Revision 5 inventory and Private Storage user-verified; this rebuilt binary has no new live test.',
+                    files=[dict(name=name, sha256=digest(output / name)) for name in ('NativeGrid.asi', 'winmm.dll', 'winmm.ini')])
+    (output / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
+    for path, expected in fingerprints.items():
+        require(digest(game / path) == expected, 'Game input changed during build: ' + path)
+    print(f'Built revision 5: {len(payloads)} exact-validated payloads; {len(results)} fixture suites passed. {output}')
+    return manifest
+
+
+def main():
+    if not __debug__:
+        raise RuntimeError('Do not use python -O: transform assertions are required.')
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--game', type=Path, help='Supported Crimson Desert installation, read only')
+    parser.add_argument('--out', type=Path, required=True, help='New or empty ignored output directory')
+    parser.add_argument('--gcc', default='gcc', help='Path to MinGW-w64 x64 GCC')
+    parser.add_argument('--test-only', action='store_true', help='Run native fixture suites without game files')
+    args = parser.parse_args()
+    require(args.test_only or args.game is not None, '--game is required unless --test-only is used')
+    gcc = shutil.which(args.gcc)
+    require(gcc is not None, 'MinGW-w64 x64 GCC not found: ' + args.gcc)
+    prepare(offline=True)
+    output = output_directory(args.out, args.game)
+    if args.test_only:
+        test(output, gcc, MINHOOK)
+    else:
+        build(args.game.resolve(), output, gcc)
+
+
+if __name__ == '__main__':
+    main()

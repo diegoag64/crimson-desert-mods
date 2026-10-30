@@ -1,0 +1,26 @@
+{
+  "minhook.zip": {
+    "url": "https://codeload.github.com/TsudaKageyu/minhook/zip/c3fcafdc10146beb5919319d0683e44e3c30d537",
+    "sha256": "cdcb160f734d81bd4d235dfea79e3f5a661c8ef0ab74fa814272aa5449069034"
+  },
+  "paz_crypto.py": {
+    "url": "https://raw.githubusercontent.com/faisalkindi/CrimsonDesert-UltimateModsManager/b5cc8fc40d7f4733adba40f46212d749928350c8/src/cdumm/archive/paz_crypto.py",
+    "sha256": "bec48f819d3b10118bd0e532fdb917689accf2bee0d740b945dc997a872c1268"
+  },
+  "hashlittle.py": {
+    "url": "https://raw.githubusercontent.com/faisalkindi/CrimsonDesert-UltimateModsManager/b5cc8fc40d7f4733adba40f46212d749928350c8/src/cdumm/archive/hashlittle.py",
+    "sha256": "2b13d15df06deb9e18f9a29a4b18ec5990dba4841ec0a9055cf53cced3cc2080"
+  },
+  "CDUMM-LICENSE": {
+    "url": "https://raw.githubusercontent.com/faisalkindi/CrimsonDesert-UltimateModsManager/b5cc8fc40d7f4733adba40f46212d749928350c8/LICENSE",
+    "sha256": "3709aec151eacf0f0f7360747aaba46f5fbb935a1e381ea4ca9bb1a4bfefad94"
+  },
+  "ual.zip": {
+    "url": "https://github.com/ThirteenAG/Ultimate-ASI-Loader/releases/download/v10.0.2/Ultimate-ASI-Loader-NoPDB_x64.zip",
+    "sha256": "fe964adf4de7f467ff39c440a4059de02e37d0574a62944eef2f55a35edafa2f"
+  },
+  "UAL-LICENSE": {
+    "url": "https://raw.githubusercontent.com/ThirteenAG/Ultimate-ASI-Loader/56fa0b03920f2a71174126e03a05c77d48b74744/license",
+    "sha256": "ceca73c504e39084b0b80d2a437aea9988313d1915418d3c629c3e4a8313f5a1"
+  }
+}
