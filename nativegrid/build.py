@@ -8,7 +8,7 @@ import struct
 
 from .dependencies import MINHOOK, prepare
 from .compiler import compile_flexible
-from .inventory import INVENTORY_PATHS, transform
+from .inventory import INVENTORY_PATHS, SELL_PATHS, transform, transform_sell
 from .pe import PE, package_methods
 from .tests import test
 
@@ -63,10 +63,14 @@ def build(game, output, gcc, experimental_shop=False):
                 'Full-read direct resize call differs from audited allocator')
     entries = {entry.path: entry for entry in Pamt.parse((game / '0012/0.pamt').read_bytes()).entries()}
     paths = list(INVENTORY_PATHS)
+    sell_pins = support.get('sell_assets', {})
+    require(not sell_pins or set(sell_pins) == set(SELL_PATHS), 'Incomplete sell layout support')
+    paths += list(sell_pins)
     if experimental_shop:
         from .shop import SHOP_PATHS, transform as shop_transform
         paths += list(SHOP_PATHS)
-    pins = support['shop_assets'] if experimental_shop else support['assets']
+    pins = dict(support['shop_assets'] if experimental_shop else support['assets'])
+    pins.update(sell_pins)
     payloads, records = [], []
     for path in paths:
         entry = entries[path]
@@ -79,6 +83,8 @@ def build(game, output, gcc, experimental_shop=False):
         require(len(before) == entry.original, 'Decoded length mismatch: ' + path)
         require(hashlib.sha256(before).hexdigest() == pins[path]['original_sha256'], 'Original asset changed: ' + path)
         after = transform(path, before) if path in INVENTORY_PATHS else before
+        if path in sell_pins:
+            after = transform_sell(path, before)
         if experimental_shop and (path in SHOP_PATHS or path.endswith('/itemicon.css')):
             after = shop_transform(path, after)
             require(len(after) == len(before), 'Shop asset must support fixed-buffer reads: ' + path)
@@ -92,7 +98,7 @@ def build(game, output, gcc, experimental_shop=False):
     # Match the tested loader configuration, including Windows line endings.
     (output / 'winmm.ini').write_bytes(b'[GlobalSets]\r\nDebugLog=1\r\nLoadExtraPlugins=\r\n[FileLoader]\r\nOverloadFromFolder=\r\n')
     shutil.copytree(SOURCE / 'licenses', output / 'licenses')
-    revision = 11 if experimental_shop else (7 if support['game_build'] == '26329202' else 5)
+    revision = 12 if sell_pins else (11 if experimental_shop else (7 if support['game_build'] == '26329202' else 5))
     manifest = dict(schema=1, revision=revision, experimental_shop=experimental_shop,
                     status='built_not_installed', game_build=support['game_build'],
                     exe_sha256=support['exe_sha256'], master_sha256=support['master_sha256'], pamt_sha256=support['pamt_sha256'],
@@ -102,6 +108,9 @@ def build(game, output, gcc, experimental_shop=False):
                     live_validation='Revision 5 inventory and Private Storage user-verified on build 26317560. This rebuilt binary and experimental shop have no live validation.',
                     files=[dict(name=name, sha256=digest(output / name)) for name in ('NativeGrid.asi', 'winmm.dll', 'winmm.ini')])
     (output / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
+    if sell_pins:
+        manifest.update(sell_grid_columns=8, sell_grid_rows=11, sell_status='awaiting_live_validation')
+        (output / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
     for path, expected in fingerprints.items():
         require(digest(game / path) == expected, 'Game input changed during build: ' + path)
     if experimental_shop:

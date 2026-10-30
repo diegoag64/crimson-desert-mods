@@ -9,10 +9,13 @@ Steam build `26329202`, EXE version `1.0.0.3446`, has separate compatibility pin
 This repository contains source, transform rules, hash pins, fixtures, and build instructions. It contains no game assets, generated payload headers, or executable downloads. Build packages contain game-derived data and must remain local.
 
 - [Build and test](docs/build.md)
+- [Fix compact grids that leave unused space](docs/grid-layout-troubleshooting.md)
 - [Install and roll back](docs/install.md)
 - [Runtime guards and compatibility](docs/runtime.md)
 - [Third-party dependencies](THIRD_PARTY.md)
 
 No license has been selected for the project code. The third-party components retain their own licenses.
+
+Revision 12 adds the sell menu's own 8-column, 11-row layout on build `26329202`. It includes the pending revision 11 shop refinements when built with `--experimental-shop`. Sell-menu rendering and those refinements still need live confirmation.
 
 An optional NPC buy-store layout uses six columns and three rows of 124 by 112 pixel cards. Build it with `--experimental-shop`. It preserves native purchase and quantity handlers. The user verified revision 10's populated card layout on build `26329202`; empty-slot alignment and overflowing requirement text remained. Revision 11 fits the empty-slot artwork to its card and suppresses requirement-label text while retaining inline icons. These two refinements still need live validation, including confirmation that the icons remain visible.

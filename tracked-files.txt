@@ -4,6 +4,7 @@ AGENTS.md
 README.md
 THIRD_PARTY.md
 docs/build.md
+docs/grid-layout-troubleshooting.md
 docs/install.md
 docs/runtime.md
 nativegrid/__init__.py

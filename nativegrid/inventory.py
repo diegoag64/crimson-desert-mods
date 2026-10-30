@@ -140,6 +140,34 @@ INVENTORY_PATHS = (
     'ui/xml/gamemain/template/itemlist.css',
 )
 
+SELL_PATHS = (
+    'ui/bin__/npcstoresellview2_game.uibinary',
+    'ui/xml/gamemain/play/npcstoresellview2.html',
+)
+
+
+def transform_sell(path, before):
+    """Update the sell screen's expanded grid, independently of its template."""
+    if path == SELL_PATHS[0]:
+        old = sized('column') + sized('6') + sized('row') + sized('8')
+        new = sized('column') + sized('8') + sized('row') + sized('11')
+        assert before.count(old) == 1, 'Sell grid must have one original 6 by 8 layout'
+        assert new not in before
+        after = before.replace(old, new)
+        assert after.replace(new, old) == before
+        return after
+    if path == SELL_PATHS[1]:
+        pattern = rb'<override\b[^>]*\bselector="#InventoryItemList"[^>]*>'
+        matches = list(re.finditer(pattern, before))
+        assert len(matches) == 1, 'Sell inventory override must be unique'
+        match = matches[0]
+        assert not re.search(rb'\b(?:column|row)=', match[0])
+        tag = match[0][:-1] + b' column="8" row="11">'
+        after = before[:match.start()] + tag + before[match.end():]
+        assert after.replace(tag, match[0], 1) == before
+        return after
+    raise ValueError('Unsupported sell asset: ' + path)
+
 def transform(path, before):
     if path.endswith('.uibinary'):
         count = 1 if 'inventoryequipmentpanel_game' in path else 2

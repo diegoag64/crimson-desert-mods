@@ -1,0 +1,75 @@
+# Fix compact grids that leave unused space
+
+Use this guide when a screen shows smaller inventory tiles but keeps too few columns or rows. The sell-menu fix in revision 12 targets Steam build `26329202`. Its live UI validation is pending.
+
+## Identify the screen's own layout
+
+Tile dimensions and grid dimensions come from different assets. `itemicon.css` supplies the shared tile size. Each screen can have an expanded copy of its grid attributes in a `.uibinary` file. Updating `inventory2.thtml` or `inventory2_component_game.uibinary` does not update every expanded copy.
+
+The sell-menu screenshot showed six columns and eight rows of compact tiles, with unused space at the right and bottom. Its `npcstoresellview2_game.uibinary` still contained one `column=6, row=8` pair. The source HTML imports the inventory template, but the compiled screen also needs its own edit.
+
+| Screen | Compiled layout | Target grid |
+| --- | --- | --- |
+| Character inventory | `ui/bin__/inventoryequipmentpanel_game.uibinary` | 8 columns, 11 rows |
+| Shared inventory template | `ui/bin__/inventory2_game.uibinary` and `inventory2_component_game.uibinary` | 8 columns, 11 rows |
+| Private Storage | `ui/bin__/warehouseview2_game.uibinary` | 8 columns, 11 rows for the main inventory grids |
+| NPC sell menu | `ui/bin__/npcstoresellview2_game.uibinary` | 8 columns, 11 rows |
+| NPC buy menu | `ui/bin__/npcstorebuyview2_game.uibinary` | 6 columns, 3 rows of larger shop cards |
+
+Do not replace every grid pair across an asset collection. Storage and other screens contain additional grids with different purposes.
+
+## Measure before changing columns and rows
+
+Read the screen's container styles and the tile styles. Include margins in each tile's pitch.
+
+For the current sell menu:
+
+- `#NpcStoreSellListWrap` has a width of 518 pixels in `npcstore2.css`.
+- `.inventory-grid-list-item-wrap.category` has a height of 690 pixels in `inventory2.css`.
+- Compact inventory tiles measure 64 by 62.5 pixels.
+- Eight columns require 512 pixels. Eleven rows require 687.5 pixels.
+- Twelve rows would require 750 pixels and would exceed the container.
+
+These are game UI coordinates. Screenshot pixels can differ because of resolution and UI scaling.
+
+## Patch the current game's original assets
+
+1. Select compatibility metadata by the exact executable hash. Keep the executable, index, method, and original-asset checks.
+2. Extract the screen's current original assets into an ignored local directory. Never commit those assets.
+3. Locate the grid's serialized attributes and inspect nearby IDs, component references, and native handlers. The sell grid belongs to `InventoryItemList` and uses `UIGamePlayControlCommon_ItemList`.
+4. Require the expected number of matches. The current sell screen has exactly one original 6-by-8 pair.
+5. Replace complete length-prefixed strings using `nativegrid.inventory.sized`. Changing `8` to `11` also changes the serialized string length. Never overwrite a single byte with two digits.
+6. Verify that reversing the replacement restores the entire original byte sequence. Preserve unrelated grids and native handlers.
+7. Update the source form as well. For sell, add `column="8" row="11"` to the unique override whose selector is `#InventoryItemList` in `npcstoresellview2.html`.
+8. Add the audited original and replacement hashes. Revision 12 uses `sell_assets` in `nativegrid/builds/26329202.json`. The builder includes those assets in both inventory-only and combined shop packages. The older supported build has no audited sell assets and retains its previous behavior.
+
+The implementation is `transform_sell` in `nativegrid/inventory.py`. Its tests reject missing or duplicate matches and verify that other grids and handlers remain unchanged.
+
+## Check delivery and component boundaries
+
+A log entry proves that a resource buffer was replaced. It does not prove that the correct widget was edited or that the result renders correctly.
+
+The runtime has a fixed-buffer read hook and a full-read hook. Equal-length replacements work through the fixed-buffer path. Resized resources require the full-read descriptor and the game's audited allocator. The sell binary grows by one byte, and its source HTML grows by 20 bytes. Check for `REPLACED resized` entries for those paths after opening the sell menu. Never pad or truncate a binary without understanding its format.
+
+For component style changes, use `component_end` in `nativegrid/shop.py`. In the supported compiled component format, children come before the named root footer. The footer contains the name, classes, script, flags, and attributes. The next component starts after that footer.
+
+The earlier shop code sliced from a component name to the next name. That changed one root and the next component's children. The visible card retained its old icons and labels. Revision 10 fixed this by starting after the previous component's footer and ending after the target component's footer. The regression fixture in `tests/test_shop.py` reproduces this order and fails against the earlier implementation.
+
+## Verify and keep a rollback checkpoint
+
+Build into a new ignored directory. Run the Python checks, native fixtures, installer fixtures, and publication audit described in [the build guide](build.md). Add new source or documentation paths to both `.gitignore` and `tracked-files.txt`. Stage explicit paths and commit each fix separately.
+
+The sell fix must preserve the existing inventory and buy-menu payload hashes. A combined build should add the two sell assets without changing the pending buy-menu refinements.
+
+Close the game before replacing the plugin. Follow [the installation guide](install.md) and supply the currently installed package as `-PreviousPackage`. Preserve both packages and the rollback journal. Do not restore old signed game archives after a Steam update.
+
+After launch, check these behaviors in the affected screen:
+
+- The expected columns and rows fill the container without crossing its borders.
+- The scrollbar reaches the last items, and category changes use the same layout.
+- Hover, focus, selection, category artwork, and empty slots fit the tiles.
+- Prices, quantities, and requirement indicators remain readable.
+- The original action and quantity-selection UI still opens correctly.
+- Character inventory, Private Storage, and the other shop tab retain their working layouts.
+
+Record the game build, package revision, runtime replacement entries, and observed result. Label offline test results separately from live UI confirmation. If a Steam update changes a fingerprint, audit compatibility before building again.

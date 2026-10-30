@@ -6,7 +6,7 @@ from pathlib import Path
 
 from nativegrid.archive import Pamt, checksum, safe_asset_path
 from nativegrid.build import output_directory
-from nativegrid.inventory import INVENTORY_PATHS, transform
+from nativegrid.inventory import INVENTORY_PATHS, SELL_PATHS, transform, transform_sell, sized
 from nativegrid.pe import PE
 
 
@@ -22,6 +22,23 @@ def synthetic_index():
 
 
 class ArchiveChecks(unittest.TestCase):
+    def test_sell_grid_preserves_other_layouts_and_handlers(self):
+        old = sized('column') + sized('6') + sized('row') + sized('8')
+        other = sized('column') + sized('6') + sized('row') + sized('4')
+        before = sized('native_sell_handler') + old + other
+        after = transform_sell(SELL_PATHS[0], before)
+        self.assertEqual(after, sized('native_sell_handler') + sized('column') + sized('8') + sized('row') + sized('11') + other)
+        for bad in (other, old + old):
+            with self.assertRaises(AssertionError):
+                transform_sell(SELL_PATHS[0], bad)
+
+    def test_sell_source_changes_only_inventory_override(self):
+        before = b'<override selector="#InventoryItemList" script="native_sell" inventory-key="Character"></override><override selector="#Other" column="6" row="8"></override>'
+        after = transform_sell(SELL_PATHS[1], before)
+        self.assertEqual(after.replace(b' column="8" row="11"', b'', 1), before)
+        with self.assertRaises(AssertionError):
+            transform_sell(SELL_PATHS[1], after)
+
     def test_valid_synthetic_entry(self):
         entry, = Pamt.parse(synthetic_index()).entries()
         self.assertEqual((entry.path, entry.offset, entry.stored, entry.original, entry.chunk, entry.flags),

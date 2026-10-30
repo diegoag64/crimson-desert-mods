@@ -90,5 +90,15 @@
       "original_sha256": "c4a48f49dd2a457e840c61dd2706eabffbd8854607d9496903b3261cec8d8cf6",
       "replacement_sha256": "217f50757233cbc813848a5d720d9380072cdbdc9390ecd4de66f1af267b790c"
     }
+  },
+  "sell_assets": {
+    "ui/bin__/npcstoresellview2_game.uibinary": {
+      "original_sha256": "2c9e5cf2ce24103baeb3c9baf3f3588b6ab1c93df66454f213ca7aef1ec781e9",
+      "replacement_sha256": "05f4a9781e699cc7184ca28abdfcd95fef6742ef29f0b1c0624b399d774dbd9b"
+    },
+    "ui/xml/gamemain/play/npcstoresellview2.html": {
+      "original_sha256": "b900fdcea52e450be2925813d22353837995c763acf973cf102c424904a8deed",
+      "replacement_sha256": "2ea10f1fe5723fdda233b6068b435b2a8a4a30c23e5fbd5328d2137352608ecc"
+    }
   }
 }
