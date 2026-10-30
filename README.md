@@ -20,4 +20,6 @@ Revision 12 failed to launch in the user's test. Do not install revisions 11 or 
 
 Revision 13 is the current working checkpoint on build `26329202`. It is installed, and the user confirmed the sell-grid result after launch. It adds the sell menu's 8-column, 11-row layout while preserving all twelve inventory and buy-menu payloads from revision 10. The buy-grid appearance was confirmed with revision 10. This does not claim a new exhaustive inventory or purchase-flow test.
 
+Revision 14 is an isolated empty-slot alignment test. It changes the free shop card's artwork and clipping frame while preserving populated-card records, requirement labels, and the sell grid. It does not use zero-sized fonts. Live validation is pending, and revision 13 remains the rollback checkpoint.
+
 An optional NPC buy-store layout uses six columns and three rows of 124 by 112 pixel cards. Build it with `--experimental-shop`. It preserves native purchase and quantity handlers. The user verified revision 10's populated card layout on build `26329202`; empty-slot alignment and overflowing requirement text remain unresolved. The revision 11 styling, including its unverified zero-font-size technique, has been removed pending investigation.

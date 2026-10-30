@@ -43,3 +43,7 @@
 .shop-grid-owned-count.shop-grid-font-sub { font-size: 12px; line-height: 14px; }
 .shop-grid-owned-count.shop-grid-font-minor { font-size: 12px; line-height: 14px; }
 .shop-grid-disabled { position: absolute; left: 0px; top: 0px; width: 124px; height: 112px; opacity: 0.2; background-color: #464646; }
+
+/* FreeStoreInfoIcon only. Replace the cropped wide-row image with a fitted tile. */
+#ItemIconBgDiagonal.shop-grid-empty-frame { position: absolute; left: 1px; top: 1px; width: 122px; height: 110px; margin: 0px; padding: 0px; overflow-x: hidden; overflow-y: hidden; }
+#ItemIconBgDiagonalBg.shop-grid-empty-art { position: absolute; left: 0px; top: 0px; width: 122px; height: 110px; background-image: textureid(cd_image_item_emptyslot_bg_00); background-repeat: stretch; background-color: #d2d2d2; background-blend-mode: multiply; }

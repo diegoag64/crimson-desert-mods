@@ -68,6 +68,8 @@ STYLE_NAMES={
     'slot-bg-item-list-hover':'shop-grid-hover',
     'list-item-focus-line':'shop-grid-focus-border',
     'item-icon-disabled-action-layer-colunm':'shop-grid-disabled',
+    'item-icon-bg-diagonal-freestore':'shop-grid-empty-frame',
+    'item-icon-bg-diagonal-bg':'shop-grid-empty-art',
 }
 
 # Some consumers call the fixed-buffer read directly. Keep every serialized
