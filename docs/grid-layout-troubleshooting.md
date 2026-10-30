@@ -227,7 +227,7 @@ Revision 26 also exposed a containment error: `ItemTierTexture` is a child of `I
 
 Revision 27 uses a 124-by-76 image container at x=0, y=4. The background artwork is explicitly 52 by 52 at x=36, y=20 inside that container: its card position remains x=36, y=24. The upgrade indicator uses its original 19.8-by-37 size at x=4, y=4 inside the container. Both fit inside the box. The horizontal mask now has opacity one at both ends so it does not fade the indicator. Title containment and the other card geometry stay unchanged.
 
-For a recurrence, inspect the actual parent, its resolved dimensions, and any mask before changing child offsets. Verify the active payload hash. After installing revision 27, check the resolved image box, background size/position, and tier bounds, then confirm the visible marks on several upgraded items. The artwork and indicator geometry are not yet live-verified for revision 27.
+For a recurrence, inspect the actual parent, its resolved dimensions, and any mask before changing child offsets. Verify the active payload hash. After installing revision 27, check the resolved image box, background size/position, and tier bounds, then confirm the visible marks on several upgraded items. The user's revision 27 screenshots show centered artwork and restored upgrade indicators.
 
 ### Follow the actual native badge visibility path
 
@@ -237,7 +237,17 @@ Revision 26's ownership and native tab-flag checks matched the live card, but it
 
 After installation, check for `REFINEMENT: kept Equipped Gear badge hidden during native style refresh.` in the package log. Check both tabs in one session, including selection, scrolling, and returning to Equipped Gear. Read-only inspection can verify the badge's class and tab flag. An equipped item in Inventory must retain native badge behavior. Do not refine an item to validate presentation.
 
-Revision 27 changes only the refinement stylesheet among the eighteen payloads and replaces the optional native badge hook. Eight native suites, 27 Python checks, and 20 installer cases pass. These checks cover the new class path and preserve verification of earlier packages. Live confirmation remains pending. Keep revision 25 as the refinement rollback checkpoint.
+Revision 27 changes only the refinement stylesheet among the eighteen payloads and replaces the optional native badge hook. Eight native suites, 27 Python checks, and 20 installer cases pass. These checks cover the new class path and preserve verification of earlier packages. The user screenshots and runtime log confirm the Equipped Gear badge correction in revision 27. The other tab still needs a separate live check. Keep revision 27 as the current refinement rollback checkpoint.
+
+### Card warning text, duplicate emblems, and short names
+
+Live inspection after revision 27 found three independent card elements:
+
+- `ItemIconDisableTextWrap` with `product-item1` still resolves to a 270-pixel wrapper. Its material warning overflows a 124-pixel card. Revision 28 hides this parent with a direct ID/class rule. The native disabled shading and the separate materials panel remain, and native refinement validation is unchanged.
+- `ItemIconEmoji` with `product-item-icon` draws a full-card overlay. The contribution ring also has a generated inline emblem inside `ItemIconTitle`. Revision 28 hides the frame overlay and retains the inline emblem. The comparison panel uses a different title element and is unchanged.
+- `ItemIconTitle` retains an automatic content width inside its 116-pixel scrolling wrapper. Revision 28 adds a 116-pixel minimum width and centers text/content within that width. Longer names can retain their intrinsic width and the existing horizontal scrolling; the outer wrapper remains aligned to its start.
+
+These rules exist only in the refinement document stylesheet. No shared name formatter, localization record, material requirement, or native hook changes. Check a short name, a long name, the contribution ring, and an item with insufficient materials after installation. The expected result is one emblem, no card warning overflow, centered short names, and readable long names during focus/scrolling. Revision 28's fixture results do not establish those visible outcomes.
 
 ## Verify and keep a rollback checkpoint
 

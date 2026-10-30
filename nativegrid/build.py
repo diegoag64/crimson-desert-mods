@@ -48,7 +48,7 @@ def build(game, output, gcc, experimental_shop=False, experimental_refinement=Fa
     support = matches[0]
     require(not experimental_refinement or experimental_shop,
             'Refinement builds must preserve the working shop package: add --experimental-shop')
-    refinement_pins = support.get('refinement_revisions', {}).get('27', {}) if experimental_refinement else {}
+    refinement_pins = support.get('refinement_revisions', {}).get('28', {}) if experimental_refinement else {}
     refinement_runtime = support.get('refinement_runtime_revisions', {}).get('27') if experimental_refinement else None
     if experimental_refinement:
         from .refinement import REFINEMENT_PATHS, transform as refinement_transform
@@ -131,7 +131,7 @@ def build(game, output, gcc, experimental_shop=False, experimental_refinement=Fa
     shutil.copytree(SOURCE / 'licenses', output / 'licenses')
     revision = 24 if requirement_support else (14 if sell_pins or experimental_shop else (7 if support['game_build'] == '26329202' else 5))
     if experimental_refinement:
-        revision = 27
+        revision = 28
     manifest = dict(schema=1, revision=revision, experimental_shop=experimental_shop,
                     status='built_not_installed', game_build=support['game_build'],
                     exe_sha256=support['exe_sha256'], master_sha256=support['master_sha256'], pamt_sha256=support['pamt_sha256'],
