@@ -241,5 +241,21 @@
         }
       }
     }
+  },
+  "crafting_revisions": {
+    "31": {
+      "ui/bin__/cookingview3_game.uibinary": {
+        "original_sha256": "cdf580f5ed004fddf26c6f199ee6e2815c10b15e8c32d3329a5749c79a53c1b6",
+        "replacement_sha256": "8f25655c1a33aa01fea428cab59b557b6ab8e0b14f8bd6d84cb9c2587f2cf5f8"
+      },
+      "ui/xml/gamemain/play/cookingview3.html": {
+        "original_sha256": "1c6d9f0f724721a10fe6f2d4c279ef32a5737211ddc66c1be94968f7733c0fd7",
+        "replacement_sha256": "23e1391aea288525c0154adf31919f4159a2d2ddaa0469916928f8dc03b1b47f"
+      },
+      "ui/xml/gamemain/play/cookingview3.css": {
+        "original_sha256": "4307befd42387445e7348149f0bd8e2bcc0dbe47fef97753d34eb2c695f9ac46",
+        "replacement_sha256": "ba6a2cd73ef669503a19e2c0fd2c7b29d5bbdbc4a18cb7c9de1e00688e2ca0c8"
+      }
+    }
   }
 }

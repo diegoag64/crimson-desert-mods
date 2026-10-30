@@ -143,6 +143,28 @@ Invoke-WrapperVerify
 Write-Output 'PASS: revision 30 accepts whole-label alignment with unchanged runtime pins'
 $candidate.payloads[2].replacement_sha256 = $support.refinement_revisions.'29'.'ui/xml/gamemain/play/itemenchantpanel.css'.replacement_sha256
 Assert-Throws { Invoke-WrapperVerify } 'revision 30 refuses the previous stylesheet'
+$candidate.revision = 31
+$candidate | Add-Member -NotePropertyName experimental_crafting -NotePropertyValue $true
+$candidate.payloads = @($support.refinement_revisions.'30'.PSObject.Properties | ForEach-Object {
+    [pscustomobject]@{path=$_.Name; original_sha256=$_.Value.original_sha256; replacement_sha256=$_.Value.replacement_sha256; size=100; replacement_size=100}
+}) + @($support.crafting_revisions.'31'.PSObject.Properties | ForEach-Object {
+    [pscustomobject]@{path=$_.Name; original_sha256=$_.Value.original_sha256; replacement_sha256=$_.Value.replacement_sha256; size=100; replacement_size=100}
+})
+Invoke-WrapperVerify
+Write-Output 'PASS: revision 31 accepts crafting with unchanged revision 30 refinement pins'
+$candidate.experimental_crafting = $false
+Assert-Throws { Invoke-WrapperVerify } 'revision 31 requires explicit crafting flag'
+$candidate.experimental_crafting = $true
+$craftHash = $candidate.payloads[-1].replacement_sha256
+$candidate.payloads[-1].replacement_sha256 = '0' * 64
+Assert-Throws { Invoke-WrapperVerify } 'revision 31 refuses changed crafting stylesheet'
+$candidate.payloads[-1].replacement_sha256 = $craftHash
+$candidate.payloads[-1].replacement_size++
+Assert-Throws { Invoke-WrapperVerify } 'revision 31 refuses resized crafting payload'
+$candidate.payloads[-1].replacement_size--
+$candidate.payloads = @($candidate.payloads | Select-Object -SkipLast 1)
+Assert-Throws { Invoke-WrapperVerify } 'revision 31 refuses missing crafting payload'
+$candidate.PSObject.Properties.Remove('experimental_crafting')
 $candidate.revision = 25
 $candidate.fixture_tests_passed = 7
 $candidate.payloads = @($support.refinement_assets.PSObject.Properties | ForEach-Object {
