@@ -3,7 +3,7 @@ from pathlib import Path
 import tempfile
 import unittest
 import zipfile
-from nativegrid.release import ROOT, check_privacy, digest, expected_payloads, export_package
+from nativegrid.release import ROOT, check_privacy, digest, expected_payloads, export_package, validation_for
 
 
 class ReleaseTests(unittest.TestCase):
@@ -72,3 +72,15 @@ class ReleaseTests(unittest.TestCase):
     def test_output_cannot_modify_build(self):
         with self.assertRaisesRegex(ValueError, 'separate'):
             export_package(self.package, self.package/'export')
+
+    def test_live_evidence_requires_exact_binary(self):
+        record = json.loads((ROOT/'nativegrid/release_validation.json').read_text())
+        self.assertTrue(validation_for(record['plugin_sha256'])['live_tested'])
+        self.assertIsNone(validation_for('0'*64))
+
+    def test_unvalidated_export_keeps_pending_status(self):
+        archive = export_package(self.package, self.root/'pending')
+        with zipfile.ZipFile(archive) as z:
+            metadata = json.loads(z.read('NativeGrid/NativeGrid-release.json'))
+            self.assertFalse(metadata['live_tested'])
+            self.assertIsNone(metadata['live_validation'])

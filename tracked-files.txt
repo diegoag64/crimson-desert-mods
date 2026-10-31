@@ -92,3 +92,4 @@ tests/test_delta.py
 tests/test_release.py
 docs/nexus-release.md
 docs/nexus-description.txt
+nativegrid/release_validation.json

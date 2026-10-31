@@ -41,7 +41,7 @@ Close the game and disable NativeGrid in DMM. For a manual installation, remove 
 NativeGrid.log is written beside the loaded ASI, normally in bin64. If the folder cannot be written, the mod can still run. Check the game's build and the log's ACTIVE or DISABLED lines if the grids are missing. When reporting a problem, include the mod version, game build, menu, steps to reproduce, screenshot, and relevant log lines. Review logs for personal information before sharing them.
 
 [b]Release status[/b]
-Version 0.1.0-rc1 is an experimental release candidate based on the revision 41 layouts. Revision 41's layouts were checked in game. This candidate changes resource delivery and logging; its own live validation must be completed before publication. The included screenshots show revision 41 and are layout references, not proof of candidate validation.
+Version 0.1.0-rc1 is an experimental release candidate based on the revision 41 layouts. The user tested this candidate on Steam build 26345091 and reported it working. The deployed plugin and DMM library hashes match the tested build; the runtime log confirms all four hooks active and 28 resource replacements with no FAILED or DISABLED entries. This is a basic game check, not exhaustive menu, controller, or transaction coverage. The screenshots show the unchanged revision 41 layouts.
 
 [b]Credits and permissions[/b]
 NativeGrid's original code and mod changes: diegoag64, MIT License. Reuse, modification, redistribution, and commercial use are permitted with the copyright and license notice retained. Dependency licenses and game content remain separate.

@@ -1,0 +1,16 @@
+{
+  "version": "0.1.0-rc1",
+  "revision": 42,
+  "game_build": "26345091",
+  "plugin_sha256": "6f0d0e17dd2b2642f5ba7f3af438bc83826bc12cda963c9dbe04c33a90d59876",
+  "checked_at": "2026-10-31T22:22:11.367101+00:00",
+  "runtime_log_sha256": "fe44d35d97a241365de78ee0fb65fe2db573e5da400da310a957488b860bbaa3",
+  "user_report": "Loaded properly, tested and working fine.",
+  "scope": "User-reported basic game check; matching deployed and DMM library plugin hashes; four runtime hooks active; 28 distinct resources replaced. No individual menu coverage or transaction coverage inferred.",
+  "live_tested": true,
+  "dmm_import_tested": true,
+  "dmm_disable_reenable_tested": false,
+  "dmm_runtime_coexistence_tested": false,
+  "resource_replacements_observed": 28,
+  "failed_or_disabled_entries": 0
+}

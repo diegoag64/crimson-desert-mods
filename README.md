@@ -98,7 +98,7 @@ Eighteen compact cards replace eight wide entries, with prices, stock, and owned
 
 ## Current status and compatibility
 
-**Revision 41 is the current working checkpoint**, confirmed in game on Steam build `26345091`. Revision 38 remains the earlier checkpoint without the comrades grid.
+**Revision 42 (`0.1.0-rc1`) has passed a user-reported basic game check on Steam build `26345091`.** Its deployed hash and active runtime were verified. Revision 41 remains the preserved rollback with the same layouts; revision 38 is the earlier checkpoint without the comrades grid. See the [release validation notes](docs/nexus-release.md#verification-and-remaining-steps) for scope.
 
 The expanded layouts use experimental build flags. Some menu states and transaction flows still need testing. See the [changelog](CHANGELOG.md) for individual results and failed revisions.
 

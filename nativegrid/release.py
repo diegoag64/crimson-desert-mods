@@ -34,6 +34,13 @@ def check_privacy(data):
             raise ValueError('Personal build path found in release file')
 
 
+def validation_for(plugin_sha256):
+    record = json.loads((ROOT/'nativegrid/release_validation.json').read_text())
+    if record['version'] == VERSION and record['revision'] == 42 and record['game_build'] == '26345091' and record['plugin_sha256'] == plugin_sha256:
+        return record
+    return None
+
+
 def export_package(package, output):
     package, output = Path(package).resolve(strict=True), Path(output).resolve()
     if output == package or output.is_relative_to(package) or package.is_relative_to(output):
@@ -70,13 +77,15 @@ def export_package(package, output):
     if len(matches) != 1 or digest(binary) != matches[0]['sha256'] or not binary.startswith(b'MZ'):
         raise ValueError('Candidate ASI integrity mismatch')
     check_privacy(binary)
-    public = dict(version=VERSION, revision=42, status='candidate_not_live_validated',
+    validation = validation_for(digest(binary))
+    public = dict(version=VERSION, revision=42, status='candidate_user_confirmed' if validation else 'candidate_not_live_validated',
                   game_build=support['game_build'], executable_version=support['executable_version'],
                   exe_sha256=support['exe_sha256'], plugin_sha256=digest(binary),
                   resource_delivery='original-dependent copy/XOR patches with input/output SHA-256 checks',
                   runtime_log='NativeGrid.log beside the loaded ASI; optional',
                   native_suites=len(suites), actual_resource_patch_checks=330,
-                  dmm_import_tested=False, live_tested=False, dmm_runtime_coexistence_tested=False,
+                  dmm_import_tested=bool(validation), live_tested=bool(validation), dmm_runtime_coexistence_tested=False,
+                  live_validation=validation,
                   payloads=records)
     entries = {'NativeGrid/NativeGrid.asi': binary,
                'NativeGrid/NativeGrid-LICENSE.txt': (ROOT/'LICENSE').read_bytes(),
@@ -86,7 +95,10 @@ def export_package(package, output):
     entries['NativeGrid/NativeGrid-README.txt'] = (
         'NativeGrid 0.1.0-rc1 (revision 42) - experimental candidate\n\n'
         'Windows x64, Steam build 26345091, EXE 1.0.0.3460 only.\n'
-        'This candidate has passed offline fixtures, not its own live game test.\n'
+        + ('This exact plugin passed a user-reported basic game check on Steam 26345091.\n'
+           'Matching DMM/deployed hashes and active hooks verified; exhaustive coverage\n'
+           'and DMM disable/re-enable remain unverified for this candidate.\n' if validation else
+           'This candidate has passed offline fixtures, not its own live game test.\n') +
         'Revision 41 layouts are preserved; resource delivery and logging changed.\n\n'
         'Close the game. In DMM 4.6.0 use Mods > Import for this ZIP, then enable\n'
         'one NativeGrid entry in ASI Mods. Keep one ASI loader. None is bundled.\n'
@@ -129,7 +141,7 @@ def export_package(package, output):
                    source_files_sha256={p:digest((ROOT/p).read_bytes()) for p in source_files},
                    fixture_suites=suites, patch_checks=patch_test,
                    full_resource_copies_excluded=True, personal_paths_excluded=True,
-                   live_tested=False, publication_ready=False)
+                   live_tested=bool(validation), live_validation=validation, publication_ready=False)
     (output/'release-audit.json').write_text(json.dumps(receipt, indent=2)+'\n')
     return archive
 

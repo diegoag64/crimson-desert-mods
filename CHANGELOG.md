@@ -2,7 +2,7 @@
 
 Newest first. Related experimental revisions are grouped to keep the history readable. Detailed diagnostics and test evidence live in [grid troubleshooting](docs/grid-layout-troubleshooting.md) and the [build guide](docs/build.md).
 
-The current working checkpoint is **revision 41 on Steam build `26345091`**. Revision 38 is the earlier fallback without the comrades grid. "Confirmed" refers to the reported in-game behavior, not exhaustive testing.
+The current candidate is **revision 42 (`0.1.0-rc1`) on Steam build `26345091`**, with a user-reported successful basic game check and verified runtime. Revision 41 is the preserved rollback. Revision 38 is the earlier fallback without the comrades grid. "Confirmed" refers to the reported in-game behavior, not exhaustive testing.
 
 **Do not install revisions 11, 12, 15, 17, or 40.** They were withdrawn or failed startup or loading checks.
 
@@ -10,7 +10,7 @@ The current working checkpoint is **revision 41 on Steam build `26345091`**. Rev
 
 | Revision | Change | Result |
 | --- | --- | --- |
-| 42 (candidate) | Portable optional logging; guarded copy/XOR resource patches; MIT license and Nexus package preparation. | Offline checks passed; not installed or live-tested. |
+| 42 (candidate) | Portable optional logging; guarded copy/XOR resource patches; MIT license and Nexus package preparation. | Basic game check user-confirmed; deployed hash and active runtime verified. |
 | 41 | Corrected comrades component serialization and added structural validation. | Comrades grid confirmed. |
 | 40 | Isolated comrades styles from shared list rules. | Startup stalled; restored 38. |
 | 39 | Introduced a five-column portrait-and-name comrades grid. | Shared styles kept full-width rows. |
