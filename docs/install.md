@@ -10,7 +10,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\NativeGrid.ps1 -Acti
 
 Verification checks the package hashes, supported game pins, and existing owned files. It writes nothing to the game. Conflicting files stop the operation.
 
-Revision 15 through 36 shop packages also require the pinned English localization index, `0020/0.pamt`. This is a read-only compatibility check. Installation still changes only the three files listed below. Revisions 15 and 17 failed live loading tests. Revisions 16 and 18 through 23 loaded and displayed icons-only requirements, but spacing remained unresolved. Revision 24 uses a direct container selector after live inspection proved that revision 23's descendant selector could not match. The user confirmed revision 24's spacing fix in the live shop. Preserve `build/shop-24-live-container-translation` as the working shop checkpoint. Preserve revision 23 and its installation rollback journal, and retain revision 16 as an earlier checkpoint.
+Revision 15 through 37 shop packages also require the pinned English localization index, `0020/0.pamt`. This is a read-only compatibility check. Installation still changes only the three files listed below. Revisions 15 and 17 failed live loading tests. Revisions 16 and 18 through 23 loaded and displayed icons-only requirements, but spacing remained unresolved. Revision 24 uses a direct container selector after live inspection proved that revision 23's descendant selector could not match. The user confirmed revision 24's spacing fix in the live shop. Preserve `build/shop-24-live-container-translation` as the working shop checkpoint. Preserve revision 23 and its installation rollback journal, and retain revision 16 as an earlier checkpoint.
 
 ## Install a package
 
@@ -77,3 +77,9 @@ After an authorized exit, install revision 36 with `build/crafting-35-build-2634
 Check `build/crafting-36-nested-layout/runtime.log` after the next user launch. Its Crafting activation line must include `nested children enabled`. Repair messages establish that the guarded helpers ran. Only a live first-open screen check establishes visible success.
 
 Revision 36 is installed and its installed ASI hash matches the package. The user reported that the initial Crafting icons appear fixed, and the runtime log records eight successful repairs. Preserve `build/crafting-36-nested-layout` as this working checkpoint. The installation preserved revision 35 under `build/rollback/rollback-adc5220bf6894a138932dbc24f152e75`. The installed ASI SHA-256 is `644a35a119ba0265db4a75934a45085b47efceb1f82c435f35852620b9677b57`.
+
+## Install the recycled shop-count correction
+
+Revision 37 is prepared in `build/shop-37-recycled-counts`. It preserves the revision 36 layouts and Crafting fix. After the user authorizes installation and exits the game, use this package as `-Package` and `build/crafting-36-nested-layout` as `-PreviousPackage`. Keep DMM unmounted.
+
+Preserve revision 36 and the new transaction journal for rollback. After the user's next launch, inspect the revision 37 runtime log for `ACTIVE: recycled shop stock line-height repair`. Check the live shop after repeated scrolling through ordinary and requirement items. Fixture success does not establish the visible result.

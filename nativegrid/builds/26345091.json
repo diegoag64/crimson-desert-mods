@@ -301,5 +301,34 @@
         "type": ".?AVUIGamePlayControlRootCooking2@uiCommonScript@pa@@"
       }
     }
+  },
+  "shop_count_runtime_revisions": {
+    "37": {
+      "remove_property": {
+        "rva": 59332992,
+        "size": 367,
+        "prefix": "48895c24084488442418574883ec20488b01488bd9488bfa",
+        "sha256": "fd65447add60835f730285b05a7869a581007350e87a758d5a4a169731fc89a1"
+      },
+      "negative_atom_initializer": {
+        "rva": 1548102,
+        "size": 25,
+        "prefix": "488d152bbb8c0541b801000000488d0dba0dfa06e9113f32",
+        "sha256": "523fa874aef7ff1e5fe6453e2534aac4520bf4bd6e68eae07a1efcd944b34768"
+      },
+      "negative_atom_rva": 118598932,
+      "description_vtable": {
+        "rva": 94188952,
+        "type": ".?AVUIGamePlayControlCommonInfoDescription@pa@@"
+      },
+      "list_vtable": {
+        "rva": 94653568,
+        "type": ".?AVUIGamePlayControlCommonStockList@uiCommonScript@pa@@"
+      },
+      "root_vtable": {
+        "rva": 94263792,
+        "type": ".?AVUIGamePlayControlRootNpcBuyStore2@uiCommonScript@pa@@"
+      }
+    }
   }
 }

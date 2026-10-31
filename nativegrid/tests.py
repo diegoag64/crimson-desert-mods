@@ -52,5 +52,13 @@ def test(output, gcc, minhook):
     assert crafting_result.returncode==0, (crafting_result.stdout,crafting_result.stderr)
     results.append(dict(case='crafting empty background detour',passed=True,output=crafting_result.stdout))
     print('PASS: crafting empty background detour',flush=True)
+    shop_exe=folder/'shop-counts-fixture.exe'
+    sources=[SOURCE/'fixtures/shop_counts_fixture.c']+[minhook/'src'/s for s in ['buffer.c','hook.c','trampoline.c','hde/hde64.c']]
+    subprocess.run([str(gcc),'-O2','-Wall','-Wextra','-Werror','-static','-I',str(minhook/'include'),
+                    '-o',str(shop_exe)]+list(map(str,sources)),check=True,timeout=60)
+    shop_result=subprocess.run([str(shop_exe)],capture_output=True,text=True,timeout=25)
+    assert shop_result.returncode==0, (shop_result.returncode,shop_result.stdout,shop_result.stderr)
+    results.append(dict(case='recycled shop stock line height',passed=True,output=shop_result.stdout))
+    print('PASS: recycled shop stock line height',flush=True)
     (output/'fixture-results.json').write_text(json.dumps(results,indent=2)+'\n')
     return results

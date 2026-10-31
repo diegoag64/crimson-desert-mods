@@ -369,3 +369,29 @@ The failed live session had the Crafting hook active, no repair messages, and tw
 Revision 36 calls the original layout without raising the repair-depth counter. It raises that counter only while invoking its background helpers, then restores it. Native child calls can repair their own images after layout. Calls caused by a repair helper still pass through without recursively repairing. The original return value and `LastError` are preserved at every nesting level.
 
 Five regression cases extend the native fixture to 35 cases. They cover a parent and image, three nested parents and an image, nested traversal with helper reentry, unavailable resources under a parent, and a successful later retry. The first new case fails against revision 35 with two original calls and zero repair-helper calls. All 35 cases pass after the guard correction. Revision 36 uses the same native addresses and all 24 payloads as revision 35 for the corresponding game build. After installation on build `26345091`, the user reported that the initial icons appear fixed. The revision 36 runtime log records eight successful repairs, its logging limit. Keep this user report separate from the fixture results. Other categories and game builds were not newly verified in this check.
+
+## Stock quantities move into the price row after scrolling
+
+Revision 36's live buy menu on build `26345091` exposed a pooled-label formatting bug. The stock and owned-count boxes had the same y coordinate and 14 CSS-pixel height. Both matched stylesheet rules with `line-height: 14px`. The stock label also retained an inline `line-height: 27px`, which took precedence. Its native text run was 36 screen pixels high at 4/3 UI scale, while the owned-count run was about 18.67 pixels high.
+
+The active stock labels had no `font-text-sub-red-negative` class and no resolved `translate-y` property. The requirement-spacing rule was not shifting these numbers. Inspect the inline property block as well as matched rules before changing CSS offsets.
+
+The requirement formatter writes property 84 (`line-height`) through the native setter at RVA `0x711f60`. Its final branch at `0x70dc94` either sets the height needed for generated icons or removes that property through RVA `0x3895980`. The ordinary stock branch instead writes plain text at `0x10af9ac`, calling `0x41d3490`. That plain-text update leaves the previous inline height in place. A card that previously contained requirement icons can therefore carry their line height into a numeric stock label.
+
+Revision 37 clears this specific stale override before the original native layout measures text. It uses the game's property-removal helper, which invalidates text/layout and lets the existing 14-pixel stylesheet rule take effect. It does not write coordinates, text runs, quantities, or prices. All 24 resource payloads and the revision 36 Crafting repair remain unchanged.
+
+The guard requires all of these conditions:
+
+- Reciprocal element, layout, and style pointers, and the exact `ItemAvailableCountText` ID.
+- A bounded inline property map containing a 27-pixel numeric line height.
+- No generated children and no native requirement class. Requirement labels retain their inline height and icon spacing.
+- A bounded matched-rule list whose final rule specifies the compact 14-pixel line height.
+- A `CommonInfoDescription` card under `CommonStockList` and `RootNpcBuyStore2`, with exact audited vtables and reciprocal owner pointers.
+
+The scoped check runs inside the existing layout hook. A thread-local guard blocks helper reentry without blocking ordinary nested tree traversal. The native removal helper owns property storage and text invalidation. The original layout still receives all five arguments and its incoming `LastError`; the hook preserves its result and outgoing error.
+
+Read-only execution of the production predicate against the failing live session matched all 18 visible stock labels and none of the 18 owned-count labels. The new native suite has 69 cases, including repeated requirement-to-number reuse, nested layout, helper reentry, idempotence, invalid pointers, wrong units, unknown overrides, unrelated menus, and malformed bounds. The first regression fails with the repair disabled and passes with it enabled. These are scope and fixture results, not a live test of the installed correction.
+
+To diagnose a recurrence, capture the failing state before changing categories. Inspect the label's inline properties at `style + 0x30`, cached properties at `style + 0x20`, matched rules, and native run metrics. Property maps use the value array at `+0x70`, value count at `+0x78`, index map at `+0x80`, and map length at `+0x88`. Index `0xff` means absent. Bound every read, verify the current EXE and process, and never reuse pointers across launches. Keep snapshots untracked.
+
+After installation, check repeated scrolling through requirement items and ordinary items in both directions, including single- and multiple-digit stock. Requirement icons must keep their spacing, and stock and owned counts must share a row. `SHOP: cleared stale numeric stock line height before layout.` confirms helper calls, with logging limited to eight. Only the live screen establishes visible success.

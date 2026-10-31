@@ -55,3 +55,8 @@ tests/test_shop_labels.py
 nativegrid/runtime/native_grid_crafting.h
 nativegrid/fixtures/crafting_fixture.c
 tests/test_crafting_runtime.py
+
+nativegrid/shop_counts.py
+nativegrid/runtime/native_grid_shop_counts.h
+nativegrid/fixtures/shop_counts_fixture.c
+tests/test_shop_counts.py

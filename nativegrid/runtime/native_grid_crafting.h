@@ -55,6 +55,9 @@ static int crafting_empty_image(uintptr_t layout) {
 }
 static unsigned char hooked_crafting_layout(void *layout,void *bounds,void *size,
                                             void *state,void *context) {
+#ifdef SHOP_COUNTS_PREPARE
+    SHOP_COUNTS_PREPARE(layout);
+#endif
     /* Forward all five ABI arguments. The native pass owns geometry and lifetime. */
     unsigned char result=original_crafting_layout(layout,bounds,size,state,context);
     DWORD outgoing=GetLastError();

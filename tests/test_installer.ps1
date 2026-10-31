@@ -340,3 +340,39 @@ Assert-Throws { Invoke-WrapperVerify } 'new build refuses previous localization 
 $candidate.extra_indexes.'0020/0.pamt' = $updated.shop_requirements.index_sha256
 $candidate.exe_sha256 = $support.exe_sha256
 Assert-Throws { Invoke-WrapperVerify } 'updated game cannot use previous executable support'
+
+# Revision 37 is an optional, separately audited addition to the working revision 36.
+$candidate.exe_sha256 = $updated.exe_sha256
+$candidate.revision = 37
+$candidate.fixture_tests_passed = 10
+$candidate | Add-Member -NotePropertyName crafting_nested_layout -NotePropertyValue $true
+Assert-Throws { Invoke-WrapperVerify } 'revision 37 refuses absent shop runtime metadata'
+$candidate | Add-Member -NotePropertyName experimental_shop_counts -NotePropertyValue $true
+$candidate | Add-Member -NotePropertyName shop_count_runtime -NotePropertyValue ($updated.shop_count_runtime_revisions.'37' | ConvertTo-Json -Depth 20 | ConvertFrom-Json)
+Invoke-WrapperVerify
+Write-Output 'PASS: revision 37 accepts scoped shop count repair with preserved revision 36 payloads'
+$candidate.experimental_shop_counts = $false
+Assert-Throws { Invoke-WrapperVerify } 'revision 37 requires count repair flag'
+$candidate.experimental_shop_counts = $true
+$candidate.fixture_tests_passed = 9
+Assert-Throws { Invoke-WrapperVerify } 'revision 37 requires pooled-count native fixture'
+$candidate.fixture_tests_passed = 10
+$candidate.crafting_nested_layout = $false
+Assert-Throws { Invoke-WrapperVerify } 'revision 37 preserves working Crafting recursion guard'
+$candidate.crafting_nested_layout = $true
+foreach ($method in @('remove_property','negative_atom_initializer')) {
+    foreach ($field in @('rva','size','prefix','sha256')) {
+        $saved = $candidate.shop_count_runtime.$method.$field
+        $candidate.shop_count_runtime.$method.$field = if ($field -in @('rva','size')) { $saved + 1 } else { '0' + $saved.Substring(1) + '0' }
+        Assert-Throws { Invoke-WrapperVerify } "revision 37 rejects changed $method.$field"
+        $candidate.shop_count_runtime.$method.$field = $saved
+    }
+}
+$candidate.shop_count_runtime.negative_atom_rva++
+Assert-Throws { Invoke-WrapperVerify } 'revision 37 rejects changed requirement atom'
+$candidate.shop_count_runtime.negative_atom_rva--
+foreach ($owner in @('description_vtable','list_vtable','root_vtable')) {
+    $candidate.shop_count_runtime.$owner.rva++
+    Assert-Throws { Invoke-WrapperVerify } "revision 37 rejects changed $owner"
+    $candidate.shop_count_runtime.$owner.rva--
+}

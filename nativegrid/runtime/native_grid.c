@@ -45,6 +45,16 @@ static void refinement_report_hide(void) {
 #define REFINEMENT_REPORT_HIDE refinement_report_hide
 #include "native_grid_refinement.h"
 #endif
+#ifdef SHOP_COUNTS_REMOVE_PROPERTY_RVA
+static LONG shop_count_repairs;
+static void shop_count_report_repair(void) {
+    if (InterlockedIncrement(&shop_count_repairs)<=8)
+        write_log("SHOP: cleared stale numeric stock line height before layout.\r\n");
+}
+#define SHOP_COUNTS_REPORT_REPAIR shop_count_report_repair
+#include "native_grid_shop_counts.h"
+#define SHOP_COUNTS_PREPARE shop_counts_prepare
+#endif
 #ifdef CRAFTING_LAYOUT_RVA
 static LONG crafting_repairs;
 static void crafting_report_repair(void) {
@@ -216,6 +226,13 @@ __declspec(dllexport) void InitializeASI(void) {
     crafting_background_size=(CraftingBackgroundFn)(image_base+CRAFTING_BACKGROUND_SIZE_RVA);
     crafting_background_position=(CraftingBackgroundFn)(image_base+CRAFTING_BACKGROUND_POSITION_RVA);
 #endif
+#ifdef SHOP_COUNTS_REMOVE_PROPERTY_RVA
+    if (!read_memory(image_base+SHOP_COUNTS_REMOVE_PROPERTY_RVA,prefix,sizeof(prefix)) ||
+        memcmp(prefix,expected_shop_counts_prefix,sizeof(prefix))) {
+        write_log("DISABLED: shop property-removal fingerprint mismatch.\r\n"); return;
+    }
+    shop_remove_property=(ShopRemovePropertyFn)(image_base+SHOP_COUNTS_REMOVE_PROPERTY_RVA);
+#endif
     MH_STATUS status=MH_Initialize();
     if (status!=MH_OK && status!=MH_ERROR_ALREADY_INITIALIZED) return;
     status=MH_CreateHook(target,hooked_read,(void **)&original_read);
@@ -253,6 +270,9 @@ __declspec(dllexport) void InitializeASI(void) {
 #endif
 #ifdef CRAFTING_LAYOUT_RVA
     write_log("ACTIVE: crafting empty-background repair during native layout; nested children enabled.\r\n");
+#endif
+#ifdef SHOP_COUNTS_REMOVE_PROPERTY_RVA
+    write_log("ACTIVE: recycled shop stock line-height repair; scoped native property removal.\r\n");
 #endif
     return;
 activation_failed:

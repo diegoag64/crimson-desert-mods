@@ -24,7 +24,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tests\test_installer.ps1
 .venv\Scripts\python.exe -m unittest discover -s tests -p "test_*.py"
 ```
 
-Nine native suites exercise nine raw-read cases and ten full-read cases, then repeat the harness with a missing interface, a changed executable, and three changed method fingerprints. A final suite repeats the read cases with a shorter replacement to check reuse of the existing allocation. The refinement suite detours a synthetic native style refresh and checks 27 cases, including both tab directions, unrelated controls, invalid pointers, cycles, native class removal, helper ordering, exact arguments, and `LastError`. The Crafting suite tests 35 cases through a real detour, including initial and recycled empty image caches, native completion, unavailable resources, retry, native parent-to-child traversal, helper reentry, unrelated menus, invalid pointers, and all five ABI arguments. The resource harness checks ABI arguments, return values, `LastError`, canaries, exact bytes, partial reads, invalid pointers, read-only buffers, resize failure, and nested reads.
+Ten native suites exercise nine raw-read cases and ten full-read cases, then repeat the harness with a missing interface, a changed executable, and three changed method fingerprints. A final suite repeats the read cases with a shorter replacement to check reuse of the existing allocation. The refinement suite detours a synthetic native style refresh and checks 27 cases, including both tab directions, unrelated controls, invalid pointers, cycles, native class removal, helper ordering, exact arguments, and `LastError`. The Crafting suite tests 35 cases through a real detour, including initial and recycled empty image caches, native completion, unavailable resources, retry, native parent-to-child traversal, helper reentry, unrelated menus, invalid pointers, and all five ABI arguments. The shop count suite covers 69 cases through the shared layout detour, including repeated pooled-label transitions, scope exclusions, helper reentry, and removal before text measurement. The resource harness checks ABI arguments, return values, `LastError`, canaries, exact bytes, partial reads, invalid pointers, read-only buffers, resize failure, and nested reads.
 
 Installer fixtures use synthetic files under `build`. They never touch the real game. All tests must pass before installation. Do not run Python with `-O`, because transform assertions are required.
 
@@ -109,3 +109,11 @@ git diff --cached --stat
 ```
 
 `tracked-files.txt` is the explicit public allowlist. `.gitignore` denies every unlisted file. Add new source files to both files before staging them by exact path. Never stage the entire scratch workspace.
+
+## Build the recycled shop-count correction
+
+On build `26345091`, append `--experimental-shop-counts` to the revision 36 command and choose a new output directory, such as `build/shop-37-recycled-counts`. This produces revision 37. The flag requires `--experimental-crafting-icons` so the working Crafting repair remains enabled. Omit the new flag to rebuild revision 36.
+
+Revision 37 adds no asset transform or layout detour. It adds a scoped preparation step to the existing layout hook. `shop_count_runtime_revisions.37` pins the full property-removal helper body, the requirement-class initializer and atom address, and three owner types. The builder audits them before compilation. Older game builds have no revision 37 support record and are rejected for this option. Do not copy these addresses to another build.
+
+The prepared package passes ten native suites, 50 Python checks, and the installer fixtures. Its 24 payload records match revision 36 exactly. The count correction remains experimental until installed and checked during live scrolling.

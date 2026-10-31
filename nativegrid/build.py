@@ -39,7 +39,8 @@ def output_directory(path, game=None):
 
 
 def build(game, output, gcc, experimental_shop=False, experimental_refinement=False, experimental_crafting=False,
-          experimental_extraction=False, experimental_buy_labels=False, experimental_extraction_scroll=False, experimental_crafting_icons=False):
+          experimental_extraction=False, experimental_buy_labels=False, experimental_extraction_scroll=False, experimental_crafting_icons=False,
+          experimental_shop_counts=False):
     from .archive import Pamt, decrypt
     import lz4.block
 
@@ -47,6 +48,11 @@ def build(game, output, gcc, experimental_shop=False, experimental_refinement=Fa
     matches = [record for record in SUPPORTED_BUILDS if record['exe_sha256'] == exe_hash]
     require(len(matches) == 1, 'Unsupported or ambiguous executable fingerprint')
     support = matches[0]
+    require(not experimental_shop_counts or experimental_crafting_icons,
+            'Shop count repair must preserve revision 36: add --experimental-crafting-icons')
+    shop_counts = support.get('shop_count_runtime_revisions', {}).get('37') if experimental_shop_counts else None
+    require(not experimental_shop_counts or shop_counts is not None,
+            'No audited shop count repair for this game build')
     require(not experimental_buy_labels or experimental_extraction,
             'Buy-label builds must include the prepared extraction package: add --experimental-extraction')
     require(not experimental_crafting_icons or experimental_extraction_scroll,
@@ -169,7 +175,7 @@ def build(game, output, gcc, experimental_shop=False, experimental_refinement=Fa
         records.append(dict(path=path, size=len(before), replacement_size=len(after),
                             original_sha256=hashlib.sha256(before).hexdigest(), replacement_sha256=hashlib.sha256(after).hexdigest()))
     results = test(output, gcc, MINHOOK)
-    compile_flexible(output, exe, payloads, methods, gcc, MINHOOK, refinement=refinement_runtime, crafting=crafting_runtime)
+    compile_flexible(output, exe, payloads, methods, gcc, MINHOOK, refinement=refinement_runtime, crafting=crafting_runtime, shop_counts=shop_counts)
     shutil.copyfile(SOURCE.parent / '.deps/loader/winmm.dll', output / 'winmm.dll')
     # Match the tested loader configuration, including Windows line endings.
     (output / 'winmm.ini').write_bytes(b'[GlobalSets]\r\nDebugLog=1\r\nLoadExtraPlugins=\r\n[FileLoader]\r\nOverloadFromFolder=\r\n')
@@ -187,6 +193,8 @@ def build(game, output, gcc, experimental_shop=False, experimental_refinement=Fa
         revision = 34
     if experimental_crafting_icons:
         revision = 36
+    if experimental_shop_counts:
+        revision = 37
     manifest = dict(schema=1, revision=revision, experimental_shop=experimental_shop,
                     status='built_not_installed', game_build=support['game_build'],
                     exe_sha256=support['exe_sha256'], master_sha256=support['master_sha256'], pamt_sha256=support['pamt_sha256'],
@@ -234,6 +242,9 @@ def build(game, output, gcc, experimental_shop=False, experimental_refinement=Fa
         manifest.update(experimental_crafting_icons=True, crafting_runtime=crafting_runtime,
                         crafting_nested_layout=True)
         (output / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
+    if experimental_shop_counts:
+        manifest.update(experimental_shop_counts=True, shop_count_runtime=shop_counts)
+        (output / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
     print(f'Built revision {manifest["revision"]}: {len(payloads)} exact-validated payloads; {len(results)} fixture suites passed. {output}')
     return manifest
 
@@ -253,6 +264,7 @@ def main():
     parser.add_argument('--experimental-buy-labels', action='store_true', help='Fix duplicate buy-card emblems and center whole labels; requires --experimental-extraction')
     parser.add_argument('--experimental-extraction-scroll', action='store_true', help='Align Extraction scrollbar to its viewport; requires --experimental-buy-labels')
     parser.add_argument('--experimental-crafting-icons', action='store_true', help='Repair empty Crafting image rectangles through audited native layout helpers')
+    parser.add_argument('--experimental-shop-counts', action='store_true', help='Clear stale requirement line height from reused buy-card stock labels')
     args = parser.parse_args()
     require(args.test_only or args.game is not None, '--game is required unless --test-only is used')
     gcc = shutil.which(args.gcc)
@@ -264,7 +276,7 @@ def main():
     else:
         build(args.game.resolve(), output, gcc, args.experimental_shop, args.experimental_refinement,
               args.experimental_crafting, args.experimental_extraction, args.experimental_buy_labels,
-              args.experimental_extraction_scroll, args.experimental_crafting_icons)
+              args.experimental_extraction_scroll, args.experimental_crafting_icons, args.experimental_shop_counts)
 
 
 if __name__ == '__main__':

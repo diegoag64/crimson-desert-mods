@@ -7,7 +7,7 @@ from .pe import PE
 
 SOURCE = Path(__file__).resolve().parent
 
-def compile_flexible(folder,exe_data,payloads,rvas,gcc,minhook,bad=None,refinement=None,crafting=None):
+def compile_flexible(folder,exe_data,payloads,rvas,gcc,minhook,bad=None,refinement=None,crafting=None,shop_counts=None):
     folder.mkdir(parents=True,exist_ok=True); pe=PE(exe_data)
     header='#define EXPECTED_SHA256 "'+hashlib.sha256(exe_data).hexdigest()+'"\n'
     header+='#define PROBE_LOG L'+json.dumps(str((folder/'runtime.log').resolve()))+'\n'
@@ -31,6 +31,17 @@ def compile_flexible(folder,exe_data,payloads,rvas,gcc,minhook,bad=None,refineme
             header+='static const unsigned char expected_crafting_'+name+'_prefix[] = {'+','.join(map(str,bytes.fromhex(method['prefix'])))+'};\n'
         for name in ('description', 'card', 'list', 'root'):
             header+=f'#define CRAFTING_{name.upper()}_VT {crafting[name+"_vtable"]["rva"]}u\n'
+    if shop_counts:
+        from .shop_counts import audit_runtime
+        if not crafting:
+            raise ValueError('Shop count repair requires the native layout hook')
+        audit_runtime(exe_data, shop_counts)
+        method=shop_counts['remove_property']
+        header+=f'#define SHOP_COUNTS_REMOVE_PROPERTY_RVA {method["rva"]}u\n'
+        header+='static const unsigned char expected_shop_counts_prefix[] = {'+','.join(map(str,bytes.fromhex(method['prefix'])))+'};\n'
+        header+=f'#define SHOP_COUNTS_NEGATIVE_ATOM_RVA {shop_counts["negative_atom_rva"]}u\n'
+        for name in ('description', 'list', 'root'):
+            header+=f'#define SHOP_COUNTS_{name.upper()}_VT {shop_counts[name+"_vtable"]["rva"]}u\n'
     for index,name in enumerate(['expected_prefix','expected_full_prefix','expected_resize_prefix']):
         prefix=exe_data[pe.raw(rvas[index]):pe.raw(rvas[index])+24]
         if bad==index:prefix=bytes(24)
