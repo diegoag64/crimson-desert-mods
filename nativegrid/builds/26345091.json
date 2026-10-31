@@ -379,6 +379,32 @@
         "original_sha256": "a1cd0bee4d0ef29355c8daa0f56bde36f9903fdc0411f5f3b046199195218e28",
         "replacement_sha256": "ed3bba9cb2b98eaf5c75207ca092bf5f19ae19aa375f4c2e9674715471e11918"
       }
+    },
+    "41": {
+      "ui/bin__/mercenarymanagementpanel_game.uibinary": {
+        "original_sha256": "e62d53d70910935811fef85aaa6e6caabaab0ba0c742590f95ae8ca3b472b0c7",
+        "replacement_sha256": "cfd76c063576a0fa446d29a4509b2aae53735863c55d0e9c662c20aa0cd4d8f0"
+      },
+      "ui/xml/gamemain/play/mercenarymanagementpanel.html": {
+        "original_sha256": "dfb030489b8d3d55f5ce45d5096015362b77dea7981dd00f12c6dbcace0b7906",
+        "replacement_sha256": "6dca800a0848a96c9749583f75c06dfd4e4c9ded6ab47bc250b2d65816c27d3d"
+      },
+      "ui/xml/gamemain/play/mercenarymanagementpanel.css": {
+        "original_sha256": "7a7a0fe90c98f95f76df30d84610369e87da31fb96127238d6ebe573cc793b31",
+        "replacement_sha256": "69f58fc1c5aa80fe2b92a78820d872e7d16df03787c8e53b1e785648941ebe70"
+      },
+      "ui/bin__/pet_component_game.uibinary": {
+        "original_sha256": "677c17fcb57eeaceef63b2618c2e1b331dec59db0f0d77b211c2d73656247e22",
+        "replacement_sha256": "85cd5351ecebe278595c997c3c6493a487907fd3b1c85062d967d130a92bdc70"
+      },
+      "ui/xml/gamemain/template/pet.thtml": {
+        "original_sha256": "6caecb264c1918fca93a16a2b3746b81207591c2ea0c3a723cf0a79ae861e1a4",
+        "replacement_sha256": "9c0df86f9a5ef6ad04dfb1c5cccf001f4a9b7ef56382e94ca67b59efe53a8bb9"
+      },
+      "ui/xml/gamemain/template/pet.css": {
+        "original_sha256": "a1cd0bee4d0ef29355c8daa0f56bde36f9903fdc0411f5f3b046199195218e28",
+        "replacement_sha256": "ed3bba9cb2b98eaf5c75207ca092bf5f19ae19aa375f4c2e9674715471e11918"
+      }
     }
   }
 }

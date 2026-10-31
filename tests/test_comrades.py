@@ -4,7 +4,7 @@ import struct
 import unittest
 
 from nativegrid.comrades import (COMRADES_PATHS, UNUSED_SELECTORS, list_attributes, transform,
-                                OLD_ROOT, CARD_ROOT, CONTAINERS, PREVIOUS_COMPONENT, CARD_COMPONENT)
+                                OLD_ROOT, CARD_ROOT, CONTAINERS, PREVIOUS_COMPONENT, CARD_COMPONENT, CardReader)
 from nativegrid.inventory import sized
 from nativegrid.shop import compact_css
 
@@ -59,28 +59,62 @@ class ComradesChecks(unittest.TestCase):
             with self.assertRaises(ValueError):
                 transform(COMRADES_PATHS[2], invalid)
 
-    def test_scoped_component_classes_keep_ids_bindings_and_fixed_length(self):
+    @staticmethod
+    def card_fixture(marker=False):
+        # Child records: class vector, child vector, attributes, then ID/script.
+        # Component footers have a separate layout. No game asset bytes are used.
+        def node(ident, children=(), classes=(), script='', attrs=()):
+            return (b'\x01' + struct.pack('<I', len(classes)) + b''.join(map(sized, classes)) +
+                    (b'\x01' + struct.pack('<I', len(children)) + b''.join(children) if children else b'\x00') +
+                    (b'\x01' + struct.pack('<I', len(attrs)) + b''.join(sized(k) + sized(v) for k, v in attrs) if attrs else b'\x00') +
+                    bytes(5) + sized(ident) + bytes(12) + sized(script) + bytes(4) + bytes([1, 0, 6]))
         def footer(name, classes=()):
             return (sized(name) + struct.pack('<I', len(classes)) + b''.join(map(sized, classes)) +
                     sized('NativeStatus') + b'\x00' + struct.pack('<I', 1) +
-                    sized('selector-mercenary-item-name') + sized('#MercenaryItemName'))
-        lead = b'untouched-earlier-components' + footer(PREVIOUS_COMPONENT)
-        children = b''.join(footer(key) for key in CONTAINERS)
-        before = lead + children + footer(CARD_COMPONENT, [OLD_ROOT, 'inherit-pickable']) + b'untouched-horses'
+                    sized('selector-name') + sized('#Name'))
+        leaf = node('Name', classes=['font', '!cpp-none'], script='NativeShow', attrs=[('selector-show', '#Name')])
+        roots = [node(key, children=[leaf], classes=['ng'] if marker else []) for key in CONTAINERS]
+        return (b'untouched-earlier-components' + footer(PREVIOUS_COMPONENT) +
+                struct.pack('<I', 2) + b''.join(roots) + bytes(4) +
+                footer(CARD_COMPONENT, [CARD_ROOT if marker else OLD_ROOT, 'inherit-pickable']) + b'untouched-horses')
+
+    def test_scoped_component_classes_keep_ids_bindings_and_fixed_length(self):
+        before = self.card_fixture()
         after = transform(COMRADES_PATHS[3], before)
-        restored = after.replace(sized(CARD_ROOT), sized(OLD_ROOT))
-        for key in CONTAINERS:
-            restored = restored.replace(sized(key) + struct.pack('<I', 1) + sized('ng'),
-                                        sized(key) + struct.pack('<I', 0))
-        self.assertEqual(restored, before)
+        self.assertEqual(after, self.card_fixture(marker=True))
         self.assertEqual(len(after), len(before))
-        self.assertTrue(after.startswith(lead))
-        self.assertTrue(after.endswith(b'untouched-horses'))
-        for invalid in (before + before, before.replace(sized(OLD_ROOT), sized('other')),
-                        before.replace(sized(CONTAINERS[0]) + struct.pack('<I', 0),
-                                       sized(CONTAINERS[0]) + struct.pack('<I', 1) + sized('unexpected'))):
+        reader = CardReader(after)
+        tree = reader.parse()
+        self.assertEqual([n['id'] for n in tree], list(CONTAINERS))
+        for parent in tree:
+            self.assertEqual(parent['classes'], ['ng'])
+            self.assertEqual(parent['children'][0]['script'], 'NativeShow')
+            self.assertEqual(parent['children'][0]['attributes'], [('selector-show', '#Name')])
+            self.assertEqual(parent['children'][0]['classes'], ['font', '!cpp-none'])
+        for invalid in (before + before, before.replace(sized(OLD_ROOT), sized('other')), self.card_fixture(marker=True)):
             with self.assertRaises(ValueError):
                 transform(COMRADES_PATHS[3], invalid)
+
+    def test_rejects_revision40_class_records_after_ids(self):
+        before = self.card_fixture()
+        failed = before.replace(sized(OLD_ROOT), sized(CARD_ROOT))
+        for target in CONTAINERS:
+            failed = failed.replace(sized(target) + bytes(4), sized(target) + struct.pack('<I', 1) + sized('ng'))
+        self.assertEqual(len(failed), len(before))
+        with self.assertRaises(ValueError):
+            CardReader(failed).parse()
+
+    def test_reader_rejects_truncated_or_unknown_element_records(self):
+        before = self.card_fixture()
+        reader = CardReader(before)
+        tree = reader.parse()
+        first = reader.nodes[0][0]
+        for bad in (before[:first] + struct.pack('<I', 1000) + before[first + 4:],
+                    before.replace(bytes([1, 0, 6]), bytes([7, 0, 6]), 1),
+                    before.replace(sized('NativeShow'), struct.pack('<I', 5000) + b'NativeShow', 1),
+                    before.replace(sized(CONTAINERS[1]), sized('different-id'))):
+            with self.assertRaises(ValueError):
+                transform(COMRADES_PATHS[3], bad)
 
     def test_source_changes_only_management_card_and_preserves_native_selectors(self):
         lead = b'<component name="Horse"><div id="MercenaryItemNameWrap"></div></component>'

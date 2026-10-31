@@ -122,7 +122,7 @@ Revision 38 adds an explicit zero translation for normal stock labels. The two-c
 
 ## Build the Manage Comrades portrait grid
 
-On build `26345091`, append `--experimental-comrades` to the revision 38 command and choose a new output directory, such as `build/comrades-40-isolated-styles`. The option now builds revision 40 and requires `--experimental-shop-counts` to preserve the user-confirmed shop correction. Omitting it retains revision 38.
+On build `26345091`, append `--experimental-comrades` to the revision 38 command and choose a new output directory, such as `build/comrades-41-validated-tree`. The option now builds revision 41 and requires `--experimental-shop-counts` to preserve the user-confirmed shop correction. Omitting it retains revision 38.
 
 Revision 39 adds three exact-sized replacements: `mercenarymanagementpanel_game.uibinary`, `mercenarymanagementpanel.html`, and `mercenarymanagementpanel.css`. The compatibility record pins each original and replacement hash under `comrades_revisions.39`. The compiled transform changes only the management list's column and row bytes. The source transform supplies the same dimensions on `MercenaryList`. Ship-station and crew-selection list attributes remain unchanged.
 
@@ -135,7 +135,7 @@ The package passes ten native suites, 55 Python checks, and the installer fixtur
 
 ### Revision 40: isolate management card styles
 
-Revision 39 failed live because shared selector definitions replaced its card width, name wrapper, and occupation visibility rules. The current `--experimental-comrades` option builds revision 40. See [the selector diagnosis](grid-layout-troubleshooting.md#duplicate-selectors-can-discard-the-entire-custom-rule) for the evidence and scope.
+Revision 39 failed live because shared selector definitions replaced its card width, name wrapper, and occupation visibility rules. Revision 40 is retained as a failed startup experiment; the current option builds revision 41. See [the selector diagnosis](grid-layout-troubleshooting.md#duplicate-selectors-can-discard-the-entire-custom-rule) for the evidence and scope.
 
 Build into a new directory such as `build/comrades-40-isolated-styles`. The package pins six comrades assets under `comrades_revisions.40`, including the shared Pet source, compiled component, and stylesheet. All replacements retain their original byte length. Only the management card receives the two extra container classes; other components and all original shared CSS rules are preserved. Native bindings and runtime method pins remain unchanged.
 
@@ -149,3 +149,14 @@ Do not install revision 40. The user reported a startup loading stall after its 
 Inspection found that `card_binary` inserted class records after ordinary element IDs, using the component-footer format for child elements. Existing child classes precede those IDs. The round-trip fixture used the same incorrect format, so its passing result did not validate the game's parser. A replacement implementation needs independent format validation before another build is installed.
 
 After the user exited and requested rollback, revision 38 was restored from `build/shop-38-count-translation`. Package, game fingerprints, installed files, and the exact ASI SHA-256 (`7315a9cf1675efc4e3c2aed61d7d3817a8a3016cb57520ecfa9b638b6ff71246`) pass verification. The transaction preserved revision 40 under `build/rollback/rollback-f5d2594457d0403db2b06359263bfc5f`. Preserve its package and startup log. The comrades grid is unresolved; revision 38 restores the original comrades list and the previously confirmed shop/Crafting changes.
+
+
+### Revision 41: validate child records before inserting classes
+
+Use the same experimental flags with a new output directory, `build/comrades-41-validated-tree`. The builder selects `comrades_revisions.41`. Only the compiled Pet component differs from revision 40; its five other comrades payloads and all 24 working revision 38 payloads remain identical.
+
+`CardReader` decodes the management card before editing it. It bounds counts, lengths, recursion, flags, element kinds, and the exact component boundary. The transform inserts the two `ng` class records at decoded class-vector positions. It then parses the result and compares every node's ID, script, attributes, references, element kind, child order, and classes against the original tree with those two additions. Other components and the total buffer length must remain unchanged.
+
+The original decoder output was checked against an independently captured working UI tree: all 37 element IDs, static classes, and child orders match. The failed revision 40 binary is rejected by the reader. Regression tests reproduce that malformed insertion and reject it even though its length is correct. These checks validate the audited structure; they do not run the game's deserializer or renderer.
+
+Ten native suites, 61 Python tests, installer fixtures, and real-package verification against installed revision 38 pass. Revision 41 is prepared but not installed or live-verified. Preserve revision 38 for rollback. Do not reuse the failed revision 40 component or its earlier fixture as evidence of valid serialization.

@@ -10,7 +10,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\NativeGrid.ps1 -Acti
 
 Verification checks the package hashes, supported game pins, and existing owned files. It writes nothing to the game. Conflicting files stop the operation.
 
-Revision 15 through 40 shop packages also require the pinned English localization index, `0020/0.pamt`. This is a read-only compatibility check. Installation still changes only the three files listed below. Revisions 15 and 17 failed live loading tests. Revisions 16 and 18 through 23 loaded and displayed icons-only requirements, but spacing remained unresolved. Revision 24 uses a direct container selector after live inspection proved that revision 23's descendant selector could not match. The user confirmed revision 24's spacing fix in the live shop. Preserve `build/shop-24-live-container-translation` as the working shop checkpoint. Preserve revision 23 and its installation rollback journal, and retain revision 16 as an earlier checkpoint.
+Revision 15 through 41 shop packages also require the pinned English localization index, `0020/0.pamt`. This is a read-only compatibility check. Installation still changes only the three files listed below. Revisions 15 and 17 failed live loading tests. Revisions 16 and 18 through 23 loaded and displayed icons-only requirements, but spacing remained unresolved. Revision 24 uses a direct container selector after live inspection proved that revision 23's descendant selector could not match. The user confirmed revision 24's spacing fix in the live shop. Preserve `build/shop-24-live-container-translation` as the working shop checkpoint. Preserve revision 23 and its installation rollback journal, and retain revision 16 as an earlier checkpoint.
 
 ## Install a package
 
@@ -117,3 +117,10 @@ Do not install revision 40. The user reported a startup loading stall after its 
 Inspection found that `card_binary` inserted class records after ordinary element IDs, using the component-footer format for child elements. Existing child classes precede those IDs. The round-trip fixture used the same incorrect format, so its passing result did not validate the game's parser. A replacement implementation needs independent format validation before another build is installed.
 
 After the user exited and requested rollback, revision 38 was restored from `build/shop-38-count-translation`. Package, game fingerprints, installed files, and the exact ASI SHA-256 (`7315a9cf1675efc4e3c2aed61d7d3817a8a3016cb57520ecfa9b638b6ff71246`) pass verification. The transaction preserved revision 40 under `build/rollback/rollback-f5d2594457d0403db2b06359263bfc5f`. Preserve its package and startup log. The comrades grid is unresolved; revision 38 restores the original comrades list and the previously confirmed shop/Crafting changes.
+
+
+## Install the structurally checked comrades grid
+
+Revision 41 is prepared in `build/comrades-41-validated-tree`. The current installed package is working revision 38. After the user authorizes installation and exits, use revision 41 as `-Package` and `build/shop-38-count-translation` as `-PreviousPackage`. Keep DMM unmounted and preserve the transaction journal. Do not install revision 40.
+
+After the user's next launch, check successful startup and replacement of all six comrades assets. In Manage Comrades, inspect the card classes and bounds described above, including the first visible row and final partial row. Keep fixture results separate from this live evidence. Do not control the mouse or change comrade assignments without authorization.

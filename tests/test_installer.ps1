@@ -461,3 +461,25 @@ $candidate.crafting_nested_layout = $false
 Assert-Throws { Invoke-WrapperVerify } 'revision 40 retains initial Crafting icons fix'
 $candidate.crafting_nested_layout = $true
 Invoke-WrapperVerify
+
+# Revision 41 rejects the malformed revision 40 component even at equal length.
+$candidate.revision = 41
+Assert-Throws { Invoke-WrapperVerify } 'revision 41 rejects failed revision 40 binary'
+$petPath = 'ui/bin__/pet_component_game.uibinary'
+$petPayload = @($candidate.payloads | Where-Object path -CEQ $petPath)[0]
+$petPayload.replacement_sha256 = $updated.comrades_revisions.'41'.$petPath.replacement_sha256
+Invoke-WrapperVerify
+Write-Output 'PASS: revision 41 accepts structurally validated management component'
+$petPayload.original_sha256 = 'wrong'
+Assert-Throws { Invoke-WrapperVerify } 'revision 41 rejects changed original component'
+$petPayload.original_sha256 = $updated.comrades_revisions.'41'.$petPath.original_sha256
+$petPayload.replacement_size++
+Assert-Throws { Invoke-WrapperVerify } 'revision 41 requires exact component length'
+$petPayload.replacement_size--
+$candidate.comrades_rows = 4
+Assert-Throws { Invoke-WrapperVerify } 'revision 41 requires compact grid dimensions'
+$candidate.comrades_rows = 3
+$candidate.shop_count_translation_reset = $false
+Assert-Throws { Invoke-WrapperVerify } 'revision 41 retains the working shop reset'
+$candidate.shop_count_translation_reset = $true
+Invoke-WrapperVerify

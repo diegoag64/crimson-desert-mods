@@ -443,3 +443,16 @@ The source and compiled mutations are bounded to `MercenaryManagementListItem`. 
 For future layout changes, inspect the actual matched rule definitions after the dynamic cards exist. Do not infer successful application from replacement logs or a selector's presence in the source. Give document overrides distinct compound selectors, including wrappers that originally have only an ID. Check their shared fallback behavior and preserve native bindings. The regression fixture loads conflicting shared selector definitions after the custom stylesheet; the new compound rules survive that order.
 
 Revision 40 passes ten native suites, 59 Python tests, installer fixtures, and verification against the installed revision 39 package. All 24 working revision 38 payload records are unchanged. These checks establish delivery, isolation, and the identified selector correction. The new card rendering and scrolling still require a live check after installation.
+
+
+### A reversible binary edit can still encode an invalid element
+
+Revision 40 failed startup. Its class insertion treated ordinary child elements like component footers. A component footer places its class vector after its name; a child element places classes before its child records and ID. Revision 40 inserted a class record into fields after the child ID. Equal total size, an exact inverse transform, and a fixture using the same mistaken layout all passed while encoding an invalid record.
+
+Revision 41 reads the full management-card subtree before choosing insertion points. For this audited component, each child record contains optional class, child, and attribute vectors; reserved fields; its ID; three reference strings; script; and a checked kind/trailer. Unknown counts, flags, kinds, string lengths, reserved fields, excessive depth, and a mismatched footer boundary stop the build. The two target containers must be unique and have an existing empty class vector.
+
+Both empty vectors receive `ng` at their decoded positions before their children. The shorter root class still balances the twelve added bytes, so no following component moves. A second parse compares the entire semantic tree with the original, permitting only the two class additions. The original reader output matches all 37 elements in the working live capture, including static classes and child order. A separate development decoder also accepts the corrected record and rejects the failed revision 40 record.
+
+The tests now include the actual failure pattern: insert records after IDs while keeping the same overall length. That mutation must fail structural validation. Minimal synthetic fixtures are source examples, not proof of the engine's parser; the independent live hierarchy check supplies the additional evidence. Retain the local captured trees and failed payload for future audits, but never publish extracted game data.
+
+Revision 41 retains revision 40's intended styles, with five columns, centered faces and names, hidden assignment text, and preserved native selection controls. Its ten native suites, 61 Python tests, and installer checks pass. Startup and the new visible layout are still pending a live test. Revision 38 remains the installed, user-confirmed rollback checkpoint.

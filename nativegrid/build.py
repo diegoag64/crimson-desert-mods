@@ -50,7 +50,7 @@ def build(game, output, gcc, experimental_shop=False, experimental_refinement=Fa
     support = matches[0]
     require(not experimental_comrades or experimental_shop_counts,
             'Comrades grid must preserve revision 38: add --experimental-shop-counts')
-    comrades_pins = support.get('comrades_revisions', {}).get('40', {}) if experimental_comrades else {}
+    comrades_pins = support.get('comrades_revisions', {}).get('41', {}) if experimental_comrades else {}
     if experimental_comrades:
         from .comrades import COMRADES_PATHS, transform as comrades_transform
         require(set(comrades_pins) == set(COMRADES_PATHS), 'No audited comrades assets for this game build')
@@ -212,7 +212,7 @@ def build(game, output, gcc, experimental_shop=False, experimental_refinement=Fa
     if experimental_shop_counts:
         revision = 38
     if experimental_comrades:
-        revision = 40
+        revision = 41
     manifest = dict(schema=1, revision=revision, experimental_shop=experimental_shop,
                     status='built_not_installed', game_build=support['game_build'],
                     exe_sha256=support['exe_sha256'], master_sha256=support['master_sha256'], pamt_sha256=support['pamt_sha256'],
