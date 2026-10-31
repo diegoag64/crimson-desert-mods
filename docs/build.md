@@ -140,3 +140,12 @@ Revision 39 failed live because shared selector definitions replaced its card wi
 Build into a new directory such as `build/comrades-40-isolated-styles`. The package pins six comrades assets under `comrades_revisions.40`, including the shared Pet source, compiled component, and stylesheet. All replacements retain their original byte length. Only the management card receives the two extra container classes; other components and all original shared CSS rules are preserved. Native bindings and runtime method pins remain unchanged.
 
 Ten native suites, 59 Python tests, and installer fixtures pass. All 24 revision 38 payloads remain identical. The package is prepared but not installed or live-verified. Retain revision 39 for exact installation rollback and revision 38 as the user-confirmed checkpoint.
+
+
+### Revision 40 failed startup; revision 38 restored
+
+Do not install revision 40. The user reported a startup loading stall after its installation. The runtime log reaches replacement of `pet_component_game.uibinary`; the following localization replacement is its last recorded entry. This ordering alone does not identify a blocked thread.
+
+Inspection found that `card_binary` inserted class records after ordinary element IDs, using the component-footer format for child elements. Existing child classes precede those IDs. The round-trip fixture used the same incorrect format, so its passing result did not validate the game's parser. A replacement implementation needs independent format validation before another build is installed.
+
+After the user exited and requested rollback, revision 38 was restored from `build/shop-38-count-translation`. Package, game fingerprints, installed files, and the exact ASI SHA-256 (`7315a9cf1675efc4e3c2aed61d7d3817a8a3016cb57520ecfa9b638b6ff71246`) pass verification. The transaction preserved revision 40 under `build/rollback/rollback-f5d2594457d0403db2b06359263bfc5f`. Preserve its package and startup log. The comrades grid is unresolved; revision 38 restores the original comrades list and the previously confirmed shop/Crafting changes.

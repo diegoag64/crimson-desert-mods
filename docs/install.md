@@ -108,3 +108,12 @@ Revision 39 is installed with matching package hashes. Its installation preserve
 Revision 40 is prepared in `build/comrades-40-isolated-styles`. After the user authorizes installation and exits, use it as `-Package` and `build/comrades-39-portrait-grid` as `-PreviousPackage`. Keep DMM unmounted. Preserve both packages, the new transaction journal, and the working revision 38 checkpoint.
 
 After launch, inspect replacement messages for all six comrades resources, including `pet_component_game.uibinary`, `pet.thtml`, and `pet.css`. Inspect the live card root for `ng-comrade-tile` and the two container classes for `ng`. Confirm 124-by-108-pixel card bounds, five visible columns, centered portraits and names, and hidden occupation text. Check selection and the last partial row without dispatching, dismissing, or changing equipment. Follow the user's input-control restriction; do not take over the mouse.
+
+
+### Revision 40 failed startup; revision 38 restored
+
+Do not install revision 40. The user reported a startup loading stall after its installation. The runtime log reaches replacement of `pet_component_game.uibinary`; the following localization replacement is its last recorded entry. This ordering alone does not identify a blocked thread.
+
+Inspection found that `card_binary` inserted class records after ordinary element IDs, using the component-footer format for child elements. Existing child classes precede those IDs. The round-trip fixture used the same incorrect format, so its passing result did not validate the game's parser. A replacement implementation needs independent format validation before another build is installed.
+
+After the user exited and requested rollback, revision 38 was restored from `build/shop-38-count-translation`. Package, game fingerprints, installed files, and the exact ASI SHA-256 (`7315a9cf1675efc4e3c2aed61d7d3817a8a3016cb57520ecfa9b638b6ff71246`) pass verification. The transaction preserved revision 40 under `build/rollback/rollback-f5d2594457d0403db2b06359263bfc5f`. Preserve its package and startup log. The comrades grid is unresolved; revision 38 restores the original comrades list and the previously confirmed shop/Crafting changes.
