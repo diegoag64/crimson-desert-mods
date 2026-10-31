@@ -45,6 +45,15 @@ static void refinement_report_hide(void) {
 #define REFINEMENT_REPORT_HIDE refinement_report_hide
 #include "native_grid_refinement.h"
 #endif
+#ifdef CRAFTING_LAYOUT_RVA
+static LONG crafting_repairs;
+static void crafting_report_repair(void) {
+    if (InterlockedIncrement(&crafting_repairs)<=8)
+        write_log("CRAFTING: repaired empty recipe background with native layout helpers.\r\n");
+}
+#define CRAFTING_REPORT_REPAIR crafting_report_repair
+#include "native_grid_crafting.h"
+#endif
 #include "native_grid_flexible_resolver.h"
 
 static int handle_path(uintptr_t handle,char path[512]) {
@@ -194,6 +203,19 @@ __declspec(dllexport) void InitializeASI(void) {
     refinement_sort_classes=(SortClassesFn)(image_base+REFINEMENT_SORT_CLASSES_RVA);
     refinement_hidden_atom=(const uint32_t *)(image_base+REFINEMENT_HIDDEN_ATOM_RVA);
 #endif
+#ifdef CRAFTING_LAYOUT_RVA
+    void *crafting_layout=(void *)(image_base+CRAFTING_LAYOUT_RVA);
+    if (!read_memory((uintptr_t)crafting_layout,prefix,sizeof(prefix)) ||
+        memcmp(prefix,expected_crafting_layout_prefix,sizeof(prefix)) ||
+        !read_memory(image_base+CRAFTING_BACKGROUND_SIZE_RVA,prefix,sizeof(prefix)) ||
+        memcmp(prefix,expected_crafting_background_size_prefix,sizeof(prefix)) ||
+        !read_memory(image_base+CRAFTING_BACKGROUND_POSITION_RVA,prefix,sizeof(prefix)) ||
+        memcmp(prefix,expected_crafting_background_position_prefix,sizeof(prefix))) {
+        write_log("DISABLED: crafting layout/helper fingerprint mismatch.\r\n"); return;
+    }
+    crafting_background_size=(CraftingBackgroundFn)(image_base+CRAFTING_BACKGROUND_SIZE_RVA);
+    crafting_background_position=(CraftingBackgroundFn)(image_base+CRAFTING_BACKGROUND_POSITION_RVA);
+#endif
     MH_STATUS status=MH_Initialize();
     if (status!=MH_OK && status!=MH_ERROR_ALREADY_INITIALIZED) return;
     status=MH_CreateHook(target,hooked_read,(void **)&original_read);
@@ -204,11 +226,24 @@ __declspec(dllexport) void InitializeASI(void) {
     status=MH_CreateHook(style_refresh,hooked_style_refresh,(void **)&original_style_refresh);
     if (status!=MH_OK) {MH_RemoveHook(full);MH_RemoveHook(target);write_log("DISABLED: refinement hook creation failed.\r\n");return;}
 #endif
+#ifdef CRAFTING_LAYOUT_RVA
+    status=MH_CreateHook(crafting_layout,hooked_crafting_layout,(void **)&original_crafting_layout);
+    if (status!=MH_OK) {
+#ifdef REFINEMENT_REFRESH_RVA
+        MH_RemoveHook(style_refresh);
+#endif
+        MH_RemoveHook(full);MH_RemoveHook(target);
+        write_log("DISABLED: crafting hook creation failed.\r\n");return;
+    }
+#endif
     HMODULE pinned=NULL;
     if (!GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS|GET_MODULE_HANDLE_EX_FLAG_PIN,(LPCWSTR)&InitializeASI,&pinned)) goto activation_failed;
     if (MH_QueueEnableHook(target)!=MH_OK || MH_QueueEnableHook(full)!=MH_OK) goto activation_failed;
 #ifdef REFINEMENT_REFRESH_RVA
     if (MH_QueueEnableHook(style_refresh)!=MH_OK) goto activation_failed;
+#endif
+#ifdef CRAFTING_LAYOUT_RVA
+    if (MH_QueueEnableHook(crafting_layout)!=MH_OK) goto activation_failed;
 #endif
     if (MH_ApplyQueued()!=MH_OK) goto activation_failed;
     InterlockedExchange(&active,1);
@@ -216,8 +251,14 @@ __declspec(dllexport) void InitializeASI(void) {
 #ifdef REFINEMENT_REFRESH_RVA
     write_log("ACTIVE: refinement Equipped Gear badge filter; native class refresh, bounded owner checks.\r\n");
 #endif
+#ifdef CRAFTING_LAYOUT_RVA
+    write_log("ACTIVE: crafting empty-background repair during native layout.\r\n");
+#endif
     return;
 activation_failed:
+#ifdef CRAFTING_LAYOUT_RVA
+    MH_DisableHook(crafting_layout);MH_RemoveHook(crafting_layout);
+#endif
 #ifdef REFINEMENT_REFRESH_RVA
     MH_DisableHook(style_refresh);MH_RemoveHook(style_refresh);
 #endif

@@ -333,3 +333,27 @@ The live revision 33 viewport measured 520 screen pixels wide at a 4/3 UI scale.
 Revision 34 appends `.enchant-item-list-scroll.builtin-vscroll-track { right: 0px; }` to the Extraction document stylesheet. The two-class selector overrides the imported one-class rule. Keep this rule local to Extraction; its level and result tracks use different classes. The final stylesheet remains 10,804 bytes, with six padding bytes. The other 23 payloads remain identical to revision 33.
 
 Offline checks establish selector scope, fixed asset size, preserved prior rules, and exact payload hashes. A live check must still confirm the scrollbar placement and scrolling behavior. Crafting's intermittent missing images are a separate unresolved issue: the captured blank weapon cards had valid names for existing DDS icon files and 124-by-76-pixel image containers. A blank screenshot alone does not establish whether a thumbnail is unavailable or its render binding is stale.
+
+## Crafting icons appear only after category changes
+
+Revision 33's first Crafting category could contain nine blank weapon cards. Switching categories restored the images. A category with twelve cards also showed nine working images and three blank images in newly revealed pool slots.
+
+The controlled comparison on build `26329202` captured the same nine image elements before any category change and after the user restored their icons. All nine retained their texture resource objects, image names, resolved image sizes, element bounds, and native item-control bytes. Each texture referred to an existing `ui/texture/icon/itemicon_prefab_*.dds` asset. The file-name prefix does not mean the game generates these thumbnails at runtime.
+
+The material difference was the cached background rectangle at image style offsets `0x3c` through `0x48`. Every blank card held `(0, 0, 0, 0)`. Every restored card held `(48, 26.6667, 69.3333, 69.3333)` screen pixels. At the captured 4/3 UI scale, that is the stylesheet's position `(36, 20)` and size `(52, 52)`. The image container remained 124 by 76 CSS pixels in both states. Comparing only CSS properties misses this failure.
+
+The native code independently identifies these fields. Layout RVA `0x38651b0` conditionally calls background-size RVA `0x387b0c0` and background-position RVA `0x387b1e0`. Those helpers resolve the native property values, texture, and UI scale, then write the rectangle and request redraw. Native element reset RVA `0x41d92d0` clears the rectangle. The captures establish an empty cache with no pending background-size or background-position bits. They do not establish the complete earlier sequence that left it empty.
+
+Revision 35 repairs that observed state at the end of the native layout pass. The repair requires a positive, bounded image-container size and an exactly empty four-float rectangle. It verifies the layout and style back pointers, the `InfoDescription` owner and image-vector membership, the direct `RootCraftListItem` parent, a grid-list ancestor, and the `RootCooking2` ancestor. Parent traversal and vector reads are bounded. Refinement, Extraction, inventory, material cards, and valid image rectangles fail these checks and pass through unchanged.
+
+The hook calls the original layout function first and forwards its five arguments and return value. It passes the original layout context to the two audited helpers, with property IDs 38/40 and 38/39. Position is recalculated only after the size helper produces positive dimensions. Missing resources remain with the native loader and can be retried on a later layout pass. A thread-local guard prevents recursive repair, and the hook restores the original function's `LastError`. It does not manufacture image pointers, write rectangle fields directly, or run a polling thread.
+
+When diagnosing a recurrence:
+
+1. Capture the initial blank state before changing categories. Record the process ID and obtain fresh addresses after every launch.
+2. Capture the native image properties, their pointed-to values, the cached rectangle, and the texture resource object while those allocations are still live.
+3. Return to the same category after the images appear, and capture the same fields again. Compare semantic values and resource identity, not only allocation addresses.
+4. Check for a zero rectangle despite a valid texture and positive container dimensions. Distinguish this case from a missing asset, zero-size container, or hidden item.
+5. Check the active package hash, hook activation, and repair messages. Confirm the visible first-open and newly revealed-card behavior before marking the revision verified.
+
+The 30-case native fixture reproduces empty and recycled caches, deferred resource availability, existing valid geometry, native failure, recursion, owner mismatches, invalid memory, and ABI forwarding. Python checks reject modified method bodies and owner types. Installer fixtures reject mismatched metadata and preserve rollback compatibility. These checks validate the repair logic and guards; revision 35 still needs a live first-open test. All 24 revision 34 payload hashes remain unchanged.

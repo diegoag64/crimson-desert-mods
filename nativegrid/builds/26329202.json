@@ -307,5 +307,45 @@
         "replacement_sha256": "f360f82aa7b6f338f920ad152651f4fa4618b3830a17697f00638cc6e0ff21e0"
       }
     }
+  },
+  "crafting_runtime_revisions": {
+    "35": {
+      "methods": {
+        "layout": {
+          "rva": 59134384,
+          "size": 14534,
+          "prefix": "488bc44c8948204c89401848895010488948085553565741",
+          "sha256": "260326c7877480c82d3e2302b8ee08227b6771e7c7a5f672e3236896eb598343"
+        },
+        "background_size": {
+          "rva": 59224256,
+          "size": 287,
+          "prefix": "48895c2410574883ec50488b01410fb6f8c5f857c0c5fa11",
+          "sha256": "d400f62a996c2a00a68d3f7a833ed5ab1c5d2b6c5e1d13da2805a62576bf8c46"
+        },
+        "background_position": {
+          "rva": 59224544,
+          "size": 382,
+          "prefix": "48895c241048896c2418565741564883ec40488b014c8d35",
+          "sha256": "953875d0e130357e0059e4ea2bd4f84b22fb3cf732bf7a98f657c95544c273b0"
+        }
+      },
+      "description_vtable": {
+        "rva": 94172568,
+        "type": ".?AVUIGamePlayControlCommonInfoDescription@pa@@"
+      },
+      "card_vtable": {
+        "rva": 94834920,
+        "type": ".?AVUIGamePlayControlRootCraftListItem@uiCommonScript@pa@@"
+      },
+      "list_vtable": {
+        "rva": 94168168,
+        "type": ".?AVUIGamePlayControlCommonGridList@pa@@"
+      },
+      "root_vtable": {
+        "rva": 94836264,
+        "type": ".?AVUIGamePlayControlRootCooking2@uiCommonScript@pa@@"
+      }
+    }
   }
 }

@@ -84,3 +84,6 @@
 !/nativegrid/shop_labels.py
 !/nativegrid/shop_labels.css
 !/tests/test_shop_labels.py
+!/nativegrid/runtime/native_grid_crafting.h
+!/nativegrid/fixtures/crafting_fixture.c
+!/tests/test_crafting_runtime.py

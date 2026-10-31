@@ -44,5 +44,13 @@ def test(output, gcc, minhook):
     assert refinement_result.returncode==0, (refinement_result.stdout,refinement_result.stderr)
     results.append(dict(case='refinement conditional badge detour',passed=True,output=refinement_result.stdout))
     print('PASS: refinement conditional badge detour',flush=True)
+    crafting_exe=folder/'crafting-fixture.exe'
+    sources=[SOURCE/'fixtures/crafting_fixture.c']+[minhook/'src'/s for s in ['buffer.c','hook.c','trampoline.c','hde/hde64.c']]
+    subprocess.run([str(gcc),'-O2','-Wall','-Wextra','-Werror','-static','-I',str(minhook/'include'),
+                    '-o',str(crafting_exe)]+list(map(str,sources)),check=True,timeout=60)
+    crafting_result=subprocess.run([str(crafting_exe)],capture_output=True,text=True,timeout=25)
+    assert crafting_result.returncode==0, (crafting_result.stdout,crafting_result.stderr)
+    results.append(dict(case='crafting empty background detour',passed=True,output=crafting_result.stdout))
+    print('PASS: crafting empty background detour',flush=True)
     (output/'fixture-results.json').write_text(json.dumps(results,indent=2)+'\n')
     return results

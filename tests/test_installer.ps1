@@ -236,6 +236,42 @@ $extractPayload.replacement_size--
 $candidate.experimental_buy_labels = $false
 Assert-Throws { Invoke-WrapperVerify } 'revision 34 preserves buy-label guards'
 $candidate.experimental_buy_labels = $true
+$candidate.revision = 35
+$candidate.fixture_tests_passed = 9
+$candidate | Add-Member -NotePropertyName experimental_crafting_icons -NotePropertyValue $true
+$candidate | Add-Member -NotePropertyName crafting_runtime -NotePropertyValue ($support.crafting_runtime_revisions.'35' | ConvertTo-Json -Depth 20 | ConvertFrom-Json)
+Invoke-WrapperVerify
+Write-Output 'PASS: revision 35 accepts guarded Crafting repair and all revision 34 payloads'
+$candidate.experimental_crafting_icons = $false
+Assert-Throws { Invoke-WrapperVerify } 'revision 35 requires icon repair flag'
+$candidate.experimental_crafting_icons = $true
+$candidate.fixture_tests_passed = 8
+Assert-Throws { Invoke-WrapperVerify } 'revision 35 requires native cache fixture'
+$candidate.fixture_tests_passed = 9
+foreach ($method in @('layout','background_size','background_position')) {
+    $candidate.crafting_runtime.methods.$method.rva++
+    Assert-Throws { Invoke-WrapperVerify } "revision 35 rejects changed $method RVA"
+    $candidate.crafting_runtime.methods.$method.rva--
+    $prefix = $candidate.crafting_runtime.methods.$method.prefix
+    $candidate.crafting_runtime.methods.$method.prefix = '00' * 24
+    Assert-Throws { Invoke-WrapperVerify } "revision 35 rejects changed $method prefix"
+    $candidate.crafting_runtime.methods.$method.prefix = $prefix
+    $hash = $candidate.crafting_runtime.methods.$method.sha256
+    $candidate.crafting_runtime.methods.$method.sha256 = '0' * 64
+    Assert-Throws { Invoke-WrapperVerify } "revision 35 rejects changed $method body hash"
+    $candidate.crafting_runtime.methods.$method.sha256 = $hash
+}
+foreach ($owner in @('description_vtable','card_vtable','list_vtable','root_vtable')) {
+    $candidate.crafting_runtime.$owner.rva++
+    Assert-Throws { Invoke-WrapperVerify } "revision 35 rejects changed $owner"
+    $candidate.crafting_runtime.$owner.rva--
+}
+$candidate.experimental_extraction_scroll = $false
+Assert-Throws { Invoke-WrapperVerify } 'revision 35 preserves extraction scrollbar guards'
+$candidate.experimental_extraction_scroll = $true
+$candidate.PSObject.Properties.Remove('crafting_runtime')
+Assert-Throws { Invoke-WrapperVerify } 'revision 35 rejects missing runtime metadata'
+$candidate.PSObject.Properties.Remove('experimental_crafting_icons')
 $candidate.PSObject.Properties.Remove('experimental_extraction_scroll')
 $candidate.PSObject.Properties.Remove('experimental_buy_labels')
 $candidate.PSObject.Properties.Remove('experimental_extraction')

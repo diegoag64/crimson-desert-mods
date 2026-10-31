@@ -1,6 +1,9 @@
 """Three-column recipe cards for the native Smithy/CookingView3 document."""
 from pathlib import Path
 import re
+import hashlib
+import struct
+from .pe import PE
 
 from .inventory import sized
 from .shop import compact_css, fit_bytes, fit_markup, validate_shop_selectors
@@ -71,3 +74,25 @@ def transform(path, before):
         validate_shop_selectors(styles)
         return fit_bytes(compact_css(css + '\n' + styles).encode('utf8'), len(before))
     raise ValueError('Unsupported crafting asset: ' + path)
+
+
+def audit_runtime(exe, pins):
+    """Check the observed cache-repair path against the audited executable."""
+    pe = PE(exe)
+    for name in ('layout', 'background_size', 'background_position'):
+        method = pins['methods'][name]
+        raw = pe.raw(method['rva'])
+        prefix = bytes.fromhex(method['prefix'])
+        section = pe.section(method['rva'])
+        if (len(prefix) != 24 or not section or not section['flags'] & 0x20000000 or
+                exe[raw:raw+24] != prefix or method['size'] < 24 or
+                hashlib.sha256(exe[raw:raw+method['size']]).hexdigest() != method['sha256']):
+            raise ValueError('Crafting method differs from audit: ' + name)
+    for name in ('description', 'card', 'list', 'root'):
+        vt = pins[name+'_vtable']
+        locator = struct.unpack_from('<Q', exe, pe.raw(vt['rva']-8))[0] - pe.base
+        td = struct.unpack_from('<I', exe, pe.raw(locator)+12)[0]
+        expected = vt['type'].encode('ascii') + b'\0'
+        start = pe.raw(td)+16
+        if exe[start:start+len(expected)] != expected:
+            raise ValueError('Crafting owner type differs from audit: ' + name)

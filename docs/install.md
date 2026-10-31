@@ -10,7 +10,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\NativeGrid.ps1 -Acti
 
 Verification checks the package hashes, supported game pins, and existing owned files. It writes nothing to the game. Conflicting files stop the operation.
 
-Revision 15 through 34 shop packages also require the pinned English localization index, `0020/0.pamt`. This is a read-only compatibility check. Installation still changes only the three files listed below. Revisions 15 and 17 failed live loading tests. Revisions 16 and 18 through 23 loaded and displayed icons-only requirements, but spacing remained unresolved. Revision 24 uses a direct container selector after live inspection proved that revision 23's descendant selector could not match. The user confirmed revision 24's spacing fix in the live shop. Preserve `build/shop-24-live-container-translation` as the working shop checkpoint. Preserve revision 23 and its installation rollback journal, and retain revision 16 as an earlier checkpoint.
+Revision 15 through 35 shop packages also require the pinned English localization index, `0020/0.pamt`. This is a read-only compatibility check. Installation still changes only the three files listed below. Revisions 15 and 17 failed live loading tests. Revisions 16 and 18 through 23 loaded and displayed icons-only requirements, but spacing remained unresolved. Revision 24 uses a direct container selector after live inspection proved that revision 23's descendant selector could not match. The user confirmed revision 24's spacing fix in the live shop. Preserve `build/shop-24-live-container-translation` as the working shop checkpoint. Preserve revision 23 and its installation rollback journal, and retain revision 16 as an earlier checkpoint.
 
 ## Install a package
 
@@ -43,3 +43,13 @@ Close the game and run the verification command with `-Action Uninstall`. The in
 ## Check the result in game
 
 Launch the game yourself. Test normal inventory, Private Storage, category icons, empty slots, hover, and focus. Record the game build, package hash, observed behavior, and any failures. Fixture success and an `ACTIVE` log establish technical checks. Only a live UI test establishes the visible result.
+
+## Install the Crafting image-cache repair
+
+Revision 35 includes revision 34's Extraction scrollbar correction and preserves all of its asset hashes. The additional Crafting hook requires nine passing native suites and the exact method and owner pins in `crafting_runtime_revisions.35`. The installer rejects altered or missing runtime metadata.
+
+Close Crimson Desert before installation. Keep DMM unmounted. Use the currently installed revision 33 package as `-PreviousPackage` when replacing it with `build/crafting-35-image-cache`. Revision 34 was prepared but was not installed. Preserve revision 33 and the resulting rollback journal.
+
+After the user launches the game, inspect `build/crafting-35-image-cache/runtime.log` for the Crafting hook activation. A successful cache repair writes `CRAFTING: repaired empty recipe background with native layout helpers.` Logging stops after eight repairs. No repair message is expected when the native pass already produces a valid rectangle. Activation and fixture results alone do not establish visible success.
+
+If initial weapon icons remain blank, capture their cached rectangles before any category switch. If loading regresses, close the game and restore the exact preceding package through the recorded rollback journal. Do not alter game archives or remove the journal.

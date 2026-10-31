@@ -7,7 +7,7 @@ from .pe import PE
 
 SOURCE = Path(__file__).resolve().parent
 
-def compile_flexible(folder,exe_data,payloads,rvas,gcc,minhook,bad=None,refinement=None):
+def compile_flexible(folder,exe_data,payloads,rvas,gcc,minhook,bad=None,refinement=None,crafting=None):
     folder.mkdir(parents=True,exist_ok=True); pe=PE(exe_data)
     header='#define EXPECTED_SHA256 "'+hashlib.sha256(exe_data).hexdigest()+'"\n'
     header+='#define PROBE_LOG L'+json.dumps(str((folder/'runtime.log').resolve()))+'\n'
@@ -23,6 +23,14 @@ def compile_flexible(folder,exe_data,payloads,rvas,gcc,minhook,bad=None,refineme
         header+=f'#define REFINEMENT_HIDDEN_ATOM_RVA {refinement["hidden_atom_rva"]}u\n'
         for name in ('description', 'list', 'root'):
             header+=f'#define REFINEMENT_{name.upper()}_VT {refinement[name+"_vtable"]["rva"]}u\n'
+    if crafting:
+        from .crafting import audit_runtime
+        audit_runtime(exe_data, crafting)
+        for name,method in crafting['methods'].items():
+            header+=f'#define CRAFTING_{name.upper()}_RVA {method["rva"]}u\n'
+            header+='static const unsigned char expected_crafting_'+name+'_prefix[] = {'+','.join(map(str,bytes.fromhex(method['prefix'])))+'};\n'
+        for name in ('description', 'card', 'list', 'root'):
+            header+=f'#define CRAFTING_{name.upper()}_VT {crafting[name+"_vtable"]["rva"]}u\n'
     for index,name in enumerate(['expected_prefix','expected_full_prefix','expected_resize_prefix']):
         prefix=exe_data[pe.raw(rvas[index]):pe.raw(rvas[index])+24]
         if bad==index:prefix=bytes(24)
