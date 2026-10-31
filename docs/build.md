@@ -98,7 +98,7 @@ The relocated methods retain their calling conventions and audited field accesse
 
 The new record pins all nine method spans with full-body hashes. The sort helper spans its split unwind entries through the final return. Build checks enforce these hashes in addition to the full EXE hash, prefixes, RTTI owners, and archive pins. Native object constructors and description binding code retain the fields used by the scoped hooks. The hidden-class atom moves to `0x710a7c8`; its initializer still receives `!cpp-none`.
 
-Revision 35 failed the live first-open Crafting check. Revision 36 passes the expanded fixtures but still requires live validation. Keep that behavior experimental until the new runtime is active and the live screen is checked.
+Revision 35 failed the live first-open Crafting check. Revision 36 passes the expanded fixtures. After installation on build `26345091`, the user reported that the initial Crafting icons appear fixed. The runtime log also records eight successful repairs, its logging limit. This is a user-confirmed checkpoint for the reported initial-icon failure, not validation of every category or other game build.
 
 ## Audit files before publication
 

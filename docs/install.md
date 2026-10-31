@@ -70,8 +70,10 @@ Use the rebuilt package's `runtime.log` for the subsequent live check. `build/la
 
 ## Install the nested-layout correction
 
-Revision 35 for build `26345091` is installed, but its first-open Crafting icons failed the live check. Revision 36 in `build/crafting-36-nested-layout` corrects the recursion guard. It preserves all 24 resource payloads, native method pins, and the existing layouts.
+Revision 35 for build `26345091` failed its first-open Crafting icon check and was replaced by revision 36. Revision 36 in `build/crafting-36-nested-layout` corrects the recursion guard. It preserves all 24 resource payloads, native method pins, and the existing layouts.
 
 After an authorized exit, install revision 36 with `build/crafting-35-build-26345091` as `-PreviousPackage`. Keep DMM unmounted. Preserve the installation journal and `build/layout-34-build-26345091` as the compatible fallback without the Crafting hook.
 
 Check `build/crafting-36-nested-layout/runtime.log` after the next user launch. Its Crafting activation line must include `nested children enabled`. Repair messages establish that the guarded helpers ran. Only a live first-open screen check establishes visible success.
+
+Revision 36 is installed and its installed ASI hash matches the package. The user reported that the initial Crafting icons appear fixed, and the runtime log records eight successful repairs. Preserve `build/crafting-36-nested-layout` as this working checkpoint. The installation preserved revision 35 under `build/rollback/rollback-adc5220bf6894a138932dbc24f152e75`. The installed ASI SHA-256 is `644a35a119ba0265db4a75934a45085b47efceb1f82c435f35852620b9677b57`.
