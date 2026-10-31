@@ -1,5 +1,7 @@
 # Build and test the inventory mod
 
+To export a verified revision 41 build for DMM, follow [Manage NativeGrid with DMM](dmm.md). Export does not rebuild or install the plugin.
+
 Use Windows x64, Python 3.12, and MinGW-w64 x64 GCC. GCC 14.2.0 from MSYS2 UCRT64 is used for the publication checks. Supply your own supported Steam installation. The builder reads the game files and never installs or launches the game.
 
 ## Prepare dependencies

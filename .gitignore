@@ -100,3 +100,6 @@
 !/nativegrid/comrades_grid.css
 
 !/tests/test_comrades.py
+!/nativegrid/dmm.py
+!/tests/test_dmm.py
+!/docs/dmm.md

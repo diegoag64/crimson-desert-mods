@@ -1,5 +1,7 @@
 # Install and roll back
 
+This guide covers the standalone installer. For DMM ownership and loader handling, use [Manage NativeGrid with DMM](dmm.md).
+
 Build a package using [the build guide](build.md). Keep each package intact. Installation requires one of the audited supported game fingerprints and a stopped game. Further game updates need a new compatibility audit before installation. Revision 7 targets build `26329202` and still needs live UI validation.
 
 ## Verify a package
