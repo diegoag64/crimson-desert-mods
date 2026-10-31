@@ -70,3 +70,15 @@ tests/test_comrades.py
 nativegrid/dmm.py
 tests/test_dmm.py
 docs/dmm.md
+
+tests/test_publication.py
+docs/images/crafting-after.png
+docs/images/crafting-before.png
+docs/images/inventory-storage-after.png
+docs/images/inventory-storage-before.png
+docs/images/manage-comrades-after.png
+docs/images/manage-comrades-before.png
+docs/images/npc-buy-after.png
+docs/images/npc-buy-before.png
+docs/images/refinement-after.png
+docs/images/refinement-before.png

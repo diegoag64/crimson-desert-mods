@@ -17,6 +17,85 @@ The compact cards fit their artwork, labels, selection borders, and empty-slot b
 
 The mod changes presentation. The game still handles purchases, crafting, refinement, extraction, and comrade actions. There is no toggle back to list view.
 
+## Before and after
+
+Expand a comparison to view the supplied in-game screenshots. Select an image to open it at full size.
+
+<details>
+<summary>Refinement</summary>
+
+A three-column gear grid, with upgrade levels retained and redundant Equipped badges hidden.
+
+<table>
+<tr><th width="50%">Before</th><th width="50%">After</th></tr>
+<tr>
+<td valign="top"><a href="docs/images/refinement-before.png"><img src="docs/images/refinement-before.png" alt="Refinement before installing NativeGrid" width="100%"></a></td>
+<td valign="top"><a href="docs/images/refinement-after.png"><img src="docs/images/refinement-after.png" alt="Refinement after installing NativeGrid" width="100%"></a></td>
+</tr>
+</table>
+
+</details>
+
+<details>
+<summary>Crafting</summary>
+
+Recipes use three columns while the selected item and materials remain in view.
+
+<table>
+<tr><th width="50%">Before</th><th width="50%">After</th></tr>
+<tr>
+<td valign="top"><a href="docs/images/crafting-before.png"><img src="docs/images/crafting-before.png" alt="Crafting before installing NativeGrid" width="100%"></a></td>
+<td valign="top"><a href="docs/images/crafting-after.png"><img src="docs/images/crafting-after.png" alt="Crafting after installing NativeGrid" width="100%"></a></td>
+</tr>
+</table>
+
+</details>
+
+<details>
+<summary>Inventory and storage</summary>
+
+Both panels expand from 6 columns and 8 visible rows to 8 columns and 11 visible rows.
+
+**Before**
+
+[![Inventory and storage before installing NativeGrid](docs/images/inventory-storage-before.png)](docs/images/inventory-storage-before.png)
+
+**After**
+
+[![Inventory and storage after installing NativeGrid](docs/images/inventory-storage-after.png)](docs/images/inventory-storage-after.png)
+
+</details>
+
+<details>
+<summary>Manage Comrades</summary>
+
+Fifteen portrait-and-name cards replace four full-width list entries.
+
+<table>
+<tr><th width="50%">Before</th><th width="50%">After</th></tr>
+<tr>
+<td valign="top"><a href="docs/images/manage-comrades-before.png"><img src="docs/images/manage-comrades-before.png" alt="Manage Comrades before installing NativeGrid" width="100%"></a></td>
+<td valign="top"><a href="docs/images/manage-comrades-after.png"><img src="docs/images/manage-comrades-after.png" alt="Manage Comrades after installing NativeGrid" width="100%"></a></td>
+</tr>
+</table>
+
+</details>
+
+<details>
+<summary>NPC Buy Menu</summary>
+
+Eighteen compact cards replace eight wide entries, with prices, stock, and owned counts beneath each item.
+
+<table>
+<tr><th width="50%">Before</th><th width="50%">After</th></tr>
+<tr>
+<td valign="top"><a href="docs/images/npc-buy-before.png"><img src="docs/images/npc-buy-before.png" alt="NPC Buy Menu before installing NativeGrid" width="100%"></a></td>
+<td valign="top"><a href="docs/images/npc-buy-after.png"><img src="docs/images/npc-buy-after.png" alt="NPC Buy Menu after installing NativeGrid" width="100%"></a></td>
+</tr>
+</table>
+
+</details>
+
 ## Current status and compatibility
 
 **Revision 41 is the current working checkpoint**, confirmed in game on Steam build `26345091`. Revision 38 remains the earlier checkpoint without the comrades grid.
@@ -27,7 +106,7 @@ Compatibility is tied to exact executable, index, and asset fingerprints. A game
 
 ## Build and install
 
-This is a source repository. Game assets and ready-to-install binaries are not included. Packages are built locally from your supported game installation and must remain local.
+This is a source repository. Extracted game assets and ready-to-install binaries are not included. Packages are built locally from your supported game installation and must remain local.
 
 1. Follow the [build guide](docs/build.md) to prepare dependencies, run checks, and choose the layouts to include.
 2. Close Crimson Desert and keep DMM unmounted before installation.
