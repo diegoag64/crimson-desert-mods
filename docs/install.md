@@ -121,6 +121,9 @@ After the user exited and requested rollback, revision 38 was restored from `bui
 
 ## Install the structurally checked comrades grid
 
-Revision 41 is prepared in `build/comrades-41-validated-tree`. The current installed package is working revision 38. After the user authorizes installation and exits, use revision 41 as `-Package` and `build/shop-38-count-translation` as `-PreviousPackage`. Keep DMM unmounted and preserve the transaction journal. Do not install revision 40.
+Revision 41 is installed from `build/comrades-41-validated-tree`. It upgraded `build/shop-38-count-translation` and preserved revision 38 under `build/rollback/rollback-166dee5463684db4bc99fdda46174cd2`. The user confirmed that the comrades grid looks good after launch. Keep both packages and the transaction journal. Keep DMM unmounted. Do not install revision 40.
 
 After the user's next launch, check successful startup and replacement of all six comrades assets. In Manage Comrades, inspect the card classes and bounds described above, including the first visible row and final partial row. Keep fixture results separate from this live evidence. Do not control the mouse or change comrade assignments without authorization.
+
+
+The installed revision 41 ASI SHA-256 is `02621114dcb317cdb4724dd4a8b71095fa16d2a7b96eeb08b8622d744848b3e9`, matching its package. The runtime is active and records successful replacement of all six comrades assets. This is the working checkpoint for the reported comrades layout; scrolling through every row and every assignment state was not separately confirmed.
