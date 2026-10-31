@@ -10,7 +10,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\NativeGrid.ps1 -Acti
 
 Verification checks the package hashes, supported game pins, and existing owned files. It writes nothing to the game. Conflicting files stop the operation.
 
-Revision 15 through 39 shop packages also require the pinned English localization index, `0020/0.pamt`. This is a read-only compatibility check. Installation still changes only the three files listed below. Revisions 15 and 17 failed live loading tests. Revisions 16 and 18 through 23 loaded and displayed icons-only requirements, but spacing remained unresolved. Revision 24 uses a direct container selector after live inspection proved that revision 23's descendant selector could not match. The user confirmed revision 24's spacing fix in the live shop. Preserve `build/shop-24-live-container-translation` as the working shop checkpoint. Preserve revision 23 and its installation rollback journal, and retain revision 16 as an earlier checkpoint.
+Revision 15 through 40 shop packages also require the pinned English localization index, `0020/0.pamt`. This is a read-only compatibility check. Installation still changes only the three files listed below. Revisions 15 and 17 failed live loading tests. Revisions 16 and 18 through 23 loaded and displayed icons-only requirements, but spacing remained unresolved. Revision 24 uses a direct container selector after live inspection proved that revision 23's descendant selector could not match. The user confirmed revision 24's spacing fix in the live shop. Preserve `build/shop-24-live-container-translation` as the working shop checkpoint. Preserve revision 23 and its installation rollback journal, and retain revision 16 as an earlier checkpoint.
 
 ## Install a package
 
@@ -99,3 +99,12 @@ Revision 38 is installed and its ASI hash matches the package: `7315a9cf1675efc4
 Revision 39 is prepared in `build/comrades-39-portrait-grid`. After the user authorizes installation and exits the game, use that package as `-Package` and `build/shop-38-count-translation` as `-PreviousPackage`. Keep DMM unmounted. Preserve revision 38 and the transaction journal as the working rollback checkpoint.
 
 After the user's next launch, inspect the package runtime log for successful replacement of the three `mercenarymanagementpanel` assets. Confirm five portrait-and-name cards per row, centered short names, fitted hover and selection borders, and scrolling through the last partial row. Select different comrades to verify that the details panel still follows selection. Do not dispatch, dismiss, equip, or otherwise change comrades merely to test layout. Follow the user's input-control restrictions. Runtime replacement messages alone do not establish visible success.
+
+
+## Install the isolated Manage Comrades styles
+
+Revision 39 is installed with matching package hashes. Its installation preserved revision 38 in `build/rollback/rollback-d17f48cdb61942618807c45492b1dcc4`. It failed the user's live layout check; do not describe it as a working grid.
+
+Revision 40 is prepared in `build/comrades-40-isolated-styles`. After the user authorizes installation and exits, use it as `-Package` and `build/comrades-39-portrait-grid` as `-PreviousPackage`. Keep DMM unmounted. Preserve both packages, the new transaction journal, and the working revision 38 checkpoint.
+
+After launch, inspect replacement messages for all six comrades resources, including `pet_component_game.uibinary`, `pet.thtml`, and `pet.css`. Inspect the live card root for `ng-comrade-tile` and the two container classes for `ng`. Confirm 124-by-108-pixel card bounds, five visible columns, centered portraits and names, and hidden occupation text. Check selection and the last partial row without dispatching, dismissing, or changing equipment. Follow the user's input-control restriction; do not take over the mouse.

@@ -1,15 +1,60 @@
 """Portrait-and-name cards in the Manage Comrades document."""
 from pathlib import Path
 import re
+import struct
 
 from .inventory import sized
-from .shop import compact_css, fit_bytes, fit_markup, validate_shop_selectors
+from .shop import compact_css, component_end, fit_bytes, fit_markup, validate_shop_selectors
 
 COMRADES_PATHS = (
     'ui/bin__/mercenarymanagementpanel_game.uibinary',
     'ui/xml/gamemain/play/mercenarymanagementpanel.html',
     'ui/xml/gamemain/play/mercenarymanagementpanel.css',
+    'ui/bin__/pet_component_game.uibinary',
+    'ui/xml/gamemain/template/pet.thtml',
+    'ui/xml/gamemain/template/pet.css',
 )
+
+# Two six-byte class records replace twelve bytes saved in the root class.
+# Keep every ID, native selector, script, flag, and the total buffer size intact.
+OLD_ROOT = 'mercenary-list-item-wrapper'
+CARD_ROOT = 'ng-comrade-tile'
+CONTAINERS = ('MercenaryItemNameWrap', 'MercenaryOccupationStateWrap')
+PREVIOUS_COMPONENT = 'MercenaryListItem_NotFocusable'
+CARD_COMPONENT = 'MercenaryManagementListItem'
+
+
+def card_binary(before):
+    start = component_end(before, PREVIOUS_COMPONENT)
+    end = component_end(before, CARD_COMPONENT)
+    block = before[start:end]
+    if block.count(sized(OLD_ROOT)) != 1 or sized(CARD_ROOT) in before:
+        raise ValueError('Unexpected management card root classes')
+    changed = block.replace(sized(OLD_ROOT), sized(CARD_ROOT))
+    for target in CONTAINERS:
+        old = sized(target) + struct.pack('<I', 0)
+        if changed.count(sized(target)) != 1 or changed.count(old) != 1:
+            raise ValueError('Unexpected management container classes: ' + target)
+        changed = changed.replace(old, sized(target) + struct.pack('<I', 1) + sized('ng'))
+    assert len(changed) == len(block)
+    return before[:start] + changed + before[end:]
+
+
+def card_source(before):
+    matches = list(re.finditer(rb'<component name="MercenaryManagementListItem".*?</component>', before, re.S))
+    if len(matches) != 1:
+        raise ValueError('Missing or ambiguous management card source')
+    match = matches[0]
+    block = match[0]
+    if block.count(OLD_ROOT.encode()) != 1 or CARD_ROOT.encode() in before:
+        raise ValueError('Unexpected management source root classes')
+    changed = block.replace(OLD_ROOT.encode(), CARD_ROOT.encode())
+    for target in CONTAINERS:
+        old = f'<div id="{target}">'.encode()
+        if changed.count(old) != 1:
+            raise ValueError('Unexpected management source container: ' + target)
+        changed = changed.replace(old, old[:-1] + b' css="ng">')
+    return before[:match.start()] + fit_markup(changed, len(block)) + before[match.end():]
 
 # These ID rules have no element in the compiled document or its source.
 # Remove only these audited decorations to fit the original CSS buffer.
@@ -33,6 +78,22 @@ def list_attributes(columns='1', rows='4'):
 
 
 def transform(path, before):
+    if path == COMRADES_PATHS[3]:
+        return card_binary(before)
+    if path == COMRADES_PATHS[4]:
+        return card_source(before)
+    if path == COMRADES_PATHS[5]:
+        # Other documents can instantiate this shared component. Give its alias
+        # exactly the original base/animation rules there; only the management
+        # document supplies the more specific grid rule.
+        css = before.decode('utf-8-sig')
+        extra = []
+        for selector in ('.' + OLD_ROOT, '.' + OLD_ROOT + '.cpp-main-mercenary'):
+            matches = list(re.finditer(re.escape(selector) + r'\s*\{[^}]*\}', css))
+            if len(matches) != 1:
+                raise ValueError('Missing or ambiguous shared card fallback: ' + selector)
+            extra.append(matches[0][0].replace(OLD_ROOT, CARD_ROOT))
+        return fit_bytes(compact_css(css + '\n' + '\n'.join(extra)).encode('utf8'), len(before))
     if path == COMRADES_PATHS[0]:
         old, new = list_attributes(), list_attributes('5', '3')
         if before.count(old) != 1 or new in before:

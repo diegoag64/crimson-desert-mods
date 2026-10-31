@@ -431,3 +431,33 @@ $candidate.shop_count_translation_reset = $false
 Assert-Throws { Invoke-WrapperVerify } 'revision 39 retains working shop-count reset'
 $candidate.shop_count_translation_reset = $true
 Invoke-WrapperVerify
+
+# Revision 40 adds scoped component styles; all six comrades payloads are required.
+$candidate.revision = 40
+Assert-Throws { Invoke-WrapperVerify } 'revision 40 refuses revision 39 payloads'
+$candidate.payloads = @($candidate.payloads | Where-Object { $_.path -notin @($updated.comrades_revisions.'39'.PSObject.Properties.Name) })
+$candidate.payloads += @($updated.comrades_revisions.'40'.PSObject.Properties | ForEach-Object {
+    [pscustomobject]@{path=$_.Name; original_sha256=$_.Value.original_sha256; replacement_sha256=$_.Value.replacement_sha256; size=100; replacement_size=100}
+})
+Invoke-WrapperVerify
+Write-Output 'PASS: revision 40 accepts isolated comrades component styles'
+foreach ($pin in $updated.comrades_revisions.'40'.PSObject.Properties) {
+    $payload = @($candidate.payloads | Where-Object path -CEQ $pin.Name)[0]
+    $saved = $payload.replacement_sha256
+    $payload.replacement_sha256 = 'wrong'
+    Assert-Throws { Invoke-WrapperVerify } "revision 40 rejects altered asset $($pin.Name)"
+    $payload.replacement_sha256 = $saved
+    $payload.replacement_size++
+    Assert-Throws { Invoke-WrapperVerify } "revision 40 rejects resized asset $($pin.Name)"
+    $payload.replacement_size--
+}
+$candidate.experimental_comrades = $false
+Assert-Throws { Invoke-WrapperVerify } 'revision 40 requires comrades flag'
+$candidate.experimental_comrades = $true
+$candidate.shop_count_translation_reset = $false
+Assert-Throws { Invoke-WrapperVerify } 'revision 40 retains shop-count fix'
+$candidate.shop_count_translation_reset = $true
+$candidate.crafting_nested_layout = $false
+Assert-Throws { Invoke-WrapperVerify } 'revision 40 retains initial Crafting icons fix'
+$candidate.crafting_nested_layout = $true
+Invoke-WrapperVerify

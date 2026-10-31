@@ -122,7 +122,7 @@ Revision 38 adds an explicit zero translation for normal stock labels. The two-c
 
 ## Build the Manage Comrades portrait grid
 
-On build `26345091`, append `--experimental-comrades` to the revision 38 command and choose a new output directory, such as `build/comrades-39-portrait-grid`. The new option requires `--experimental-shop-counts` to preserve the user-confirmed shop correction. Omitting it retains revision 38.
+On build `26345091`, append `--experimental-comrades` to the revision 38 command and choose a new output directory, such as `build/comrades-40-isolated-styles`. The option now builds revision 40 and requires `--experimental-shop-counts` to preserve the user-confirmed shop correction. Omitting it retains revision 38.
 
 Revision 39 adds three exact-sized replacements: `mercenarymanagementpanel_game.uibinary`, `mercenarymanagementpanel.html`, and `mercenarymanagementpanel.css`. The compatibility record pins each original and replacement hash under `comrades_revisions.39`. The compiled transform changes only the management list's column and row bytes. The source transform supplies the same dimensions on `MercenaryList`. Ship-station and crew-selection list attributes remain unchanged.
 
@@ -131,3 +131,12 @@ The document-local stylesheet creates five columns and three visible rows. Each 
 Five unused decoration rules are removed to fit the stylesheet's original 5,062-byte buffer. The compiled transform rejects the build if any corresponding ID appears. The final stylesheet has 419 padding bytes. The original three asset sizes and all 24 revision 38 payloads remain unchanged. No new native hook is added.
 
 The package passes ten native suites, 55 Python checks, and the installer fixtures. These checks establish transform scope, native-binding preservation, capacity, and compatibility guards. They do not establish live scrolling or portrait rendering. The comrades grid remains experimental pending installation and a live check.
+
+
+### Revision 40: isolate management card styles
+
+Revision 39 failed live because shared selector definitions replaced its card width, name wrapper, and occupation visibility rules. The current `--experimental-comrades` option builds revision 40. See [the selector diagnosis](grid-layout-troubleshooting.md#duplicate-selectors-can-discard-the-entire-custom-rule) for the evidence and scope.
+
+Build into a new directory such as `build/comrades-40-isolated-styles`. The package pins six comrades assets under `comrades_revisions.40`, including the shared Pet source, compiled component, and stylesheet. All replacements retain their original byte length. Only the management card receives the two extra container classes; other components and all original shared CSS rules are preserved. Native bindings and runtime method pins remain unchanged.
+
+Ten native suites, 59 Python tests, and installer fixtures pass. All 24 revision 38 payloads remain identical. The package is prepared but not installed or live-verified. Retain revision 39 for exact installation rollback and revision 38 as the user-confirmed checkpoint.

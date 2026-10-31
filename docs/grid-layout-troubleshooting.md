@@ -422,4 +422,24 @@ Revision 39 changes the native dimensions and these card wrappers together. Five
 
 Keep these changes in the management document. The shared Pet component library also serves horses, pets, shops, and other mercenary lists. Editing its general card sizes would affect those menus. The source and compiled list guards deliberately match the management item component and complete attribute sequence. Other list dimensions and the details panel are preserved.
 
-The initial layout and frame behavior were inspected read-only in the active process. Revision 39's new appearance has not yet been observed in game. Verify first-open portraits, names, selection, hover, and the final partial row after installation before promoting it to a working checkpoint.
+Revision 39 failed the live check: full-width rows remained, names moved to the left, and occupation text escaped below the cards. Its successful transform fixtures did not detect a shared-style collision.
+
+
+### Duplicate selectors can discard the entire custom rule
+
+The revision 39 runtime replaced all three intended assets. A read-only capture found 15 native cards, confirming that five columns and three rows were active. Every card still measured 650 by 84 CSS pixels. Native positioning placed the other columns outside the viewport, so the visible rows showed every fifth comrade.
+
+Matched-rule inspection identified the failure. Each root retained only the shared `.mercenary-list-item-wrapper` rule with width 650 and height 84. `#MercenaryItemNameWrap` retained its shared 280-by-58-pixel rule. `#MercenaryOccupationStateWrap` retained `display:flex`. Those selector names were identical in the document and shared stylesheets; the loaded rule table retained one definition, rather than merging their properties. By contrast, revision 39's unique ID-plus-class portrait and name rules survived. The native inline maps contained position or texture data, not overrides for these failed dimensions.
+
+Revision 40 isolates the management component's styles:
+
+- The root uses `ng-comrade-tile`. The management document targets `.ng-comrade-tile.inherit-pickable`, a unique compound selector. Empty slots receive a separate compound size rule.
+- The existing name and occupation containers gain the `ng` class. Their IDs remain unchanged. `#MercenaryItemNameWrap.ng` defines the centered 116-by-20-pixel row, and `#MercenaryOccupationStateWrap.ng` hides assignment text.
+- Other assignment marks and the disabled overlay use unique ID-plus-class rules. Portrait binding and native focus/selection controls remain unchanged.
+- The shared Pet stylesheet supplies exact copies of the original root and main-mercenary animation rules for the new root alias. Outside the management document, the component therefore retains its original layout. All 226 original shared rules remain intact.
+
+The source and compiled mutations are bounded to `MercenaryManagementListItem`. Two six-byte class records consume the twelve bytes saved by the shorter root class, keeping the compiled resource at its original size. Reversing these edits restores the entire original component. Every native ID, script, selector, flag, and tab index is preserved; other components remain byte-identical. An audit of all 179 current UI stylesheets found only the two copied Pet rules targeting the old root class.
+
+For future layout changes, inspect the actual matched rule definitions after the dynamic cards exist. Do not infer successful application from replacement logs or a selector's presence in the source. Give document overrides distinct compound selectors, including wrappers that originally have only an ID. Check their shared fallback behavior and preserve native bindings. The regression fixture loads conflicting shared selector definitions after the custom stylesheet; the new compound rules survive that order.
+
+Revision 40 passes ten native suites, 59 Python tests, installer fixtures, and verification against the installed revision 39 package. All 24 working revision 38 payload records are unchanged. These checks establish delivery, isolation, and the identified selector correction. The new card rendering and scrolling still require a live check after installation.
