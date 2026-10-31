@@ -1,5 +1,6 @@
 """Read-only PE inspection and named package-worker resolution."""
 import struct
+import hashlib
 
 class PE:
     def __init__(self, data):
@@ -37,6 +38,20 @@ def positions(data, needle):
     while pos>=0:
         yield pos
         pos=data.find(needle,pos+1)
+
+def audit_method(data, method):
+    """Validate an audited executable method, including bytes after its prologue."""
+    pe = PE(data)
+    rva, size = method['rva'], method['size']
+    raw = pe.raw(rva)
+    section = pe.section(rva)
+    prefix = bytes.fromhex(method['prefix'])
+    if (not section or not section['flags'] & 0x20000000 or
+            len(prefix) != 24 or size < 24 or
+            rva + size > section['rva'] + min(section['vsize'], section['rawsize']) or
+            data[raw:raw+24] != prefix or
+            hashlib.sha256(data[raw:raw+size]).hexdigest() != method['sha256']):
+        raise ValueError('Native method differs from audited body')
 def exported_rva(data,name):
     pe=PE(data); header=struct.unpack_from('<I',data,0x3c)[0]
     export_rva=struct.unpack_from('<I',data,header+24+112)[0]

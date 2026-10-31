@@ -284,3 +284,50 @@ $candidate.payloads = @($support.refinement_assets.PSObject.Properties | ForEach
 $candidate.PSObject.Properties.Remove('refinement_runtime')
 Invoke-WrapperVerify
 Write-Output 'PASS: revision 25 rollback still accepts its original asset pins without new hook'
+
+# A new game build must select its own methods, owners, indexes, and UI bytes.
+$updated = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\nativegrid\builds\26345091.json') -Raw | ConvertFrom-Json
+[IO.File]::WriteAllText((Join-Path $game 'bin64\CrimsonDesert.exe'), 'synthetic updated executable')
+[IO.File]::WriteAllText($extraPath, 'synthetic updated localization')
+$updated.exe_sha256 = Get-GridHash (Join-Path $game 'bin64\CrimsonDesert.exe')
+$updated.master_sha256 = Get-GridHash (Join-Path $game 'meta\0.papgt')
+$updated.pamt_sha256 = Get-GridHash (Join-Path $game '0012\0.pamt')
+$updated.shop_requirements.index_sha256 = Get-GridHash $extraPath
+$updated | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath (Join-Path $wrapper 'nativegrid\builds\26345091.json')
+$candidate = New-Manifest $package
+$candidate | Add-Member -NotePropertyMembers @{
+    schema=1; revision=35; fixture_tests_passed=9; variable_length_resources=$true
+    experimental_shop=$true; experimental_refinement=$true; experimental_crafting=$true
+    experimental_extraction=$true; experimental_buy_labels=$true; experimental_extraction_scroll=$true
+    experimental_crafting_icons=$true
+    refinement_runtime=($updated.refinement_runtime_revisions.'27' | ConvertTo-Json -Depth 20 | ConvertFrom-Json)
+    crafting_runtime=($updated.crafting_runtime_revisions.'35' | ConvertTo-Json -Depth 20 | ConvertFrom-Json)
+    extra_indexes=[pscustomobject]@{'0020/0.pamt'=$updated.shop_requirements.index_sha256}
+    payloads=@(@($updated.refinement_revisions.'30', $updated.crafting_revisions.'31',
+                  $updated.extraction_revisions.'34', $updated.buy_label_revisions.'33') | ForEach-Object {
+        $_.PSObject.Properties | ForEach-Object {
+            [pscustomobject]@{path=$_.Name; original_sha256=$_.Value.original_sha256; replacement_sha256=$_.Value.replacement_sha256; size=100; replacement_size=100}
+        }
+    })
+}
+Invoke-WrapperVerify
+Write-Output 'PASS: build 26345091 accepts its separate revision 35 compatibility pins'
+$candidate.crafting_runtime.methods.layout.rva = $support.crafting_runtime_revisions.'35'.methods.layout.rva
+Assert-Throws { Invoke-WrapperVerify } 'new build refuses previous Crafting method address'
+$candidate.crafting_runtime.methods.layout.rva = $updated.crafting_runtime_revisions.'35'.methods.layout.rva
+$candidate.refinement_runtime.hidden_atom_rva = $support.refinement_runtime_revisions.'27'.hidden_atom_rva
+Assert-Throws { Invoke-WrapperVerify } 'new build refuses previous hidden-class atom'
+$candidate.refinement_runtime.hidden_atom_rva = $updated.refinement_runtime_revisions.'27'.hidden_atom_rva
+$candidate.refinement_runtime.root_vtable.rva = $support.refinement_runtime_revisions.'27'.root_vtable.rva
+Assert-Throws { Invoke-WrapperVerify } 'new build refuses previous Refinement owner'
+$candidate.refinement_runtime.root_vtable.rva = $updated.refinement_runtime_revisions.'27'.root_vtable.rva
+$componentPath = 'ui/bin__/itemicon_component_game.uibinary'
+$component = @($candidate.payloads | Where-Object path -CEQ $componentPath)[0]
+$component.original_sha256 = $support.buy_label_revisions.'33'.$componentPath.original_sha256
+Assert-Throws { Invoke-WrapperVerify } 'new build refuses previous item-component original'
+$component.original_sha256 = $updated.buy_label_revisions.'33'.$componentPath.original_sha256
+$candidate.extra_indexes.'0020/0.pamt' = $support.shop_requirements.index_sha256
+Assert-Throws { Invoke-WrapperVerify } 'new build refuses previous localization index'
+$candidate.extra_indexes.'0020/0.pamt' = $updated.shop_requirements.index_sha256
+$candidate.exe_sha256 = $support.exe_sha256
+Assert-Throws { Invoke-WrapperVerify } 'updated game cannot use previous executable support'

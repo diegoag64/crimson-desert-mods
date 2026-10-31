@@ -34,13 +34,13 @@ Installer fixtures use synthetic files under `build`. They never touch the real 
 .venv\Scripts\python.exe -m nativegrid.build --game "E:\Steam\steamapps\common\Crimson Desert" --gcc C:\msys64\ucrt64\bin\gcc.exe --out build\inventory-5
 ```
 
-The build selects compatibility metadata by the exact EXE hash. `nativegrid/supported_build.json` preserves build `26317560`; `nativegrid/builds/26329202.json` describes build `26329202`. It also requires the exact master-index, UI-index, original asset, and replacement hashes for that build. It derives the package-worker methods from named RTTI in the local EXE, checks their known RVAs, generates local payload headers, runs the native fixtures, and compiles `NativeGrid.asi` with `-Wall -Wextra -Werror`.
+The build selects compatibility metadata by the exact EXE hash. `nativegrid/supported_build.json` preserves build `26317560`. The files under `nativegrid/builds/` separately describe builds `26329202` and `26345091`. The builder also requires the exact master-index, UI-index, original asset, and replacement hashes for that build. It derives the package-worker methods from named RTTI in the local EXE, checks their known RVAs, generates local payload headers, runs the native fixtures, and compiles `NativeGrid.asi` with `-Wall -Wextra -Werror`.
 
 The output includes `manifest.json`, three install files, licenses, fixture results, runtime log paths, and generated headers. Keep the whole package for verification and rollback. Runtime logs are written to the package's absolute path, so keep that directory in place after installation. Different output paths can produce different binary hashes.
 
 To include the experimental six-column NPC buy-store grid, add `--experimental-shop` and choose another output directory, such as `build\shop-6`. The default remains inventory only. The shop transforms rename scoped component styles while retaining native script and binding attributes. They do not add purchase logic. Shop behavior still needs an active runtime and live UI validation.
 
-The current build uses allocator RVA `0x1501e20` and verifies the direct call at full-read RVA plus `0x80`. Current game originals are extracted afresh, including the two component binaries changed by the update. The new pins follow a separate offline method and allocator audit. An unknown EXE or changed asset is refused. Successful offline builds do not establish the visible in-game result.
+Build `26329202` uses allocator RVA `0x1501e20`. Build `26345091` uses `0x1504f30`. Both verify the direct call at full-read RVA plus `0x80`. Game originals are extracted afresh. Each compatibility record follows a separate offline method and allocator audit. An unknown EXE or changed asset is refused. Successful offline builds do not establish the visible in-game result.
 
 To add the experimental refinement gear grid on build `26329202`, use both `--experimental-shop` and `--experimental-refinement`. For example:
 
@@ -67,6 +67,38 @@ To include the Crafting image-cache repair, add `--experimental-crafting-icons` 
 Revision 35 passes offline fixtures but has no live validation yet. Check the first weapon category after a fresh launch, then a category that reveals previously unused cards. See [Crafting image-cache troubleshooting](grid-layout-troubleshooting.md#crafting-icons-appear-only-after-category-changes) for the measured failure and the runtime repair guard.
 
 On build `26329202`, experimental shop packages also read `0020/0.pamt` and the English `localstringinfo.paloc` resource. The `shop_requirements` metadata pins this index and both resource hashes. The installer verifies the additional index before replacement. The localization transform changes three short requirement labels to their original inline icons and verifies that all other records remain identical. Its compressed envelope changes size, so delivery requires the existing full-read hook. See [requirement-label troubleshooting](grid-layout-troubleshooting.md#requirement-text-overflows-a-shop-card) for the format, scope, and live checks.
+
+## Build revision 35 for Steam 26345091
+
+Game EXE version `1.0.0.3460` has SHA-256 `4e38ce1d8fe98eee7be0e26026a1d24ea6a17e80aa88e906b5f3ed553af11f63`. Its separate compatibility record retains the revision 35 behavior and the earlier build's records. Use all seven experimental flags:
+
+```powershell
+.venv\Scripts\python.exe -m nativegrid.build --game "E:\Steam\steamapps\common\Crimson Desert" --gcc C:\msys64\ucrt64\bin\gcc.exe --out build\crafting-35-build-26345091 --experimental-shop --experimental-refinement --experimental-crafting --experimental-extraction --experimental-buy-labels --experimental-extraction-scroll --experimental-crafting-icons
+```
+
+Choose a new output directory if this package already exists. Omitting `--experimental-crafting-icons` builds revision 34 for the same game build. That fallback retains the layouts and scrollbar correction without the Crafting cache hook. An old-game package cannot serve as a runnable fallback after Steam updates the EXE.
+
+The offline audit found 22 unchanged resources among the 24 replacements. `itemicon_component_game.uibinary` has 14 changed bytes at the same file length. None overlaps the mod's edits, and all 14 survive the transform. The English localization table adds two records, with no removed or changed existing records. Its transform preserves the new records and changes only the same three requirement labels.
+
+The native audit independently resolves package-worker RTTI, each UI owner type, and the `!cpp-none` atom initializer. The following RVAs belong only to build `26345091`:
+
+| Method | RVA |
+| --- | --- |
+| Raw resource read | `0x1588ab0` |
+| Full resource read | `0x15889f0` |
+| Buffer resize | `0x1504f30` |
+| Refinement style refresh | `0x38930d0` |
+| Add class | `0x3896780` |
+| Sort classes | `0x38971b0` |
+| Crafting native layout | `0x3868ce0` |
+| Background size | `0x387ebf0` |
+| Background position | `0x387ed10` |
+
+The relocated methods retain their calling conventions and audited field accesses. Address-normalized comparisons cover 3,235 instructions from retained previous-build disassembly. These include the complete resource readers, class helpers, background helpers, and the retained portion of the layout method. The earlier layout dump starts inside that method, so this is not a complete old/new layout-body comparison. The new prologue, five-argument forwarding, native helper call sites, cached-rectangle accesses, and return path were inspected separately. The resize routine still owns allocation, length, capacity, and the two terminator bytes.
+
+The new record pins all nine method spans with full-body hashes. The sort helper spans its split unwind entries through the final return. Build checks enforce these hashes in addition to the full EXE hash, prefixes, RTTI owners, and archive pins. Native object constructors and description binding code retain the fields used by the scoped hooks. The hidden-class atom moves to `0x710a7c8`; its initializer still receives `!cpp-none`.
+
+Offline checks do not prove that revision 35 fixes the first-open Crafting icons in this game build. Keep that behavior experimental until the new runtime is active and the live screen is checked.
 
 ## Audit files before publication
 

@@ -1,13 +1,15 @@
 """Synthetic malformed-input and output-containment checks; no game assets."""
 import struct
+import hashlib
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from nativegrid.archive import Pamt, checksum, safe_asset_path
 from nativegrid.build import output_directory
 from nativegrid.inventory import INVENTORY_PATHS, SELL_PATHS, transform, transform_sell, sized
-from nativegrid.pe import PE
+from nativegrid.pe import PE, audit_method
 
 
 def synthetic_index():
@@ -22,6 +24,24 @@ def synthetic_index():
 
 
 class ArchiveChecks(unittest.TestCase):
+    def test_method_body_guard_rejects_changes_after_the_prefix(self):
+        data = bytes(range(64))
+        method = dict(rva=0, size=48, prefix=data[:24].hex(),
+                      sha256=hashlib.sha256(data[:48]).hexdigest())
+        with patch('nativegrid.pe.PE') as pe:
+            pe.return_value.raw.side_effect = lambda rva: rva
+            pe.return_value.section.return_value = dict(rva=0, vsize=64, rawsize=64, flags=0x20000000)
+            audit_method(data, method)
+            damaged = bytearray(data)
+            damaged[30] ^= 1
+            with self.assertRaises(ValueError):
+                audit_method(damaged, method)
+            with self.assertRaises(ValueError):
+                audit_method(data, dict(method, size=65))
+            pe.return_value.section.return_value['flags'] = 0x40000000
+            with self.assertRaises(ValueError):
+                audit_method(data, method)
+
     def test_sell_grid_preserves_other_layouts_and_handlers(self):
         old = sized('column') + sized('6') + sized('row') + sized('8')
         other = sized('column') + sized('6') + sized('row') + sized('4')

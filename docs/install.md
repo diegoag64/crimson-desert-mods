@@ -14,7 +14,7 @@ Revision 15 through 35 shop packages also require the pinned English localizatio
 
 ## Install a package
 
-Revision 33 is installed. Preserve `build/shop-33-whole-labels` and its installation rollback journal, `build/rollback/rollback-07fb54249ccc4f6881e75c4591ea52ba`, along with earlier packages. The user reports that Extraction's scrollbar is too far from its grid and that Crafting thumbnails sometimes appear only after switching tabs.
+Revision 33 is an earlier layout checkpoint. Preserve `build/shop-33-whole-labels` and its installation rollback journal, `build/rollback/rollback-07fb54249ccc4f6881e75c4591ea52ba`, along with earlier packages. The reported issues were Extraction's scrollbar distance and Crafting thumbnails that appeared only after switching tabs.
 
 Revision 34 corrects the Extraction scrollbar offset. It does not address the Crafting thumbnail issue. The package is prepared separately and requires installation authorization and a live check. Use the installed revision 33 package as `-PreviousPackage` when installing it.
 
@@ -48,8 +48,22 @@ Launch the game yourself. Test normal inventory, Private Storage, category icons
 
 Revision 35 includes revision 34's Extraction scrollbar correction and preserves all of its asset hashes. The additional Crafting hook requires nine passing native suites and the exact method and owner pins in `crafting_runtime_revisions.35`. The installer rejects altered or missing runtime metadata.
 
-Close Crimson Desert before installation. Keep DMM unmounted. Use the currently installed revision 33 package as `-PreviousPackage` when replacing it with `build/crafting-35-image-cache`. Revision 34 was prepared but was not installed. Preserve revision 33 and the resulting rollback journal.
+Close Crimson Desert before installation. Keep DMM unmounted. The original build `26329202` installation upgraded revision 33 to `build/crafting-35-image-cache`. Its rollback journal is `build/rollback/rollback-91d1c7cbc3dd4c95871c51e5af6949b1`. Revision 34 was prepared but was not installed. Preserve these packages and journals.
 
 After the user launches the game, inspect `build/crafting-35-image-cache/runtime.log` for the Crafting hook activation. A successful cache repair writes `CRAFTING: repaired empty recipe background with native layout helpers.` Logging stops after eight repairs. No repair message is expected when the native pass already produces a valid rectangle. Activation and fixture results alone do not establish visible success.
 
 If initial weapon icons remain blank, capture their cached rectangles before any category switch. If loading regresses, close the game and restore the exact preceding package through the recorded rollback journal. Do not alter game archives or remove the journal.
+
+## Install after Steam updates to 26345091
+
+Use `build/crafting-35-build-26345091`, built from the separate audited compatibility record. The old `build/crafting-35-image-cache` package remains revision 35 but targets a different EXE. Reinstalling its bytes cannot enable it on the new game build.
+
+For the first upgrade from the old-game revision 35 package:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\NativeGrid.ps1 -Action Install -Game "E:\Steam\steamapps\common\Crimson Desert" -Package build\crafting-35-build-26345091 -PreviousPackage build\crafting-35-image-cache
+```
+
+Installation still requires user authorization and a stopped game. The installer uses the previous package to establish ownership and preserve exact rollback bytes. It validates the current game against the target package's pins. Keep DMM unmounted.
+
+Use the rebuilt package's `runtime.log` for the subsequent live check. `build/layout-34-build-26345091` is a separately built fallback with the same UI resources but no Crafting image-cache hook. To use it after an authorized exit, supply it as `-Package` and the installed new-game revision 35 package as `-PreviousPackage`. Restoring old-game bytes would disable the mod on the updated EXE. The previous packages remain available for their original game build.

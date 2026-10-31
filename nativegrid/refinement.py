@@ -5,7 +5,7 @@ import struct
 
 from .inventory import sized
 from .shop import compact_css, fit_bytes, validate_shop_selectors
-from .pe import PE
+from .pe import PE, audit_method
 
 REFINEMENT_PATHS = (
     'ui/bin__/itemenchantpanel_game.uibinary',
@@ -23,6 +23,8 @@ def audit_runtime(exe, pins):
         raw = pe.raw(method['rva'])
         if len(prefix) != 24 or exe[raw:raw+24] != prefix:
             raise ValueError('Refinement method fingerprint differs from audit: ' + name)
+        if 'sha256' in method:
+            audit_method(exe, method)
     section = pe.section(pins['hidden_atom_rva'])
     if not section or not section['flags'] & 0x80000000:
         raise ValueError('Refinement hidden-class atom is outside writable image data')

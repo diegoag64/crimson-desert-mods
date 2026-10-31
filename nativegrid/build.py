@@ -9,7 +9,7 @@ import struct
 from .dependencies import MINHOOK, prepare
 from .compiler import compile_flexible
 from .inventory import INVENTORY_PATHS, SELL_PATHS, transform, transform_sell
-from .pe import PE, package_methods
+from .pe import PE, package_methods, audit_method
 from .tests import test
 
 SOURCE = Path(__file__).resolve().parent
@@ -95,6 +95,11 @@ def build(game, output, gcc, experimental_shop=False, experimental_refinement=Fa
     exe = (game / 'bin64/CrimsonDesert.exe').read_bytes()
     methods = package_methods(exe) + [support['method_rvas'][2]]
     require(methods == support['method_rvas'], 'Derived package-worker methods differ from supported build')
+    if 'method_audits' in support:
+        for name, rva in zip(('raw_read', 'full_read', 'resize'), methods):
+            method = support['method_audits'][name]
+            require(method['rva'] == rva, 'Method body audit uses a different RVA: ' + name)
+            audit_method(exe, method)
     if 'resize_call_offset' in support:
         call = methods[1] + support['resize_call_offset']
         raw = PE(exe).raw(call)

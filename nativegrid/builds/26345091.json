@@ -1,0 +1,305 @@
+{
+  "assets": {
+    "ui/bin__/inventoryequipmentpanel_game.uibinary": {
+      "original_sha256": "5c6884f46e298e07d728a348b971cba602047fd5a93c82a66ed8d8c1793224ea",
+      "replacement_sha256": "4bba96a6b5408a1c7c8d257effe15a585b072bbd791130ffeaaaea7cd5734e7f"
+    },
+    "ui/bin__/inventory2_game.uibinary": {
+      "original_sha256": "76f93337204ba558c88785560db29222b25101a3c2dc0c60c2c95b6cc399a91b",
+      "replacement_sha256": "580bac29f7205f09fae46a0268fa536b45365d24e615367d031a145872a3d193"
+    },
+    "ui/bin__/inventory2_component_game.uibinary": {
+      "original_sha256": "99c3e7ad42ab7e3b5ef4bf62b77797e84bf67addce6f5cfa29f9115bfa63957b",
+      "replacement_sha256": "b4a6124e83343514e1a68d47d0fbf88c472c83beaa8151a61b76aa068b7baa48"
+    },
+    "ui/xml/gamemain/template/inventory2.thtml": {
+      "original_sha256": "fac77a7dc10bceab4fc316bab9c4304117272cbf6dffff775d5fb0b47277044d",
+      "replacement_sha256": "ca5871c28bd417f4d962543f5b03d5b7fcafc6a7e586f7422df174d799b9a0f1"
+    },
+    "ui/xml/gamemain/title/itemicon.css": {
+      "original_sha256": "f21d01dc72a819594a9113b604530e7dc7ae6638061e4db589c5ad8fff1f9b22",
+      "replacement_sha256": "b29ce76eee03d9980d769c5851ab72f6d1ff19ac2a53342771d8fe547560c547"
+    },
+    "ui/bin__/warehouseview2_game.uibinary": {
+      "original_sha256": "e563c124d4a243a48477fc43d0a58cb78fc86dcd7f597c2cd6f2694b3e8dba79",
+      "replacement_sha256": "5d1bbd024504b01711d0fcbe16770b4d0d473821ae52d715e2dd7e2f7ee86232"
+    },
+    "ui/xml/gamemain/template/itemlist.css": {
+      "original_sha256": "e8c37852513cb0c3399b3264424ad517857321f5e77edf03a9da6af7c161b470",
+      "replacement_sha256": "a8a12c47e9a341459e6cee31078d886a622cf543911bdc68971ee3afabbbd626"
+    }
+  },
+  "shop_assets": {
+    "ui/bin__/inventoryequipmentpanel_game.uibinary": {
+      "original_sha256": "5c6884f46e298e07d728a348b971cba602047fd5a93c82a66ed8d8c1793224ea",
+      "replacement_sha256": "4bba96a6b5408a1c7c8d257effe15a585b072bbd791130ffeaaaea7cd5734e7f"
+    },
+    "ui/bin__/inventory2_game.uibinary": {
+      "original_sha256": "76f93337204ba558c88785560db29222b25101a3c2dc0c60c2c95b6cc399a91b",
+      "replacement_sha256": "580bac29f7205f09fae46a0268fa536b45365d24e615367d031a145872a3d193"
+    },
+    "ui/bin__/inventory2_component_game.uibinary": {
+      "original_sha256": "99c3e7ad42ab7e3b5ef4bf62b77797e84bf67addce6f5cfa29f9115bfa63957b",
+      "replacement_sha256": "b4a6124e83343514e1a68d47d0fbf88c472c83beaa8151a61b76aa068b7baa48"
+    },
+    "ui/xml/gamemain/template/inventory2.thtml": {
+      "original_sha256": "fac77a7dc10bceab4fc316bab9c4304117272cbf6dffff775d5fb0b47277044d",
+      "replacement_sha256": "ca5871c28bd417f4d962543f5b03d5b7fcafc6a7e586f7422df174d799b9a0f1"
+    },
+    "ui/xml/gamemain/title/itemicon.css": {
+      "original_sha256": "f21d01dc72a819594a9113b604530e7dc7ae6638061e4db589c5ad8fff1f9b22",
+      "replacement_sha256": "46975e5ef7d6791f15e9bd1e3f9957189cb855117f2d19d10ba46dba4cea89b2"
+    },
+    "ui/bin__/warehouseview2_game.uibinary": {
+      "original_sha256": "e563c124d4a243a48477fc43d0a58cb78fc86dcd7f597c2cd6f2694b3e8dba79",
+      "replacement_sha256": "5d1bbd024504b01711d0fcbe16770b4d0d473821ae52d715e2dd7e2f7ee86232"
+    },
+    "ui/xml/gamemain/template/itemlist.css": {
+      "original_sha256": "e8c37852513cb0c3399b3264424ad517857321f5e77edf03a9da6af7c161b470",
+      "replacement_sha256": "a8a12c47e9a341459e6cee31078d886a622cf543911bdc68971ee3afabbbd626"
+    },
+    "ui/bin__/npcstorebuyview2_game.uibinary": {
+      "original_sha256": "68ab1eb625358434a8d65912d5a904085bcafb620c8d4ca88087d12dc8de396b",
+      "replacement_sha256": "2a7f99b62ef059e3913c158abcb3096f3f35a53510a75c406984f2ff08302d97"
+    },
+    "ui/bin__/itemicon_component_game.uibinary": {
+      "original_sha256": "8c9a67028d89383b406c8e387dadde9f201683d3168ec0ca98dbb3dc6e90744d",
+      "replacement_sha256": "9136a383f27c35d93bc9b2fcd1a95225c4d57bb553822b2c6b85c42bbc35aca7"
+    },
+    "ui/bin__/itemicon_game.uibinary": {
+      "original_sha256": "383145a646b353aa75ea43b24a5e0b885a1fb6c09a084567c64e251f4cfae5eb",
+      "replacement_sha256": "5a6bb27b713fbabe6fab68316be40279c64e577898a22eeacd09257ad20d5508"
+    },
+    "ui/xml/gamemain/template/itemicon.thtml": {
+      "original_sha256": "d84c8b9b184423e3fd0d4393d9afd8f5f1ccc1731e32ac5152786c78aa05a586",
+      "replacement_sha256": "c8645c929f00a798ff11c99c7d95ad1bb2e7e6c5b806a063d05f668aa16efc5f"
+    },
+    "ui/xml/gamemain/play/npcstorebuyview2.html": {
+      "original_sha256": "c4a48f49dd2a457e840c61dd2706eabffbd8854607d9496903b3261cec8d8cf6",
+      "replacement_sha256": "217f50757233cbc813848a5d720d9380072cdbdc9390ecd4de66f1af267b790c"
+    }
+  },
+  "sell_assets": {
+    "ui/bin__/npcstoresellview2_game.uibinary": {
+      "original_sha256": "2c9e5cf2ce24103baeb3c9baf3f3588b6ab1c93df66454f213ca7aef1ec781e9",
+      "replacement_sha256": "05f4a9781e699cc7184ca28abdfcd95fef6742ef29f0b1c0624b399d774dbd9b"
+    },
+    "ui/xml/gamemain/play/npcstoresellview2.html": {
+      "original_sha256": "b900fdcea52e450be2925813d22353837995c763acf973cf102c424904a8deed",
+      "replacement_sha256": "2ea10f1fe5723fdda233b6068b435b2a8a4a30c23e5fbd5328d2137352608ecc"
+    }
+  },
+  "shop_requirements": {
+    "index_path": "0020/0.pamt",
+    "index_sha256": "a0315b20e6e7cf9ff3714b3376b6eb206e472e138b06e6546e67a36dd0b6d38f",
+    "asset": {
+      "original_sha256": "2bcf226050a5964060288e6d98b4420843befcf95c108a1c37ca567a312130bc",
+      "replacement_sha256": "5a03f6370ca283a1cf3899824522d81402269a6b52c3c3fb370d396d1abac4db"
+    }
+  },
+  "refinement_assets": {
+    "ui/bin__/itemenchantpanel_game.uibinary": {
+      "original_sha256": "19755699050a2fdb3500ba2a617148869030d936bd56139b5718a86b184d4f9a",
+      "replacement_sha256": "7f0af72dc141566b771d4aee44fdffd44934519fd7c6baea153a99f2b3d2ab79"
+    },
+    "ui/xml/gamemain/play/itemenchantpanel.html": {
+      "original_sha256": "a9f071c1fedef91c59e85b9934bff7bddb15187b073f90b4237517f877b4128a",
+      "replacement_sha256": "40513b34e5b42be4022de1253241d0229a84c7cb2bbf08f3af14188860d78d95"
+    },
+    "ui/xml/gamemain/play/itemenchantpanel.css": {
+      "original_sha256": "32c7978371e371e524dbb3be6e93c9193adda92516c466e1d455d82578c04502",
+      "replacement_sha256": "89c4f0e2f2d33f478d33a34489c97aa8c0f820372684081ed5468f7046be8f33"
+    }
+  },
+  "crafting_revisions": {
+    "31": {
+      "ui/bin__/cookingview3_game.uibinary": {
+        "original_sha256": "cdf580f5ed004fddf26c6f199ee6e2815c10b15e8c32d3329a5749c79a53c1b6",
+        "replacement_sha256": "8f25655c1a33aa01fea428cab59b557b6ab8e0b14f8bd6d84cb9c2587f2cf5f8"
+      },
+      "ui/xml/gamemain/play/cookingview3.html": {
+        "original_sha256": "1c6d9f0f724721a10fe6f2d4c279ef32a5737211ddc66c1be94968f7733c0fd7",
+        "replacement_sha256": "23e1391aea288525c0154adf31919f4159a2d2ddaa0469916928f8dc03b1b47f"
+      },
+      "ui/xml/gamemain/play/cookingview3.css": {
+        "original_sha256": "4307befd42387445e7348149f0bd8e2bcc0dbe47fef97753d34eb2c695f9ac46",
+        "replacement_sha256": "ba6a2cd73ef669503a19e2c0fd2c7b29d5bbdbc4a18cb7c9de1e00688e2ca0c8"
+      }
+    }
+  },
+  "extraction_revisions": {
+    "32": {
+      "ui/bin__/itemextractpanel_game.uibinary": {
+        "original_sha256": "9d7e31a68bb70209186b8aad5738861756a0963e935e476937b0b2ca45bd6812",
+        "replacement_sha256": "33964e4a9697641c9f781b44497a05ecd63d2569fce4ac481068863e1356a851"
+      },
+      "ui/xml/gamemain/play/itemextractpanel.html": {
+        "original_sha256": "9ae97b0700911056ebefdde75a1902b1abd8059986e61331d75afaf89548dd9c",
+        "replacement_sha256": "e8a66e48d404c8e9f8941b46aaa25ad440331bfff011df60c4e623b633cfa8fa"
+      },
+      "ui/xml/gamemain/play/itemextractpanel.css": {
+        "original_sha256": "8128fd4d8d268367061160f2b5f377e8a82489487d1f1fffd627cf0a498a3dbb",
+        "replacement_sha256": "efdb55f904cc14c7a0ab4e0f4e88ebd86b6d1df0c2ddb7c94d49d8ebc58b3201"
+      }
+    },
+    "34": {
+      "ui/bin__/itemextractpanel_game.uibinary": {
+        "original_sha256": "9d7e31a68bb70209186b8aad5738861756a0963e935e476937b0b2ca45bd6812",
+        "replacement_sha256": "33964e4a9697641c9f781b44497a05ecd63d2569fce4ac481068863e1356a851"
+      },
+      "ui/xml/gamemain/play/itemextractpanel.html": {
+        "original_sha256": "9ae97b0700911056ebefdde75a1902b1abd8059986e61331d75afaf89548dd9c",
+        "replacement_sha256": "e8a66e48d404c8e9f8941b46aaa25ad440331bfff011df60c4e623b633cfa8fa"
+      },
+      "ui/xml/gamemain/play/itemextractpanel.css": {
+        "original_sha256": "8128fd4d8d268367061160f2b5f377e8a82489487d1f1fffd627cf0a498a3dbb",
+        "replacement_sha256": "853c0c6df751d6e20b94a6b2f9bea77a4edaba3dc240d2482d494dbba715f3f4"
+      }
+    }
+  },
+  "buy_label_revisions": {
+    "33": {
+      "ui/bin__/itemicon_component_game.uibinary": {
+        "original_sha256": "8c9a67028d89383b406c8e387dadde9f201683d3168ec0ca98dbb3dc6e90744d",
+        "replacement_sha256": "ec81fafbc3e1a5dbc50f8e217ba2131bd8ada870f0967337117fb8204054f71c"
+      },
+      "ui/bin__/itemicon_game.uibinary": {
+        "original_sha256": "383145a646b353aa75ea43b24a5e0b885a1fb6c09a084567c64e251f4cfae5eb",
+        "replacement_sha256": "fd1c925946d32dd54dfbcf3e140b9ee1e9737401125397f27441c4972238e894"
+      },
+      "ui/xml/gamemain/template/itemicon.thtml": {
+        "original_sha256": "d84c8b9b184423e3fd0d4393d9afd8f5f1ccc1731e32ac5152786c78aa05a586",
+        "replacement_sha256": "15e15070d62a4abed1cf8e24c5cdce74e69bc7335019f761e90ba11a3f070dd7"
+      },
+      "ui/xml/gamemain/title/itemicon.css": {
+        "original_sha256": "f21d01dc72a819594a9113b604530e7dc7ae6638061e4db589c5ad8fff1f9b22",
+        "replacement_sha256": "f360f82aa7b6f338f920ad152651f4fa4618b3830a17697f00638cc6e0ff21e0"
+      }
+    }
+  },
+  "game_build": "26345091",
+  "executable_version": "1.0.0.3460",
+  "exe_sha256": "4e38ce1d8fe98eee7be0e26026a1d24ea6a17e80aa88e906b5f3ed553af11f63",
+  "master_sha256": "479ca2a0781629ef28c3168c3b338742aa7e95ecc44cc7df540ed588f54a6cef",
+  "pamt_sha256": "01ab2c0a0382005aad625d5985beecc80adfe633836aea5bf773196bb682e7c4",
+  "method_rvas": [
+    22579888,
+    22579696,
+    22040368
+  ],
+  "resize_call_offset": 128,
+  "live_validation": "none; offline compatibility audit and fixture tests only",
+  "method_audits": {
+    "raw_read": {
+      "rva": 22579888,
+      "size": 343,
+      "prefix": "48895c240848896c2418565741564883ec60418bf1498be8",
+      "sha256": "5153904bbc293f480d07b0e39b317aea5c788c190f05cf256cadd3eef01eb42b"
+    },
+    "full_read": {
+      "rva": 22579696,
+      "size": 191,
+      "prefix": "48895c2408488974241048897c24184c8974242041574883",
+      "sha256": "a3610e844bcf953e68e40205d656ad8c7630a1fad43aecd24f89389ed46da255"
+    },
+    "resize": {
+      "rva": 22040368,
+      "size": 346,
+      "prefix": "48895c241048896c2418565741564881ec800000008bf248",
+      "sha256": "47c4bb0d94846493914c2d442e6f25d88009898590191275170c09cf0c77484a"
+    }
+  },
+  "refinement_revisions": {
+    "30": {
+      "ui/bin__/itemenchantpanel_game.uibinary": {
+        "original_sha256": "19755699050a2fdb3500ba2a617148869030d936bd56139b5718a86b184d4f9a",
+        "replacement_sha256": "7f0af72dc141566b771d4aee44fdffd44934519fd7c6baea153a99f2b3d2ab79"
+      },
+      "ui/xml/gamemain/play/itemenchantpanel.html": {
+        "original_sha256": "a9f071c1fedef91c59e85b9934bff7bddb15187b073f90b4237517f877b4128a",
+        "replacement_sha256": "40513b34e5b42be4022de1253241d0229a84c7cb2bbf08f3af14188860d78d95"
+      },
+      "ui/xml/gamemain/play/itemenchantpanel.css": {
+        "original_sha256": "32c7978371e371e524dbb3be6e93c9193adda92516c466e1d455d82578c04502",
+        "replacement_sha256": "cc902c4c3b3d80fa26cfe9897aa3a5d02ad3157df37dfe405ae9bc6a364d95f3"
+      }
+    }
+  },
+  "refinement_runtime_revisions": {
+    "27": {
+      "description_vtable": {
+        "rva": 94188952,
+        "type": ".?AVUIGamePlayControlCommonInfoDescription@pa@@"
+      },
+      "list_vtable": {
+        "rva": 94655032,
+        "type": ".?AVUIGamePlayControlCommon_ItemList@uiCommonScript@pa@@"
+      },
+      "root_vtable": {
+        "rva": 94854640,
+        "type": ".?AVUIGamePlayControlRootItemEnchant@uiCommonScript@pa@@"
+      },
+      "hidden_atom_rva": 118532040,
+      "methods": {
+        "refresh": {
+          "rva": 59322576,
+          "size": 384,
+          "prefix": "48895c24185556574883ec20488bd9488b09e879d0e6fcc7",
+          "sha256": "746b7ba92ef03d0f7c5c22b762eff600bc262998f3457509dd8607bcbf486e6d"
+        },
+        "add_class": {
+          "rva": 59336576,
+          "size": 153,
+          "prefix": "48895c2408488974241048897c241841564883ec20448b41",
+          "sha256": "854e5c514f37f8db5e2581c17de6d7e29a3e904e5b9d997c956e17ea5338222d"
+        },
+        "sort_classes": {
+          "rva": 59339184,
+          "size": 250,
+          "prefix": "41574883ec108b41084c8bf9448bd841d1eb0f84db000000",
+          "sha256": "54db14a16eec41afb2d31d70f20ac14f369ef3bc3c192d6bc659386c7ac2840c"
+        }
+      }
+    }
+  },
+  "crafting_runtime_revisions": {
+    "35": {
+      "methods": {
+        "layout": {
+          "rva": 59149536,
+          "size": 14534,
+          "prefix": "488bc44c8948204c89401848895010488948085553565741",
+          "sha256": "a75e17275c9feaf38984305ba325bbeec1d6c6245c1e6a282edd4c658239a086"
+        },
+        "background_size": {
+          "rva": 59239408,
+          "size": 287,
+          "prefix": "48895c2410574883ec50488b01410fb6f8c5f857c0c5fa11",
+          "sha256": "d400f62a996c2a00a68d3f7a833ed5ab1c5d2b6c5e1d13da2805a62576bf8c46"
+        },
+        "background_position": {
+          "rva": 59239696,
+          "size": 382,
+          "prefix": "48895c241048896c2418565741564883ec40488b014c8d35",
+          "sha256": "817ed91b7ad4d1da3c14e02e0cb38322de15dcc55ec1409b2345f58356c1c734"
+        }
+      },
+      "description_vtable": {
+        "rva": 94188952,
+        "type": ".?AVUIGamePlayControlCommonInfoDescription@pa@@"
+      },
+      "card_vtable": {
+        "rva": 94851328,
+        "type": ".?AVUIGamePlayControlRootCraftListItem@uiCommonScript@pa@@"
+      },
+      "list_vtable": {
+        "rva": 94183128,
+        "type": ".?AVUIGamePlayControlCommonGridList@pa@@"
+      },
+      "root_vtable": {
+        "rva": 94852672,
+        "type": ".?AVUIGamePlayControlRootCooking2@uiCommonScript@pa@@"
+      }
+    }
+  }
+}
