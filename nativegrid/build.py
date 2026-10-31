@@ -39,7 +39,7 @@ def output_directory(path, game=None):
 
 
 def build(game, output, gcc, experimental_shop=False, experimental_refinement=False, experimental_crafting=False,
-          experimental_extraction=False):
+          experimental_extraction=False, experimental_buy_labels=False):
     from .archive import Pamt, decrypt
     import lz4.block
 
@@ -47,6 +47,12 @@ def build(game, output, gcc, experimental_shop=False, experimental_refinement=Fa
     matches = [record for record in SUPPORTED_BUILDS if record['exe_sha256'] == exe_hash]
     require(len(matches) == 1, 'Unsupported or ambiguous executable fingerprint')
     support = matches[0]
+    require(not experimental_buy_labels or experimental_extraction,
+            'Buy-label builds must include the prepared extraction package: add --experimental-extraction')
+    label_pins = support.get('buy_label_revisions', {}).get('33', {}) if experimental_buy_labels else {}
+    if experimental_buy_labels:
+        from .shop_labels import LABEL_PATHS, transform as label_transform
+        require(set(label_pins) == set(LABEL_PATHS), 'No audited buy-label assets for this game build')
     require(not experimental_extraction or experimental_crafting,
             'Extraction builds must preserve the working crafting package: add --experimental-crafting')
     extraction_pins = support.get('extraction_revisions', {}).get('32', {}) if experimental_extraction else {}
@@ -109,6 +115,7 @@ def build(game, output, gcc, experimental_shop=False, experimental_refinement=Fa
     pins.update(refinement_pins)
     pins.update(crafting_pins)
     pins.update(extraction_pins)
+    pins.update(label_pins)
     if requirement_support:
         paths.append(REQUIREMENT_PATH)
         pins[REQUIREMENT_PATH] = requirement_support['asset']
@@ -142,6 +149,9 @@ def build(game, output, gcc, experimental_shop=False, experimental_refinement=Fa
         if path in extraction_pins:
             after = extraction_transform(path, before)
             require(len(after) == len(before), 'Extraction asset must support fixed-buffer reads: ' + path)
+        if path in label_pins:
+            after = label_transform(path, after)
+            require(len(after) == len(before), 'Buy-label asset must support fixed-buffer reads: ' + path)
         require(hashlib.sha256(after).hexdigest() == pins[path]['replacement_sha256'], 'Transform differs from pinned replacement: ' + path)
         payloads.append((path, before, after))
         records.append(dict(path=path, size=len(before), replacement_size=len(after),
@@ -159,6 +169,8 @@ def build(game, output, gcc, experimental_shop=False, experimental_refinement=Fa
         revision = 31
     if experimental_extraction:
         revision = 32
+    if experimental_buy_labels:
+        revision = 33
     manifest = dict(schema=1, revision=revision, experimental_shop=experimental_shop,
                     status='built_not_installed', game_build=support['game_build'],
                     exe_sha256=support['exe_sha256'], master_sha256=support['master_sha256'], pamt_sha256=support['pamt_sha256'],
@@ -196,6 +208,9 @@ def build(game, output, gcc, experimental_shop=False, experimental_refinement=Fa
                         extraction_tile_width=124, extraction_tile_height=106,
                         extraction_status='experimental_no_live_validation')
         (output / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
+    if experimental_buy_labels:
+        manifest.update(experimental_buy_labels=True, buy_labels_status='experimental_no_live_validation')
+        (output / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
     print(f'Built revision {manifest["revision"]}: {len(payloads)} exact-validated payloads; {len(results)} fixture suites passed. {output}')
     return manifest
 
@@ -212,6 +227,7 @@ def main():
     parser.add_argument('--experimental-refinement', action='store_true', help='Include experimental 3 by 4 refinement gear cards; requires --experimental-shop')
     parser.add_argument('--experimental-crafting', action='store_true', help='Include experimental 3 by 4 crafting recipe cards; requires --experimental-refinement')
     parser.add_argument('--experimental-extraction', action='store_true', help='Include experimental 3 by 4 extraction item cards; requires --experimental-crafting')
+    parser.add_argument('--experimental-buy-labels', action='store_true', help='Fix duplicate buy-card emblems and center whole labels; requires --experimental-extraction')
     args = parser.parse_args()
     require(args.test_only or args.game is not None, '--game is required unless --test-only is used')
     gcc = shutil.which(args.gcc)
@@ -222,7 +238,7 @@ def main():
         test(output, gcc, MINHOOK)
     else:
         build(args.game.resolve(), output, gcc, args.experimental_shop, args.experimental_refinement,
-              args.experimental_crafting, args.experimental_extraction)
+              args.experimental_crafting, args.experimental_extraction, args.experimental_buy_labels)
 
 
 if __name__ == '__main__':

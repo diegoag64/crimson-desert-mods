@@ -273,5 +273,25 @@
         "replacement_sha256": "efdb55f904cc14c7a0ab4e0f4e88ebd86b6d1df0c2ddb7c94d49d8ebc58b3201"
       }
     }
+  },
+  "buy_label_revisions": {
+    "33": {
+      "ui/bin__/itemicon_component_game.uibinary": {
+        "original_sha256": "7b282602d41064820eb651b29d5f55a3b4562636811b8459517f16ed392e1e5b",
+        "replacement_sha256": "94034bb734ee2cec8512d96fe5996ee221018ea83db287d374c61700395ef146"
+      },
+      "ui/bin__/itemicon_game.uibinary": {
+        "original_sha256": "383145a646b353aa75ea43b24a5e0b885a1fb6c09a084567c64e251f4cfae5eb",
+        "replacement_sha256": "fd1c925946d32dd54dfbcf3e140b9ee1e9737401125397f27441c4972238e894"
+      },
+      "ui/xml/gamemain/template/itemicon.thtml": {
+        "original_sha256": "d84c8b9b184423e3fd0d4393d9afd8f5f1ccc1731e32ac5152786c78aa05a586",
+        "replacement_sha256": "15e15070d62a4abed1cf8e24c5cdce74e69bc7335019f761e90ba11a3f070dd7"
+      },
+      "ui/xml/gamemain/title/itemicon.css": {
+        "original_sha256": "f21d01dc72a819594a9113b604530e7dc7ae6638061e4db589c5ad8fff1f9b22",
+        "replacement_sha256": "f360f82aa7b6f338f920ad152651f4fa4618b3830a17697f00638cc6e0ff21e0"
+      }
+    }
   }
 }

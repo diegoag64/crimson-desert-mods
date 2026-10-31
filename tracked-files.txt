@@ -48,3 +48,6 @@ nativegrid/crafting.py
 tests/test_crafting.py
 nativegrid/extraction.py
 tests/test_extraction.py
+nativegrid/shop_labels.py
+nativegrid/shop_labels.css
+tests/test_shop_labels.py

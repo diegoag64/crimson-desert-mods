@@ -58,6 +58,8 @@ To add the Extraction item grid, also pass `--experimental-extraction`. This bui
 
 Extraction reuses the Refinement gear-list transform and card CSS. Its item selector changes to three columns and four rows, with a 390-by-435-pixel viewport. The separate extraction-level and result lists remain vertical. The new assets keep their original byte lengths. Revision 32 requires a live UI check after installation.
 
+To include the buy-card emblem fix with the prepared Extraction update, add `--experimental-buy-labels` to all four existing experimental flags. This builds revision 33. The default builds and their historical pins remain unchanged. The label transform runs after the legacy shop transform and pins four replacements under `buy_label_revisions.33`. It changes one byte in each of two compiled component resources and the source template to isolate the shop's frame-emblem class, then appends scoped stylesheet rules. It retains the native inline emblem and centers the complete name label. No native runtime method changes.
+
 On build `26329202`, experimental shop packages also read `0020/0.pamt` and the English `localstringinfo.paloc` resource. The `shop_requirements` metadata pins this index and both resource hashes. The installer verifies the additional index before replacement. The localization transform changes three short requirement labels to their original inline icons and verifies that all other records remain identical. Its compressed envelope changes size, so delivery requires the existing full-read hook. See [requirement-label troubleshooting](grid-layout-troubleshooting.md#requirement-text-overflows-a-shop-card) for the format, scope, and live checks.
 
 ## Audit files before publication

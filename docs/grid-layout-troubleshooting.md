@@ -295,6 +295,16 @@ The original Extraction viewport is 350 by 428 CSS pixels. Three card pitches ne
 
 The new package adds three exact-pinned, equal-length assets. All twenty-one revision 31 payloads and the native runtime pins remain unchanged. Eight native suites, 35 Python tests, and 37 installer cases pass. These checks do not establish the visible Extraction result. After installation, inspect item names, tier markers, the third column, the bottom row, scrolling, and the later level/result layout without executing extraction. Keep revision 31 available for rollback.
 
+## Duplicate house emblems on buy cards
+
+The user reported overlapping house symbols on furniture and dye names in a buy menu running revision 31. Read-only inspection found eight visible populated cards. The first four had both a visible `ItemIconEmoji` frame overlay and an inline name symbol. The frame overlay covered the whole card: about 165.33 by 149.33 screen pixels. The name's native text runs were already sequential for these long names: a 24-pixel symbol followed by a 168-, 177-, 183-, or 249-pixel name run. This separates the confirmed duplicate overlay from the short-name centering issue previously diagnosed in Refinement.
+
+Do not hide `.cpp-icon-emoji` globally or remove the name formatter's symbols. Revision 33 assigns `item-icon-emoj_` only to the overlay in `StoreInfoIcon`. The change replaces one byte in each compiled component resource and the source template. `selector-item-icon-emoji`, `ItemIconEmoji`, native scripts, other components, and item data remain unchanged. A direct `#ItemIconEmoji.item-icon-emoj_` rule hides this duplicate. Inventory, gear cards, detail tooltips, and requirement icons do not acquire that class.
+
+The buy title uses shop-specific aliases. Its wrapper now centers an auto-width label capped at 116 CSS pixels. The title itself uses left alignment and start-aligned contents, preserving the icon/name run sequence. Long labels retain their left edge and clip inside the card; short labels are centered together with any inline emblem. Existing price, stock, owned-count, requirement-spacing, hover, and empty-card rules are unchanged.
+
+Revision 33 changes four of revision 32's twenty-four payloads and retains its prepared Extraction assets. Revision 31 remains installed until replacement is authorized. Eight native suites, 39 Python tests, and 43 installer cases pass; the Python geometry test includes the four measured symbol/name pairs. These are offline checks. After installation, inspect the same vendor's house-marked cards, plain short names, long names, and unavailable-item requirements without purchasing anything. Preserve the revision 31 package as the live rollback checkpoint.
+
 ## Verify and keep a rollback checkpoint
 
 Build into a new ignored directory. Run the Python checks, native fixtures, installer fixtures, and publication audit described in [the build guide](build.md). Add new source or documentation paths to both `.gitignore` and `tracked-files.txt`. Stage explicit paths and commit each fix separately.

@@ -1,0 +1,7 @@
+/* Exact aliases belong only to compact StoreInfoIcon cards. Keep the name's
+   inline emblem and remove the duplicate full-card overlay. */
+#ItemIconEmoji.item-icon-emoj_ { display: none; }
+/* Center the assembled label box; native text-align:center moves each rich-text
+   run independently. Long names remain clipped in the existing 116px viewport. */
+#ItemIconTitleWrap.item-icon-name-wra_ { display: flex; justify-content: center; }
+#ItemIconTitle.item-icon-nam_ { width: auto; min-width: 0px; max-width: 116px; text-align: left; justify-content: flex-start; }

@@ -191,6 +191,32 @@ Assert-Throws { Invoke-WrapperVerify } 'revision 32 still requires crafting guar
 $candidate.experimental_crafting = $true
 $candidate.payloads = @($candidate.payloads | Select-Object -SkipLast 1)
 Assert-Throws { Invoke-WrapperVerify } 'revision 32 refuses missing extraction payload'
+$candidate.payloads += @($support.extraction_revisions.'32'.PSObject.Properties | Select-Object -Last 1 | ForEach-Object {
+    [pscustomobject]@{path=$_.Name; original_sha256=$_.Value.original_sha256; replacement_sha256=$_.Value.replacement_sha256; size=100; replacement_size=100}
+})
+$candidate.payloads += @($support.buy_label_revisions.'33'.PSObject.Properties | ForEach-Object {
+    [pscustomobject]@{path=$_.Name; original_sha256=$_.Value.original_sha256; replacement_sha256=$_.Value.replacement_sha256; size=100; replacement_size=100}
+})
+$candidate.revision = 33
+$candidate | Add-Member -NotePropertyName experimental_buy_labels -NotePropertyValue $true
+Invoke-WrapperVerify
+Write-Output 'PASS: revision 33 accepts scoped buy labels and prepared extraction pins'
+$candidate.experimental_buy_labels = $false
+Assert-Throws { Invoke-WrapperVerify } 'revision 33 requires buy-label flag'
+$candidate.experimental_buy_labels = $true
+$labelHash = $candidate.payloads[-1].replacement_sha256
+$candidate.payloads[-1].replacement_sha256 = '0' * 64
+Assert-Throws { Invoke-WrapperVerify } 'revision 33 refuses changed buy-label payload'
+$candidate.payloads[-1].replacement_sha256 = $labelHash
+$candidate.payloads[-1].replacement_size++
+Assert-Throws { Invoke-WrapperVerify } 'revision 33 refuses resized buy-label payload'
+$candidate.payloads[-1].replacement_size--
+$candidate.experimental_extraction = $false
+Assert-Throws { Invoke-WrapperVerify } 'revision 33 still requires extraction guards'
+$candidate.experimental_extraction = $true
+$candidate.payloads = @($candidate.payloads | Select-Object -SkipLast 1)
+Assert-Throws { Invoke-WrapperVerify } 'revision 33 refuses missing buy-label payload'
+$candidate.PSObject.Properties.Remove('experimental_buy_labels')
 $candidate.PSObject.Properties.Remove('experimental_extraction')
 $candidate.PSObject.Properties.Remove('experimental_crafting')
 $candidate.revision = 25
