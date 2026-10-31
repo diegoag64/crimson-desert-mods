@@ -374,7 +374,7 @@ Five regression cases extend the native fixture to 35 cases. They cover a parent
 
 Revision 36's live buy menu on build `26345091` exposed a pooled-label formatting bug. The stock and owned-count boxes had the same y coordinate and 14 CSS-pixel height. Both matched stylesheet rules with `line-height: 14px`. The stock label also retained an inline `line-height: 27px`, which took precedence. Its native text run was 36 screen pixels high at 4/3 UI scale, while the owned-count run was about 18.67 pixels high.
 
-The active stock labels had no `font-text-sub-red-negative` class and no resolved `translate-y` property. The requirement-spacing rule was not shifting these numbers. Inspect the inline property block as well as matched rules before changing CSS offsets.
+The active stock labels had no `font-text-sub-red-negative` class and no resolved `translate-y` property. That did not establish that the rendered translation was zero. Revision 37's later live failure exposed a separate derived transform cache that this initial investigation missed.
 
 The requirement formatter writes property 84 (`line-height`) through the native setter at RVA `0x711f60`. Its final branch at `0x70dc94` either sets the height needed for generated icons or removes that property through RVA `0x3895980`. The ordinary stock branch instead writes plain text at `0x10af9ac`, calling `0x41d3490`. That plain-text update leaves the previous inline height in place. A card that previously contained requirement icons can therefore carry their line height into a numeric stock label.
 
@@ -395,3 +395,19 @@ Read-only execution of the production predicate against the failing live session
 To diagnose a recurrence, capture the failing state before changing categories. Inspect the label's inline properties at `style + 0x30`, cached properties at `style + 0x20`, matched rules, and native run metrics. Property maps use the value array at `+0x70`, value count at `+0x78`, index map at `+0x80`, and map length at `+0x88`. Index `0xff` means absent. Bound every read, verify the current EXE and process, and never reuse pointers across launches. Keep snapshots untracked.
 
 After installation, check repeated scrolling through requirement items and ordinary items in both directions, including single- and multiple-digit stock. Requirement icons must keep their spacing, and stock and owned counts must share a row. `SHOP: cleared stale numeric stock line height before layout.` confirms helper calls, with logging limited to eight. Only the live screen establishes visible success.
+
+### A missing property is not a cleared transform
+
+Revision 37 failed the user's live scrolling check. Its log recorded repair calls. A fresh read-only capture on build `26345091` confirmed that all 18 visible stock labels now had 14-pixel line heights, matching their owned-count siblings. Their text-run metrics also matched the compact height. The stock numbers still rendered above their boxes.
+
+The cached property block at `style + 0x20` contains derived transform values before its property map. Its float at `+0x58` was `-18` for every visible stock label and zero for every owned-count label. The stock labels had no requirement class or translation property-map entry. Their rendered y offsets at `element + 0x6c` differed from their parent by `-24` screen pixels, exactly `-18` CSS pixels at the captured 4/3 scale. Owned labels had zero relative offset. Comparing only property maps and text metrics missed the remaining failure.
+
+Native render-transform code also reads this derived state. On this EXE, RVA `0x41dbaab` loads the cached property block and `0x41dbabd` reads its y translation at `+0x58`. The following transform composition uses that value even when the property map no longer contains a translation entry. This is diagnostic evidence, not a new hooked method.
+
+Revision 38 supplies an explicit normal state, `.item-available-count-tex_{translate-y:0px;}`, through the compact shop transform. The existing two-class requirement rule retains its higher specificity and `-18px` value. The builder enables the reset with `--experimental-shop-counts`. Builds without that flag retain the previous stylesheet. The new package preserves revision 37's line-height cleanup because the captures proved that both stale values can coexist.
+
+The package changes one rule in one 92,099-byte stylesheet. The other 23 payloads, native hooks, method pins, and original-asset pins remain unchanged. `shop_count_assets_revisions.38` separately pins the changed replacement bytes. The installer requires that pin and the translation-reset marker, while retaining the revision 37 native guards.
+
+The CSS regression checks the delivered class aliases, normal and requirement specificity through repeated state transitions, fixed delivery size, and exclusion of owned counts and unrelated classes. This is a stylesheet-resolution check, not an execution of the game's renderer. Ten native suites, 51 Python tests, and the installer fixtures pass. Live verification of revision 38 remains pending.
+
+For future pooled-state failures, compare matched properties, derived caches, and final rendered offsets. An absent map entry can coexist with a stale cache. Give both states explicit values when a reusable element changes its transform. Avoid compensating by moving the price or count container, because their captured boxes were already correct.

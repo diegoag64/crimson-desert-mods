@@ -1,12 +1,38 @@
 """Check shop transform scope and preservation of native handler attributes."""
 import unittest
 import struct
+import re
 import xml.etree.ElementTree as ET
 from nativegrid.shop import style_template, style_binary, transform, STYLE_MAP, compact_css, fit_bytes, component_end, validate_shop_selectors
 from nativegrid.inventory import sized
 
 
 class ShopChecks(unittest.TestCase):
+    def test_recycled_stock_translation_has_explicit_normal_and_requirement_states(self):
+        # Inspect the delivered, aliased CSS rather than the authoring class names.
+        source = b'.unrelated{translate-y:7px;}' + b' ' * 20000
+        old = transform('ui/xml/gamemain/title/itemicon.css', source)
+        new = transform('ui/xml/gamemain/title/itemicon.css', source, reset_counts=True)
+        self.assertEqual(len(new), len(source))
+        reset = b'.item-available-count-tex_{translate-y:0px;} '
+        self.assertEqual(new.count(reset.rstrip()), 1)
+        self.assertEqual(new.replace(reset.rstrip(), b'').rstrip(), old.rstrip())
+        rules = []
+        for selector, body in re.findall(r'([^{}]+)\{([^{}]*)\}', new.decode()):
+            value = re.search(r'(?:^|;)translate-y:([^;]+)', body)
+            if value:
+                rules.append((set(re.findall(r'\.([\w!-]+)', selector)), value[1]))
+        def resolve(classes):
+            matches = [(len(required), order, value) for order, (required, value) in enumerate(rules)
+                       if required and required <= classes]
+            return max(matches)[2] if matches else None
+        normal = {'item-available-count-tex_', 'font-text-sub-whit_'}
+        for _ in range(20):
+            self.assertEqual(resolve(normal | {'font-text-sub-red-negative'}), '-18px')
+            self.assertEqual(resolve(normal), '0px')
+        self.assertIsNone(resolve({'item-inventory-have-count-tex_'}))
+        self.assertEqual(resolve({'unrelated'}), '7px')
+
     def test_grouped_selectors_refused_without_confusing_values_or_strings(self):
         for css in ('.a, .b { top: 0px; }', '.a/* comment */, #b { translate-y: -18px; }'):
             with self.assertRaises(ValueError):

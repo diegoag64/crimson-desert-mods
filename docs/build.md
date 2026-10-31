@@ -112,8 +112,10 @@ git diff --cached --stat
 
 ## Build the recycled shop-count correction
 
-On build `26345091`, append `--experimental-shop-counts` to the revision 36 command and choose a new output directory, such as `build/shop-37-recycled-counts`. This produces revision 37. The flag requires `--experimental-crafting-icons` so the working Crafting repair remains enabled. Omit the new flag to rebuild revision 36.
+On build `26345091`, append `--experimental-shop-counts` to the revision 36 command and choose a new output directory, such as `build/shop-38-count-translation`. This now produces revision 38. The flag requires `--experimental-crafting-icons` so the working Crafting repair remains enabled. Omit the new flag to rebuild revision 36.
 
 Revision 37 adds no asset transform or layout detour. It adds a scoped preparation step to the existing layout hook. `shop_count_runtime_revisions.37` pins the full property-removal helper body, the requirement-class initializer and atom address, and three owner types. The builder audits them before compilation. Older game builds have no revision 37 support record and are rejected for this option. Do not copy these addresses to another build.
 
-The prepared package passes ten native suites, 50 Python checks, and the installer fixtures. Its 24 payload records match revision 36 exactly. The count correction remains experimental until installed and checked during live scrolling.
+Revision 37 passed ten native suites, 50 Python checks, and the installer fixtures, but failed the live scrolling check. It removed the stale line height while leaving a separate cached translation. Preserve that package and its evidence.
+
+Revision 38 adds an explicit zero translation for normal stock labels. The two-class requirement rule retains its existing offset. A separate `shop_count_assets_revisions.38` record pins the changed stylesheet. The other 23 payloads and every native method pin remain unchanged. Builds without the count flag retain the previous stylesheet and pins. The revision 38 package passes ten native suites, 51 Python checks, and the installer fixtures. Its visible scrolling behavior still needs a live check.

@@ -376,3 +376,27 @@ foreach ($owner in @('description_vtable','list_vtable','root_vtable')) {
     Assert-Throws { Invoke-WrapperVerify } "revision 37 rejects changed $owner"
     $candidate.shop_count_runtime.$owner.rva--
 }
+
+# Revision 38 changes only the compact stock translation stylesheet.
+$candidate.revision = 38
+Assert-Throws { Invoke-WrapperVerify } 'revision 38 rejects previous stylesheet'
+$cssPath = 'ui/xml/gamemain/title/itemicon.css'
+$css = @($candidate.payloads | Where-Object path -CEQ $cssPath)[0]
+$css.replacement_sha256 = $updated.shop_count_assets_revisions.'38'.$cssPath.replacement_sha256
+Assert-Throws { Invoke-WrapperVerify } 'revision 38 requires translation reset marker'
+$candidate | Add-Member -NotePropertyName shop_count_translation_reset -NotePropertyValue $true
+Invoke-WrapperVerify
+Write-Output 'PASS: revision 38 accepts explicit stock translation reset'
+$candidate.shop_count_translation_reset = $false
+Assert-Throws { Invoke-WrapperVerify } 'revision 38 refuses disabled translation reset'
+$candidate.shop_count_translation_reset = $true
+$candidate.shop_count_runtime.remove_property.rva++
+Assert-Throws { Invoke-WrapperVerify } 'revision 38 retains native count guards'
+$candidate.shop_count_runtime.remove_property.rva--
+$css.original_sha256 = 'wrong'
+Assert-Throws { Invoke-WrapperVerify } 'revision 38 retains original stylesheet guard'
+$css.original_sha256 = $updated.shop_count_assets_revisions.'38'.$cssPath.original_sha256
+$candidate.crafting_nested_layout = $false
+Assert-Throws { Invoke-WrapperVerify } 'revision 38 retains nested Crafting guard'
+$candidate.crafting_nested_layout = $true
+Invoke-WrapperVerify

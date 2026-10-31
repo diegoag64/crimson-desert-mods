@@ -330,5 +330,13 @@
         "type": ".?AVUIGamePlayControlRootNpcBuyStore2@uiCommonScript@pa@@"
       }
     }
+  },
+  "shop_count_assets_revisions": {
+    "38": {
+      "ui/xml/gamemain/title/itemicon.css": {
+        "original_sha256": "f21d01dc72a819594a9113b604530e7dc7ae6638061e4db589c5ad8fff1f9b22",
+        "replacement_sha256": "8d148f57064eb748145bd80f553ea5f86160773fafb345618dc5faba0d9314e0"
+      }
+    }
   }
 }

@@ -13,10 +13,15 @@ SHOP_PATHS = (
 )
 
 
-def transform(path, before):
+def transform(path, before, reset_counts=False):
     if path.endswith('/itemicon.css'):
         # The caller supplies the already transformed inventory stylesheet.
         styles = Path(__file__).with_name('shop_grid.css').read_text(encoding='utf8')
+        if reset_counts:
+            # Removing the requirement class drops the property from the map,
+            # but the native transform cache retains its old -18px value.
+            # The two-class requirement rule still wins over this normal state.
+            styles += '\n.shop-grid-stock-count { translate-y: 0px; }\n'
         validate_shop_selectors(styles)
         styles = re.sub(r'(?<=\.)shop-grid-[\w-]+', lambda m: CSS_ALIASES[m[0]], styles)
         return fit_bytes(compact_css(before.decode('utf-8-sig') + '\n' + styles).encode('utf8'), len(before))

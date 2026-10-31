@@ -134,6 +134,11 @@ def build(game, output, gcc, experimental_shop=False, experimental_refinement=Fa
     pins.update(crafting_pins)
     pins.update(extraction_pins)
     pins.update(label_pins)
+    if experimental_shop_counts:
+        count_assets = support.get('shop_count_assets_revisions', {}).get('38', {})
+        require(set(count_assets) == {'ui/xml/gamemain/title/itemicon.css'},
+                'No audited shop count translation reset for this game build')
+        pins.update(count_assets)
     if requirement_support:
         paths.append(REQUIREMENT_PATH)
         pins[REQUIREMENT_PATH] = requirement_support['asset']
@@ -154,7 +159,7 @@ def build(game, output, gcc, experimental_shop=False, experimental_refinement=Fa
         if path in sell_pins:
             after = transform_sell(path, before)
         if experimental_shop and (path in SHOP_PATHS or path.endswith('/itemicon.css')):
-            after = shop_transform(path, after)
+            after = shop_transform(path, after, reset_counts=experimental_shop_counts)
             require(len(after) == len(before), 'Shop asset must support fixed-buffer reads: ' + path)
         if is_requirement:
             after = requirement_transform(before)
@@ -194,7 +199,7 @@ def build(game, output, gcc, experimental_shop=False, experimental_refinement=Fa
     if experimental_crafting_icons:
         revision = 36
     if experimental_shop_counts:
-        revision = 37
+        revision = 38
     manifest = dict(schema=1, revision=revision, experimental_shop=experimental_shop,
                     status='built_not_installed', game_build=support['game_build'],
                     exe_sha256=support['exe_sha256'], master_sha256=support['master_sha256'], pamt_sha256=support['pamt_sha256'],
@@ -243,7 +248,8 @@ def build(game, output, gcc, experimental_shop=False, experimental_refinement=Fa
                         crafting_nested_layout=True)
         (output / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
     if experimental_shop_counts:
-        manifest.update(experimental_shop_counts=True, shop_count_runtime=shop_counts)
+        manifest.update(experimental_shop_counts=True, shop_count_runtime=shop_counts,
+                        shop_count_translation_reset=True)
         (output / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
     print(f'Built revision {manifest["revision"]}: {len(payloads)} exact-validated payloads; {len(results)} fixture suites passed. {output}')
     return manifest
