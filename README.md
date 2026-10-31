@@ -106,7 +106,7 @@ Compatibility is tied to exact executable, index, and asset fingerprints. A game
 
 ## Build and install
 
-This is a source repository. Extracted game assets and ready-to-install binaries are not included. Packages are built locally from your supported game installation and must remain local.
+This is a source repository. Extracted game assets and ready-to-install binaries are not included. Historical full-resource packages must remain local. The [Nexus release preparation guide](docs/nexus-release.md) describes the separate patch-based candidate, its portable ZIP, and remaining live checks.
 
 1. Follow the [build guide](docs/build.md) to prepare dependencies, run checks, and choose the layouts to include.
 2. Close Crimson Desert and keep DMM unmounted before installation.
@@ -127,4 +127,4 @@ Canonical source lives in `nativegrid/`; build and installation scripts live in 
 
 ## License
 
-No license has been selected for the project code. Dependencies retain their own licenses; see [third-party notices](THIRD_PARTY.md).
+NativeGrid's original code and mod changes use the [MIT License](LICENSE). Retain the copyright and license notice when reusing them. Dependency licenses and game content remain separate; see [third-party notices](THIRD_PARTY.md). The license does not cover game assets shown in screenshots.

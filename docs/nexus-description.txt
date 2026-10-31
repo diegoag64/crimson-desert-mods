@@ -1,0 +1,53 @@
+[b]NativeGrid - Compact Inventory and Menu Grids[/b]
+
+See more items and comrades at once. NativeGrid adds compact grids to Crimson Desert's inventory, storage, shops, Refinement, Crafting, Extraction, and Manage Comrades.
+
+[b]Layouts[/b]
+[list]
+[*]Inventory, Private Storage, and Shop Sell: 8 columns, 11 visible rows.
+[*]Shop Buy: 6 columns, 3 visible rows, with separate price and stock/owned rows.
+[*]Refinement, Crafting, and Extraction: 3 columns, 4 visible rows.
+[*]Manage Comrades: 5 columns, 3 visible rows with portraits and names.
+[/list]
+
+Cards retain selection borders and gear upgrade indicators. Refinement hides the Equipped badge in the Equipped Gear tab. Item labels retain one inline emblem. Crafting includes a fix for initially missing thumbnails, and shop counts stay aligned when cards are reused.
+
+The game retains its selection, scrolling, and action handlers. There is no list-view toggle. NativeGrid changes UI presentation; it does not change item stats, prices, inventory capacity, or save data.
+
+[b]Requirements and compatibility[/b]
+Windows x64. Steam build 26345091, EXE version 1.0.0.3460 only. The plugin checks the exact executable and original resource hashes and stays inactive on an unsupported executable. A game update needs a new compatibility audit.
+
+Use one x64 ASI loader. DMM 4.6.0 is the recommended manager; the plugin does not require an archive mount. DMM and the loader are separate downloads and are not bundled.
+
+[url=https://www.nexusmods.com/crimsondesert/mods/633]Download DMM[/url]
+
+Other mods that replace these UI resources or the English requirement-label table may conflict. Coexistence with DmmRuntime.asi and arbitrary load orders is unverified. The shortened requirement labels apply to English only. Other languages, resolutions, UI scales, controller navigation, and transaction flows do not have complete test coverage.
+
+[b]Install with DMM[/b]
+1. Close Crimson Desert. Preserve your working NativeGrid package if upgrading.
+2. Import the NativeGrid ZIP through DMM's Mods > Import. Open ASI Mods and enable one NativeGrid entry. Resolve duplicate entries before launching.
+3. Keep one ASI loader. If none is installed, use DMM's loader setup. Do not add a second loader.
+4. Launch the game. NativeGrid itself needs no archive mount. DMM's "No mods loaded" warning can refer to archive mods; check that NativeGrid is enabled in ASI Mods.
+
+For an initial compatibility check, leave archive mods unmounted. Test other mods separately afterward.
+
+[b]Manual installation[/b]
+With the game closed and one compatible ASI loader already installed, copy the contents of the ZIP's NativeGrid folder into the game's bin64 folder. Do not combine manual deployment with a DMM-managed NativeGrid entry.
+
+[b]Uninstall or roll back[/b]
+Close the game and disable NativeGrid in DMM. For a manual installation, remove NativeGrid.asi and its NativeGrid-prefixed companion files. Keep any shared loader and other mods. To roll back, restore the preserved working NativeGrid version using the same installation method.
+
+[b]Troubleshooting[/b]
+NativeGrid.log is written beside the loaded ASI, normally in bin64. If the folder cannot be written, the mod can still run. Check the game's build and the log's ACTIVE or DISABLED lines if the grids are missing. When reporting a problem, include the mod version, game build, menu, steps to reproduce, screenshot, and relevant log lines. Review logs for personal information before sharing them.
+
+[b]Release status[/b]
+Version 0.1.0-rc1 is an experimental release candidate based on the revision 41 layouts. Revision 41's layouts were checked in game. This candidate changes resource delivery and logging; its own live validation must be completed before publication. The included screenshots show revision 41 and are layout references, not proof of candidate validation.
+
+[b]Credits and permissions[/b]
+NativeGrid's original code and mod changes: diegoag64, MIT License. Reuse, modification, redistribution, and commercial use are permitted with the copyright and license notice retained. Dependency licenses and game content remain separate.
+
+MinHook and HDE provide the runtime hooks. CDUMM's archive helpers are used by the local builder. Ultimate ASI Loader is a separate loader option. Pearl Abyss owns Crimson Desert and its game content; this is an unofficial mod with no claimed endorsement.
+
+AI tools were used extensively to generate and revise code and this description. In-game screenshots are user-provided captures.
+
+[url=https://github.com/diegoag64/crimson-desert-mods]Source, changelog, licenses, and build instructions[/url]

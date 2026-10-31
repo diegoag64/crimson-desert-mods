@@ -40,7 +40,7 @@ def output_directory(path, game=None):
 
 def build(game, output, gcc, experimental_shop=False, experimental_refinement=False, experimental_crafting=False,
           experimental_extraction=False, experimental_buy_labels=False, experimental_extraction_scroll=False, experimental_crafting_icons=False,
-          experimental_shop_counts=False, experimental_comrades=False):
+          experimental_shop_counts=False, experimental_comrades=False, release_patches=False):
     from .archive import Pamt, decrypt
     import lz4.block
 
@@ -48,6 +48,8 @@ def build(game, output, gcc, experimental_shop=False, experimental_refinement=Fa
     matches = [record for record in SUPPORTED_BUILDS if record['exe_sha256'] == exe_hash]
     require(len(matches) == 1, 'Unsupported or ambiguous executable fingerprint')
     support = matches[0]
+    require(not release_patches or (experimental_comrades and str(support['game_build']) == '26345091'),
+            'Release candidate requires all revision 41 features and Steam build 26345091')
     require(not experimental_comrades or experimental_shop_counts,
             'Comrades grid must preserve revision 38: add --experimental-shop-counts')
     comrades_pins = support.get('comrades_revisions', {}).get('41', {}) if experimental_comrades else {}
@@ -191,7 +193,12 @@ def build(game, output, gcc, experimental_shop=False, experimental_refinement=Fa
         records.append(dict(path=path, size=len(before), replacement_size=len(after),
                             original_sha256=hashlib.sha256(before).hexdigest(), replacement_sha256=hashlib.sha256(after).hexdigest()))
     results = test(output, gcc, MINHOOK)
-    compile_flexible(output, exe, payloads, methods, gcc, MINHOOK, refinement=refinement_runtime, crafting=crafting_runtime, shop_counts=shop_counts)
+    if release_patches:
+        results += test(output, gcc, MINHOOK, release_patches=True)
+    compile_flexible(output, exe, payloads, methods, gcc, MINHOOK, refinement=refinement_runtime, crafting=crafting_runtime, shop_counts=shop_counts, release_patches=release_patches)
+    if release_patches:
+        from .delta import verify_native
+        results.append(verify_native(output, payloads, gcc))
     shutil.copyfile(SOURCE.parent / '.deps/loader/winmm.dll', output / 'winmm.dll')
     # Match the tested loader configuration, including Windows line endings.
     (output / 'winmm.ini').write_bytes(b'[GlobalSets]\r\nDebugLog=1\r\nLoadExtraPlugins=\r\n[FileLoader]\r\nOverloadFromFolder=\r\n')
@@ -213,7 +220,9 @@ def build(game, output, gcc, experimental_shop=False, experimental_refinement=Fa
         revision = 38
     if experimental_comrades:
         revision = 41
-    manifest = dict(schema=1, revision=revision, experimental_shop=experimental_shop,
+    if release_patches:
+        revision = 42
+    manifest = dict(schema=1, revision=revision, release_patches=release_patches, experimental_shop=experimental_shop,
                     status='built_not_installed', game_build=support['game_build'],
                     exe_sha256=support['exe_sha256'], master_sha256=support['master_sha256'], pamt_sha256=support['pamt_sha256'],
                     grid_columns=8, grid_rows=11, storage_grid_columns=8, storage_grid_rows=11,
@@ -280,6 +289,7 @@ def main():
     parser.add_argument('--game', type=Path, help='Supported Crimson Desert installation, read only')
     parser.add_argument('--out', type=Path, required=True, help='New or empty ignored output directory')
     parser.add_argument('--gcc', default='gcc', help='Path to MinGW-w64 x64 GCC')
+    parser.add_argument('--release-patches', action='store_true', help='Build portable revision 42 candidate with copy/XOR patches; requires all experimental flags')
     parser.add_argument('--test-only', action='store_true', help='Run native fixture suites without game files')
     parser.add_argument('--experimental-shop', action='store_true', help='Include experimental 6 by 3 NPC buy-store cards')
     parser.add_argument('--experimental-refinement', action='store_true', help='Include experimental 3 by 4 refinement gear cards; requires --experimental-shop')
@@ -297,12 +307,12 @@ def main():
     prepare(offline=True)
     output = output_directory(args.out, args.game)
     if args.test_only:
-        test(output, gcc, MINHOOK)
+        test(output, gcc, MINHOOK, release_patches=args.release_patches)
     else:
         build(args.game.resolve(), output, gcc, args.experimental_shop, args.experimental_refinement,
               args.experimental_crafting, args.experimental_extraction, args.experimental_buy_labels,
               args.experimental_extraction_scroll, args.experimental_crafting_icons, args.experimental_shop_counts,
-              args.experimental_comrades)
+              args.experimental_comrades, args.release_patches)
 
 
 if __name__ == '__main__':

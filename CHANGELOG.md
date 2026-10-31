@@ -10,6 +10,7 @@ The current working checkpoint is **revision 41 on Steam build `26345091`**. Rev
 
 | Revision | Change | Result |
 | --- | --- | --- |
+| 42 (candidate) | Portable optional logging; guarded copy/XOR resource patches; MIT license and Nexus package preparation. | Offline checks passed; not installed or live-tested. |
 | 41 | Corrected comrades component serialization and added structural validation. | Comrades grid confirmed. |
 | 40 | Isolated comrades styles from shared list rules. | Startup stalled; restored 38. |
 | 39 | Introduced a five-column portrait-and-name comrades grid. | Shared styles kept full-width rows. |

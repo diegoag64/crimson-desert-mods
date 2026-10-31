@@ -7,7 +7,15 @@
 #include "MinHook.h"
 #include "native_grid_config.h"
 
+#ifdef NATIVEGRID_RELEASE_PATCHES
+#include "native_grid_patch.h"
+#else
 struct Payload { const char *path; const unsigned char *before,*after; DWORD size,after_size; };
+static const unsigned char *payload_prepare(const struct Payload *p,const unsigned char *original) {
+    return !memcmp(original,p->before,p->size) ? p->after : NULL;
+}
+static void payload_release(const unsigned char *data) {(void)data;}
+#endif
 #include "native_grid_payloads.h"
 typedef unsigned char (*ReadFn)(void *,void *,void *,DWORD,DWORD,DWORD);
 static ReadFn original_read;
@@ -111,8 +119,10 @@ static void substitute(void *self,void *handle,void *buffer,DWORD capacity,DWORD
             writable(buffer,p->size)) {
             unsigned char *copy=HeapAlloc(GetProcessHeap(),0,p->size);
             status="SKIP: original bytes differ or unavailable";
-            if (copy && read_memory((uintptr_t)buffer,copy,p->size) && !memcmp(copy,p->before,p->size)) {
-                memcpy(buffer,p->after,p->size);
+            const unsigned char *replacement=NULL;
+            if (copy && read_memory((uintptr_t)buffer,copy,p->size) && (replacement=payload_prepare(p,copy))) {
+                memcpy(buffer,replacement,p->size);
+                payload_release(replacement);
                 InterlockedIncrement(&replacements);
                 status="REPLACED: original bytes matched exactly";
             }
@@ -158,20 +168,22 @@ static unsigned char hooked_full(void *self,void *handle,void *descriptor,void *
         if (p->after_size==p->size || p->size!=declared || strcmp(path,p->path)) continue;
         const char *status="SKIP resized: original bytes differ or unavailable";
         unsigned char *copy=HeapAlloc(GetProcessHeap(),0,p->size);
-        if (copy && read_memory((uintptr_t)buffer.data,copy,p->size) && !memcmp(copy,p->before,p->size)) {
+        const unsigned char *replacement=NULL;
+        if (copy && read_memory((uintptr_t)buffer.data,copy,p->size) && (replacement=payload_prepare(p,copy))) {
             /* The game's own resize routine owns allocation, release, length and terminators. */
             void *destination=resize_buffer(descriptor,p->after_size,context);
             struct BufferDescriptor resized;
             if (destination && read_memory((uintptr_t)descriptor,&resized,sizeof(resized)) &&
                 resized.data==destination && resized.length==p->after_size && resized.capacity>=p->after_size+2 &&
                 writable(destination,p->after_size+2)) {
-                memcpy(destination,p->after,p->after_size);
+                memcpy(destination,replacement,p->after_size);
                 InterlockedIncrement(&replacements);
                 status="REPLACED resized: original bytes matched exactly";
             } else {
                 /* Never return an uninitialized or truncated asset as a successful read. */
                 result=0; status="FAILED: native buffer resize";
             }
+            payload_release(replacement);
         }
         if (copy) HeapFree(GetProcessHeap(),0,copy);
         if (InterlockedIncrement(&reports[i])<=8) {
@@ -184,11 +196,30 @@ done:
 }
 __declspec(dllexport) LONG GridStatus(void) {return active;}
 __declspec(dllexport) LONG GridReplacements(void) {return replacements;}
+#ifdef NATIVEGRID_RELEASE_PATCHES
+static HANDLE open_portable_log(void) {
+    HMODULE module=NULL;
+    wchar_t path[32768];
+    if (!GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS|GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+                           (LPCWSTR)&open_portable_log,&module)) return INVALID_HANDLE_VALUE;
+    DWORD count=GetModuleFileNameW(module,path,32768);
+    if (!count || count>=32768) return INVALID_HANDLE_VALUE;
+    wchar_t *slash=wcsrchr(path,L'\\');
+    if (!slash || slash-path+1+sizeof(L"NativeGrid.log")/sizeof(wchar_t)>32768) return INVALID_HANDLE_VALUE;
+    wcscpy(slash+1,L"NativeGrid.log");
+    return CreateFileW(path,GENERIC_WRITE,FILE_SHARE_READ,NULL,CREATE_ALWAYS,FILE_ATTRIBUTE_NORMAL,NULL);
+}
+#endif
 __declspec(dllexport) void InitializeASI(void) {
     if (InterlockedExchange(&initialized,1)) return;
+#ifdef NATIVEGRID_RELEASE_PATCHES
+    log_file=open_portable_log();
+    write_log("NativeGrid 0.1.0-rc1: guarded resource patches; no archive writes.\r\n");
+#else
     log_file=CreateFileW(PROBE_LOG,GENERIC_WRITE,FILE_SHARE_READ,NULL,CREATE_ALWAYS,FILE_ATTRIBUTE_NORMAL,NULL);
     if (log_file==INVALID_HANDLE_VALUE) return;
     write_log("NativeGrid v5: exact-byte decoded UI replacement; no archive writes.\r\n");
+#endif
     wchar_t exe[32768]; DWORD n=GetModuleFileNameW(NULL,exe,32768);
     if (!n || n>=32768 || !fingerprint(exe)) {write_log("DISABLED: executable fingerprint mismatch.\r\n"); return;}
     image_base=(uintptr_t)GetModuleHandleW(NULL);
