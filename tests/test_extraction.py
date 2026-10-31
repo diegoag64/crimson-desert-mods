@@ -32,6 +32,17 @@ class ExtractionChecks(unittest.TestCase):
         after = transform(EXTRACTION_PATHS[1], before)
         self.assertEqual(after.replace(b'column="3"', b'column="1"'), before)
 
+    def test_scrollbar_override_moves_only_selection_track_to_viewport_edge(self):
+        from nativegrid.extraction import SCROLLBAR_RULE
+        before = OLD_ITEM_LIST_RULE + b' ' * 2000
+        legacy = transform(EXTRACTION_PATHS[2], before)
+        aligned = transform(EXTRACTION_PATHS[2], before, align_scrollbar=True)
+        rule = compact_css(SCROLLBAR_RULE).encode()
+        self.assertEqual(len(aligned), len(before))
+        self.assertNotIn(rule, legacy)
+        self.assertEqual(aligned.count(rule), 1)
+        self.assertEqual(aligned.replace(rule, b'').rstrip(), legacy.rstrip())
+
     def test_geometry_fits_all_rows_without_changing_results_panel(self):
         result_rule = b'#ExtractResultList { height: 435px; }'
         before = OLD_ITEM_LIST_RULE + result_rule + b' ' * 2000

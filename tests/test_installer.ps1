@@ -216,6 +216,27 @@ Assert-Throws { Invoke-WrapperVerify } 'revision 33 still requires extraction gu
 $candidate.experimental_extraction = $true
 $candidate.payloads = @($candidate.payloads | Select-Object -SkipLast 1)
 Assert-Throws { Invoke-WrapperVerify } 'revision 33 refuses missing buy-label payload'
+$candidate.payloads += @($support.buy_label_revisions.'33'.PSObject.Properties | Select-Object -Last 1 | ForEach-Object {
+    [pscustomobject]@{path=$_.Name; original_sha256=$_.Value.original_sha256; replacement_sha256=$_.Value.replacement_sha256; size=100; replacement_size=100}
+})
+$candidate.revision = 34
+$candidate | Add-Member -NotePropertyName experimental_extraction_scroll -NotePropertyValue $true
+Assert-Throws { Invoke-WrapperVerify } 'revision 34 refuses the old extraction scrollbar payload'
+$extractPath = 'ui/xml/gamemain/play/itemextractpanel.css'
+$extractPayload = @($candidate.payloads | Where-Object path -CEQ $extractPath)[0]
+$extractPayload.replacement_sha256 = $support.extraction_revisions.'34'.$extractPath.replacement_sha256
+Invoke-WrapperVerify
+Write-Output 'PASS: revision 34 accepts corrected extraction scrollbar and preserved prior payloads'
+$candidate.experimental_extraction_scroll = $false
+Assert-Throws { Invoke-WrapperVerify } 'revision 34 requires scrollbar flag'
+$candidate.experimental_extraction_scroll = $true
+$extractPayload.replacement_size++
+Assert-Throws { Invoke-WrapperVerify } 'revision 34 refuses resized extraction stylesheet'
+$extractPayload.replacement_size--
+$candidate.experimental_buy_labels = $false
+Assert-Throws { Invoke-WrapperVerify } 'revision 34 preserves buy-label guards'
+$candidate.experimental_buy_labels = $true
+$candidate.PSObject.Properties.Remove('experimental_extraction_scroll')
 $candidate.PSObject.Properties.Remove('experimental_buy_labels')
 $candidate.PSObject.Properties.Remove('experimental_extraction')
 $candidate.PSObject.Properties.Remove('experimental_crafting')

@@ -323,3 +323,13 @@ After launch, check these behaviors in the affected screen:
 - Character inventory, Private Storage, and the other shop tab retain their working layouts.
 
 Record the game build, package revision, runtime replacement entries, and observed result. Label offline test results separately from live UI confirmation. If a Steam update changes a fingerprint, audit compatibility before building again.
+
+## Extraction scrollbar sits outside the compact grid
+
+Inspect the track's resolved `right` value before moving the grid. On build `26329202`, `InventoryContent.VerticalListScroll` carries `enchant-item-list-scroll` and `builtin-vscroll-track`. The imported `itemlist.css` sets the first class to `right: -45px`. That offset survives the three-column conversion.
+
+The live revision 33 viewport measured 520 screen pixels wide at a 4/3 UI scale. Its track began 578.667 screen pixels after the viewport's left edge. This matches `(390 + 45 - 1) * 4/3`; the extra space is the inherited negative offset, not unused grid columns.
+
+Revision 34 appends `.enchant-item-list-scroll.builtin-vscroll-track { right: 0px; }` to the Extraction document stylesheet. The two-class selector overrides the imported one-class rule. Keep this rule local to Extraction; its level and result tracks use different classes. The final stylesheet remains 10,804 bytes, with six padding bytes. The other 23 payloads remain identical to revision 33.
+
+Offline checks establish selector scope, fixed asset size, preserved prior rules, and exact payload hashes. A live check must still confirm the scrollbar placement and scrolling behavior. Crafting's intermittent missing images are a separate unresolved issue: the captured blank weapon cards had valid names for existing DDS icon files and 124-by-76-pixel image containers. A blank screenshot alone does not establish whether a thumbnail is unavailable or its render binding is stale.

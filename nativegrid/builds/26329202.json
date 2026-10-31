@@ -272,6 +272,20 @@
         "original_sha256": "8128fd4d8d268367061160f2b5f377e8a82489487d1f1fffd627cf0a498a3dbb",
         "replacement_sha256": "efdb55f904cc14c7a0ab4e0f4e88ebd86b6d1df0c2ddb7c94d49d8ebc58b3201"
       }
+    },
+    "34": {
+      "ui/bin__/itemextractpanel_game.uibinary": {
+        "original_sha256": "9d7e31a68bb70209186b8aad5738861756a0963e935e476937b0b2ca45bd6812",
+        "replacement_sha256": "33964e4a9697641c9f781b44497a05ecd63d2569fce4ac481068863e1356a851"
+      },
+      "ui/xml/gamemain/play/itemextractpanel.html": {
+        "original_sha256": "9ae97b0700911056ebefdde75a1902b1abd8059986e61331d75afaf89548dd9c",
+        "replacement_sha256": "e8a66e48d404c8e9f8941b46aaa25ad440331bfff011df60c4e623b633cfa8fa"
+      },
+      "ui/xml/gamemain/play/itemextractpanel.css": {
+        "original_sha256": "8128fd4d8d268367061160f2b5f377e8a82489487d1f1fffd627cf0a498a3dbb",
+        "replacement_sha256": "853c0c6df751d6e20b94a6b2f9bea77a4edaba3dc240d2482d494dbba715f3f4"
+      }
     }
   },
   "buy_label_revisions": {
