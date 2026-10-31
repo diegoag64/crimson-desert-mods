@@ -3,7 +3,7 @@ typedef unsigned char (*CraftingLayoutFn)(void *,void *,void *,void *,void *);
 typedef unsigned char (*CraftingBackgroundFn)(void *,void *,unsigned char,unsigned char);
 static CraftingLayoutFn original_crafting_layout;
 static CraftingBackgroundFn crafting_background_size,crafting_background_position;
-static __thread unsigned crafting_layout_depth;
+static __thread unsigned crafting_repair_depth;
 
 static int crafting_read(uintptr_t object,size_t offset,void *out,size_t size) {
     return object>=0x10000 && object<=UINTPTR_MAX-offset-size &&
@@ -56,12 +56,12 @@ static int crafting_empty_image(uintptr_t layout) {
 static unsigned char hooked_crafting_layout(void *layout,void *bounds,void *size,
                                             void *state,void *context) {
     /* Forward all five ABI arguments. The native pass owns geometry and lifetime. */
-    DWORD incoming=GetLastError();
-    unsigned nested=crafting_layout_depth++;
-    SetLastError(incoming);
     unsigned char result=original_crafting_layout(layout,bounds,size,state,context);
     DWORD outgoing=GetLastError();
-    if (!nested && result && context && crafting_empty_image((uintptr_t)layout)) {
+    if (!crafting_repair_depth && result && context && crafting_empty_image((uintptr_t)layout)) {
+        /* Normal parent layout recursively lays out its children. Guard only
+           reentry caused by our helpers, or every nested recipe image is skipped. */
+        crafting_repair_depth++;
         /* Native property IDs: image=38, size=40, position=39. These helpers
            resolve assets and UI scale; never synthesize a rectangle or texture. */
         if (crafting_background_size(layout,context,38,40)) {
@@ -76,8 +76,8 @@ static unsigned char hooked_crafting_layout(void *layout,void *bounds,void *size
 #endif
             }
         }
+        crafting_repair_depth--;
     }
-    crafting_layout_depth--;
     SetLastError(outgoing);
     return result;
 }

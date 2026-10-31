@@ -252,7 +252,7 @@ __declspec(dllexport) void InitializeASI(void) {
     write_log("ACTIVE: refinement Equipped Gear badge filter; native class refresh, bounded owner checks.\r\n");
 #endif
 #ifdef CRAFTING_LAYOUT_RVA
-    write_log("ACTIVE: crafting empty-background repair during native layout.\r\n");
+    write_log("ACTIVE: crafting empty-background repair during native layout; nested children enabled.\r\n");
 #endif
     return;
 activation_failed:

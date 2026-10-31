@@ -10,7 +10,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\NativeGrid.ps1 -Acti
 
 Verification checks the package hashes, supported game pins, and existing owned files. It writes nothing to the game. Conflicting files stop the operation.
 
-Revision 15 through 35 shop packages also require the pinned English localization index, `0020/0.pamt`. This is a read-only compatibility check. Installation still changes only the three files listed below. Revisions 15 and 17 failed live loading tests. Revisions 16 and 18 through 23 loaded and displayed icons-only requirements, but spacing remained unresolved. Revision 24 uses a direct container selector after live inspection proved that revision 23's descendant selector could not match. The user confirmed revision 24's spacing fix in the live shop. Preserve `build/shop-24-live-container-translation` as the working shop checkpoint. Preserve revision 23 and its installation rollback journal, and retain revision 16 as an earlier checkpoint.
+Revision 15 through 36 shop packages also require the pinned English localization index, `0020/0.pamt`. This is a read-only compatibility check. Installation still changes only the three files listed below. Revisions 15 and 17 failed live loading tests. Revisions 16 and 18 through 23 loaded and displayed icons-only requirements, but spacing remained unresolved. Revision 24 uses a direct container selector after live inspection proved that revision 23's descendant selector could not match. The user confirmed revision 24's spacing fix in the live shop. Preserve `build/shop-24-live-container-translation` as the working shop checkpoint. Preserve revision 23 and its installation rollback journal, and retain revision 16 as an earlier checkpoint.
 
 ## Install a package
 
@@ -67,3 +67,11 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\NativeGrid.ps1 -Acti
 Installation still requires user authorization and a stopped game. The installer uses the previous package to establish ownership and preserve exact rollback bytes. It validates the current game against the target package's pins. Keep DMM unmounted.
 
 Use the rebuilt package's `runtime.log` for the subsequent live check. `build/layout-34-build-26345091` is a separately built fallback with the same UI resources but no Crafting image-cache hook. To use it after an authorized exit, supply it as `-Package` and the installed new-game revision 35 package as `-PreviousPackage`. Restoring old-game bytes would disable the mod on the updated EXE. The previous packages remain available for their original game build.
+
+## Install the nested-layout correction
+
+Revision 35 for build `26345091` is installed, but its first-open Crafting icons failed the live check. Revision 36 in `build/crafting-36-nested-layout` corrects the recursion guard. It preserves all 24 resource payloads, native method pins, and the existing layouts.
+
+After an authorized exit, install revision 36 with `build/crafting-35-build-26345091` as `-PreviousPackage`. Keep DMM unmounted. Preserve the installation journal and `build/layout-34-build-26345091` as the compatible fallback without the Crafting hook.
+
+Check `build/crafting-36-nested-layout/runtime.log` after the next user launch. Its Crafting activation line must include `nested children enabled`. Repair messages establish that the guarded helpers ran. Only a live first-open screen check establishes visible success.

@@ -186,7 +186,7 @@ def build(game, output, gcc, experimental_shop=False, experimental_refinement=Fa
     if experimental_extraction_scroll:
         revision = 34
     if experimental_crafting_icons:
-        revision = 35
+        revision = 36
     manifest = dict(schema=1, revision=revision, experimental_shop=experimental_shop,
                     status='built_not_installed', game_build=support['game_build'],
                     exe_sha256=support['exe_sha256'], master_sha256=support['master_sha256'], pamt_sha256=support['pamt_sha256'],
@@ -231,7 +231,8 @@ def build(game, output, gcc, experimental_shop=False, experimental_refinement=Fa
         manifest.update(experimental_extraction_scroll=True)
         (output / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
     if experimental_crafting_icons:
-        manifest.update(experimental_crafting_icons=True, crafting_runtime=crafting_runtime)
+        manifest.update(experimental_crafting_icons=True, crafting_runtime=crafting_runtime,
+                        crafting_nested_layout=True)
         (output / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
     print(f'Built revision {manifest["revision"]}: {len(payloads)} exact-validated payloads; {len(results)} fixture suites passed. {output}')
     return manifest

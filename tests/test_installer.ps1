@@ -242,6 +242,15 @@ $candidate | Add-Member -NotePropertyName experimental_crafting_icons -NotePrope
 $candidate | Add-Member -NotePropertyName crafting_runtime -NotePropertyValue ($support.crafting_runtime_revisions.'35' | ConvertTo-Json -Depth 20 | ConvertFrom-Json)
 Invoke-WrapperVerify
 Write-Output 'PASS: revision 35 accepts guarded Crafting repair and all revision 34 payloads'
+$candidate.revision = 36
+Assert-Throws { Invoke-WrapperVerify } 'revision 36 refuses missing nested-layout marker'
+$candidate | Add-Member -NotePropertyName crafting_nested_layout -NotePropertyValue $true
+Invoke-WrapperVerify
+Write-Output 'PASS: revision 36 accepts nested-layout repair with unchanged native pins'
+$candidate.crafting_nested_layout = $false
+Assert-Throws { Invoke-WrapperVerify } 'revision 36 refuses disabled nested-layout repair'
+$candidate.PSObject.Properties.Remove('crafting_nested_layout')
+$candidate.revision = 35
 $candidate.experimental_crafting_icons = $false
 Assert-Throws { Invoke-WrapperVerify } 'revision 35 requires icon repair flag'
 $candidate.experimental_crafting_icons = $true

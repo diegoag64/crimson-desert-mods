@@ -13,14 +13,14 @@ $Package = (Resolve-Path -LiteralPath $Package).Path
 $supports = @((Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\nativegrid\supported_build.json') -Raw | ConvertFrom-Json))
 $supports += @(Get-ChildItem -LiteralPath (Join-Path $PSScriptRoot '..\nativegrid\builds') -Filter '*.json' -File | ForEach-Object { Get-Content -LiteralPath $_.FullName -Raw | ConvertFrom-Json })
 $manifest = Get-Content -LiteralPath (Join-Path $Package 'manifest.json') -Raw | ConvertFrom-Json
-if ($manifest.schema -ne 1 -or $manifest.revision -notin @(5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35) -or $manifest.fixture_tests_passed -lt 6 -or -not $manifest.variable_length_resources) { throw 'Unsupported or untested package.' }
+if ($manifest.schema -ne 1 -or $manifest.revision -notin @(5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36) -or $manifest.fixture_tests_passed -lt 6 -or -not $manifest.variable_length_resources) { throw 'Unsupported or untested package.' }
 $supportedMatches = @($supports | Where-Object exe_sha256 -eq $manifest.exe_sha256)
 if ($supportedMatches.Count -ne 1) { throw 'Unknown or ambiguous supported game build.' }
 $support = $supportedMatches[0]
 foreach ($key in @('exe_sha256','master_sha256','pamt_sha256')) {
     if ($manifest.$key -ne $support.$key) { throw "Package is not pinned to the supported game build: $key" }
 }
-if ($manifest.revision -in @(15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35)) {
+if ($manifest.revision -in @(15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36)) {
     if ($manifest.fixture_tests_passed -lt 7) { throw 'Requirement-label package needs the shrinking-buffer fixture.' }
     if (-not $manifest.experimental_shop -or -not $support.PSObject.Properties['shop_requirements'] -or
         -not $manifest.PSObject.Properties['extra_indexes']) { throw 'Missing requirement-label compatibility pins.' }
@@ -28,7 +28,7 @@ if ($manifest.revision -in @(15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,
     if ($indexes.Count -ne 1 -or $indexes[0].Name -cne $support.shop_requirements.index_path -or
         $indexes[0].Value -cne $support.shop_requirements.index_sha256) { throw 'Localization index pin differs from supported build.' }
 }
-if ($manifest.revision -in @(25,26,27,28,29,30,31,32,33,34,35)) {
+if ($manifest.revision -in @(25,26,27,28,29,30,31,32,33,34,35,36)) {
     if (-not $manifest.PSObject.Properties['experimental_refinement'] -or -not $manifest.experimental_refinement -or
         -not $support.PSObject.Properties['refinement_assets']) { throw 'Missing refinement compatibility pins.' }
     $refinementPins = $support.refinement_assets
@@ -45,8 +45,8 @@ if ($manifest.revision -in @(25,26,27,28,29,30,31,32,33,34,35)) {
                 $manifest.refinement_runtime.$key.type -cne $support.refinement_runtime.$key.type) { throw "Refinement owner pin mismatch: $key" }
         }
     }
-    if ($manifest.revision -in @(27,28,29,30,31,32,33,34,35)) {
-        $refinementRevision = if ($manifest.revision -in @(31,32,33,34,35)) { '30' } else { [string]$manifest.revision }
+    if ($manifest.revision -in @(27,28,29,30,31,32,33,34,35,36)) {
+        $refinementRevision = if ($manifest.revision -in @(31,32,33,34,35,36)) { '30' } else { [string]$manifest.revision }
         if ($manifest.fixture_tests_passed -lt 8 -or -not $manifest.PSObject.Properties['refinement_runtime'] -or
             -not $support.PSObject.Properties['refinement_runtime_revisions'] -or
             -not $support.refinement_revisions.PSObject.Properties[$refinementRevision]) { throw 'Missing tested refinement class filter.' }
@@ -69,7 +69,7 @@ if ($manifest.revision -in @(25,26,27,28,29,30,31,32,33,34,35)) {
             $found[0].size -ne $found[0].replacement_size) { throw "Refinement payload pin mismatch: $($pin.Name)" }
     }
 }
-if ($manifest.revision -in @(31,32,33,34,35)) {
+if ($manifest.revision -in @(31,32,33,34,35,36)) {
     if (-not $manifest.PSObject.Properties['experimental_crafting'] -or -not $manifest.experimental_crafting -or
         -not $support.PSObject.Properties['crafting_revisions'] -or
         -not $support.crafting_revisions.PSObject.Properties['31']) { throw 'Missing crafting compatibility pins.' }
@@ -80,9 +80,9 @@ if ($manifest.revision -in @(31,32,33,34,35)) {
             $found[0].size -ne $found[0].replacement_size) { throw "Crafting payload pin mismatch: $($pin.Name)" }
     }
 }
-if ($manifest.revision -in @(32,33,34,35)) {
-    $extractionRevision = if ($manifest.revision -in @(34,35)) { '34' } else { '32' }
-    if ($manifest.revision -in @(34,35) -and (-not $manifest.PSObject.Properties['experimental_extraction_scroll'] -or
+if ($manifest.revision -in @(32,33,34,35,36)) {
+    $extractionRevision = if ($manifest.revision -in @(34,35,36)) { '34' } else { '32' }
+    if ($manifest.revision -in @(34,35,36) -and (-not $manifest.PSObject.Properties['experimental_extraction_scroll'] -or
         -not $manifest.experimental_extraction_scroll)) { throw 'Missing extraction scrollbar flag.' }
     if (-not $manifest.PSObject.Properties['experimental_extraction'] -or -not $manifest.experimental_extraction -or
         -not $support.PSObject.Properties['extraction_revisions'] -or
@@ -94,7 +94,9 @@ if ($manifest.revision -in @(32,33,34,35)) {
             $found[0].size -ne $found[0].replacement_size) { throw "Extraction payload pin mismatch: $($pin.Name)" }
     }
 }
-if ($manifest.revision -eq 35) {
+if ($manifest.revision -in @(35,36)) {
+    if ($manifest.revision -eq 36 -and (-not $manifest.PSObject.Properties['crafting_nested_layout'] -or
+        -not $manifest.crafting_nested_layout)) { throw 'Missing nested Crafting layout repair.' }
     if (-not $manifest.PSObject.Properties['experimental_crafting_icons'] -or
         -not $manifest.experimental_crafting_icons -or $manifest.fixture_tests_passed -lt 9 -or
         -not $manifest.PSObject.Properties['crafting_runtime'] -or
@@ -112,7 +114,7 @@ if ($manifest.revision -eq 35) {
             $manifest.crafting_runtime.$key.type -cne $craftingRuntime.$key.type) { throw "Crafting owner pin mismatch: $key" }
     }
 }
-if ($manifest.revision -in @(33,34,35)) {
+if ($manifest.revision -in @(33,34,35,36)) {
     if (-not $manifest.PSObject.Properties['experimental_buy_labels'] -or -not $manifest.experimental_buy_labels -or
         -not $support.PSObject.Properties['buy_label_revisions'] -or
         -not $support.buy_label_revisions.PSObject.Properties['33']) { throw 'Missing buy-label compatibility pins.' }

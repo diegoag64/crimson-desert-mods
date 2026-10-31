@@ -20,10 +20,13 @@ static int read_memory(uintptr_t address,void *out,size_t size) {
 static unsigned char image[0x200],card[0x200],outer[0x200],list_node[0x200],root_node[0x200];
 static unsigned char description[0x200],outer_control[0x200],list_control[0x200],root_control[0x200];
 static unsigned char layout[0x80],style[0x80],bounds[32],size_arg[16],state[320],context[32];
+static unsigned char parent_layouts[3][0x80];
 static uintptr_t images[8];
 static unsigned cases,calls,sizes,positions;
 static unsigned char native_result;
 static int helper_fails,helper_empty,nested_call,native_fills;
+static unsigned tree_depth;
+static unsigned char native_layout(void *,void *,void *,void *,void *);
 static void *expected_layout;
 static void put(void *object,size_t offset,uintptr_t value) {memcpy((char *)object+offset,&value,8);}
 static void floats(void *object,size_t offset,const float *values,size_t count) {
@@ -36,6 +39,7 @@ static void reset(void) {
     void *objects[]={image,card,outer,list_node,root_node,description,outer_control,list_control,root_control};
     for (unsigned i=0;i<sizeof(objects)/sizeof(*objects);i++) memset(objects[i],0,0x200);
     memset(layout,0,sizeof(layout));memset(style,0,sizeof(style));memset(images,0,sizeof(images));
+    memset(parent_layouts,0,sizeof(parent_layouts));tree_depth=0;
     put(layout,0,(uintptr_t)image);put(image,0x18,(uintptr_t)layout);
     put(image,0x20,(uintptr_t)style);put(style,0,(uintptr_t)image);
     floats(image,0x78,(float[]){165.333f,101.333f},2);
@@ -48,9 +52,18 @@ static void reset(void) {
     expected_layout=layout;
 }
 __attribute__((noinline)) static unsigned char native_layout_body(void *a,void *b,void *c,void *d,void *e) {
-    if (a!=expected_layout || b!=bounds || c!=size_arg || d!=state || e!=context ||
+    int parent=-1;
+    for (unsigned i=0;i<tree_depth;i++) if (a==parent_layouts[i]) parent=(int)i;
+    if ((a!=expected_layout && !(tree_depth && (a==layout || parent>=0))) ||
+        b!=bounds || c!=size_arg || d!=state || e!=context ||
         GetLastError()!=123) ExitProcess(4);
     calls++;
+    if (parent>=0) {
+        void *child=(unsigned)(parent+1)<tree_depth ? parent_layouts[parent+1] : layout;
+        unsigned char child_result=native_layout(child,b,c,d,e);
+        if (child_result!=native_result || GetLastError()!=456) ExitProcess(7);
+        SetLastError(456);return native_result;
+    }
     if (native_fills) floats(style,0x3c,(float[]){48,26.667f,69.333f,69.333f},4);
     SetLastError(456);return native_result;
 }
@@ -76,7 +89,7 @@ static int verify(const char *name,unsigned want_size,unsigned want_position,uns
     SetLastError(123);
     unsigned char result=native_layout(expected_layout,bounds,size_arg,state,context);
     if (result!=native_result || GetLastError()!=456 || sizes!=want_size ||
-        positions!=want_position || calls!=want_calls || crafting_layout_depth) {
+        positions!=want_position || calls!=want_calls || crafting_repair_depth) {
         fprintf(stderr,"FAIL %s: return=%u calls=%u size=%u position=%u error=%lu\n",
                 name,result,calls,sizes,positions,GetLastError());return 0;
     }
@@ -96,6 +109,11 @@ int main(void) {
     helper_fails=0;sizes=positions=calls=0;CHECK("retry on later native pass",1,1,1);
     reset();helper_empty=1;CHECK("helper succeeded without image",1,0,1);
     reset();nested_call=1;CHECK("nested layout cannot recurse repair",1,1,2);
+    reset();tree_depth=1;expected_layout=parent_layouts[0];CHECK("native parent lays out recipe image",1,1,2);
+    reset();tree_depth=3;expected_layout=parent_layouts[0];CHECK("native document card and description descend to image",1,1,4);
+    reset();tree_depth=3;nested_call=1;expected_layout=parent_layouts[0];CHECK("native tree allowed while helper reentry is blocked",1,1,5);
+    reset();tree_depth=3;helper_fails=1;expected_layout=parent_layouts[0];CHECK("nested image resource unavailable",1,0,4);
+    helper_fails=0;sizes=positions=calls=0;CHECK("nested image retries on next document layout",1,1,4);
     reset();native_result=0;CHECK("native failure forwarded",0,0,1);
     reset();floats(style,0x3c,(float[]){1,0,0,0},4);CHECK("nonempty cache untouched",0,0,1);
     reset();floats(style,0x3c,(float[]){NAN,0,0,0},4);CHECK("invalid cache untouched",0,0,1);

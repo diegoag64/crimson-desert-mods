@@ -24,7 +24,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tests\test_installer.ps1
 .venv\Scripts\python.exe -m unittest discover -s tests -p "test_*.py"
 ```
 
-Nine native suites exercise nine raw-read cases and ten full-read cases, then repeat the harness with a missing interface, a changed executable, and three changed method fingerprints. A final suite repeats the read cases with a shorter replacement to check reuse of the existing allocation. The refinement suite detours a synthetic native style refresh and checks 27 cases, including both tab directions, unrelated controls, invalid pointers, cycles, native class removal, helper ordering, exact arguments, and `LastError`. The Crafting suite tests 30 cases through a real detour, including initial and recycled empty image caches, native completion, unavailable resources, retry, nested calls, unrelated menus, invalid pointers, and all five ABI arguments. The resource harness checks ABI arguments, return values, `LastError`, canaries, exact bytes, partial reads, invalid pointers, read-only buffers, resize failure, and nested reads.
+Nine native suites exercise nine raw-read cases and ten full-read cases, then repeat the harness with a missing interface, a changed executable, and three changed method fingerprints. A final suite repeats the read cases with a shorter replacement to check reuse of the existing allocation. The refinement suite detours a synthetic native style refresh and checks 27 cases, including both tab directions, unrelated controls, invalid pointers, cycles, native class removal, helper ordering, exact arguments, and `LastError`. The Crafting suite tests 35 cases through a real detour, including initial and recycled empty image caches, native completion, unavailable resources, retry, native parent-to-child traversal, helper reentry, unrelated menus, invalid pointers, and all five ABI arguments. The resource harness checks ABI arguments, return values, `LastError`, canaries, exact bytes, partial reads, invalid pointers, read-only buffers, resize failure, and nested reads.
 
 Installer fixtures use synthetic files under `build`. They never touch the real game. All tests must pass before installation. Do not run Python with `-O`, because transform assertions are required.
 
@@ -64,16 +64,16 @@ To align the Extraction scrollbar, append `--experimental-extraction-scroll` to 
 
 To include the Crafting image-cache repair, add `--experimental-crafting-icons` to the revision 34 command. Revision 35 retains all 24 revision 34 payloads. It adds a native layout detour with exact method-body hashes and owner types under `crafting_runtime_revisions.35`. The detour lets the native layout pass finish, then uses the game's background-size and background-position helpers if a recipe image still has an empty cached rectangle. The installed layout and item bindings are unchanged. Omit the flag to build revision 34 without this detour.
 
-Revision 35 passes offline fixtures but has no live validation yet. Check the first weapon category after a fresh launch, then a category that reveals previously unused cards. See [Crafting image-cache troubleshooting](grid-layout-troubleshooting.md#crafting-icons-appear-only-after-category-changes) for the measured failure and the runtime repair guard.
+Revision 35 passed its original fixtures but failed the live first-open check. Current source builds revision 36 with the same `--experimental-crafting-icons` flag, method pins, and asset payloads. The corrected guard allows normal nested child layout and blocks helper reentry. Check the first weapon category after a fresh launch, then a category that reveals previously unused cards. See [Crafting image-cache troubleshooting](grid-layout-troubleshooting.md#crafting-icons-appear-only-after-category-changes) for the measured failure and the runtime repair guard.
 
 On build `26329202`, experimental shop packages also read `0020/0.pamt` and the English `localstringinfo.paloc` resource. The `shop_requirements` metadata pins this index and both resource hashes. The installer verifies the additional index before replacement. The localization transform changes three short requirement labels to their original inline icons and verifies that all other records remain identical. Its compressed envelope changes size, so delivery requires the existing full-read hook. See [requirement-label troubleshooting](grid-layout-troubleshooting.md#requirement-text-overflows-a-shop-card) for the format, scope, and live checks.
 
-## Build revision 35 for Steam 26345091
+## Build the Crafting repair for Steam 26345091
 
-Game EXE version `1.0.0.3460` has SHA-256 `4e38ce1d8fe98eee7be0e26026a1d24ea6a17e80aa88e906b5f3ed553af11f63`. Its separate compatibility record retains the revision 35 behavior and the earlier build's records. Use all seven experimental flags:
+Game EXE version `1.0.0.3460` has SHA-256 `4e38ce1d8fe98eee7be0e26026a1d24ea6a17e80aa88e906b5f3ed553af11f63`. Its separate compatibility record preserves the earlier build's records. Use all seven experimental flags to build revision 36:
 
 ```powershell
-.venv\Scripts\python.exe -m nativegrid.build --game "E:\Steam\steamapps\common\Crimson Desert" --gcc C:\msys64\ucrt64\bin\gcc.exe --out build\crafting-35-build-26345091 --experimental-shop --experimental-refinement --experimental-crafting --experimental-extraction --experimental-buy-labels --experimental-extraction-scroll --experimental-crafting-icons
+.venv\Scripts\python.exe -m nativegrid.build --game "E:\Steam\steamapps\common\Crimson Desert" --gcc C:\msys64\ucrt64\bin\gcc.exe --out build\crafting-36-nested-layout --experimental-shop --experimental-refinement --experimental-crafting --experimental-extraction --experimental-buy-labels --experimental-extraction-scroll --experimental-crafting-icons
 ```
 
 Choose a new output directory if this package already exists. Omitting `--experimental-crafting-icons` builds revision 34 for the same game build. That fallback retains the layouts and scrollbar correction without the Crafting cache hook. An old-game package cannot serve as a runnable fallback after Steam updates the EXE.
@@ -98,7 +98,7 @@ The relocated methods retain their calling conventions and audited field accesse
 
 The new record pins all nine method spans with full-body hashes. The sort helper spans its split unwind entries through the final return. Build checks enforce these hashes in addition to the full EXE hash, prefixes, RTTI owners, and archive pins. Native object constructors and description binding code retain the fields used by the scoped hooks. The hidden-class atom moves to `0x710a7c8`; its initializer still receives `!cpp-none`.
 
-Offline checks do not prove that revision 35 fixes the first-open Crafting icons in this game build. Keep that behavior experimental until the new runtime is active and the live screen is checked.
+Revision 35 failed the live first-open Crafting check. Revision 36 passes the expanded fixtures but still requires live validation. Keep that behavior experimental until the new runtime is active and the live screen is checked.
 
 ## Audit files before publication
 
