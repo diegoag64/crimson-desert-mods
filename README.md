@@ -1,65 +1,49 @@
-# Crimson Desert compact inventory
+# Crimson Desert compact grids
 
-A native ASI mod that fits eight columns and eleven rows into the inventory and Private Storage screens. Tiles measure 64 by 62.5 pixels. Category artwork, empty slots, hover, and focus effects follow the compact layout. A list-mode toggle is not implemented.
+NativeGrid makes Crimson Desert's inventory and NPC menus more compact, so you can see more items or comrades at once. It replaces several list views with grids while retaining the game's selection, scrolling, and action handlers.
 
-Revision 5 was verified in game by the user on Steam build `26317560`. The runtime replaces exact decoded UI resources in memory and leaves signed archives, indexes, and saves untouched.
+## What changes
 
-Steam build `26329202`, EXE version `1.0.0.3446`, has separate compatibility pins following an offline audit of the native methods, allocator, and current assets. The builder selects the supported build by its full EXE hash. Revision 7 activated in game and displayed six shop columns, but card backgrounds and labels overlapped. Inventory regression testing on that build is still pending.
+| Screen | Layout |
+| --- | --- |
+| Inventory and Private Storage | 8 columns, 11 visible rows |
+| Shop Sell | 8 columns, 11 visible rows |
+| Shop Buy | 6 columns, 3 visible rows |
+| Refinement and Crafting | 3 columns, 4 visible rows |
+| Extraction item selection | 3 columns, 4 visible rows |
+| Manage Comrades | 5 columns, 3 visible rows with portraits and names |
 
-This repository contains source, transform rules, hash pins, fixtures, and build instructions. It contains no game assets, generated payload headers, or executable downloads. Build packages contain game-derived data and must remain local.
+The compact cards fit their artwork, labels, selection borders, and empty-slot backgrounds to the grid. Shop cards separate the price row from the aligned stock and owned counts. Refinement hides the redundant Equipped badge in the Equipped Gear tab. Gear cards retain their upgrade indicators and avoid duplicate item emblems.
 
-- [Build and test](docs/build.md)
-- [Fix compact grids that leave unused space](docs/grid-layout-troubleshooting.md)
-- [Install and roll back](docs/install.md)
-- [Runtime guards and compatibility](docs/runtime.md)
-- [Third-party dependencies](THIRD_PARTY.md)
+The mod changes presentation. The game still handles purchases, crafting, refinement, extraction, and comrade actions. There is no toggle back to list view.
 
-No license has been selected for the project code. The third-party components retain their own licenses.
+## Current status and compatibility
 
-Revision 12 failed to launch in the user's test. Do not install revisions 11 or 12. Rolling back to revision 10 restored launch. The failed runtime log stopped before either sell asset was replaced, but no crash record established the exact cause.
+**Revision 41 is the current working checkpoint**, confirmed in game on Steam build `26345091`. Revision 38 remains the earlier checkpoint without the comrades grid.
 
-Revision 13 added the sell menu's 8-column, 11-row layout while preserving all twelve inventory and buy-menu payloads from revision 10. The user confirmed the sell-grid result after launch. The buy-grid appearance was confirmed with revision 10. This does not claim a new exhaustive inventory or purchase-flow test.
+The expanded layouts use experimental build flags. Some menu states and transaction flows still need testing. See the [changelog](CHANGELOG.md) for individual results and failed revisions.
 
-Revision 14 is the working rollback checkpoint on build `26329202`. The user confirmed its empty-slot alignment in game. It changes the free shop card's artwork and clipping frame while preserving populated-card records, requirement labels, and the sell grid.
+Compatibility is tied to exact executable, index, and asset fingerprints. A game update needs an audit before a new package can be built or installed. Older compatibility records remain in the repository for previous builds.
 
-An optional NPC buy-store layout uses six columns and three rows of 124 by 112 pixel cards. Build it with `--experimental-shop`. It preserves native purchase and quantity handlers. The shop remains experimental pending broader purchase-flow testing.
+## Build and install
 
-Do not install revision 15: the user reported that the game started but remained loading. Its runtime log confirms the English localization replacement and subsequent UI resource loads; it does not establish the cause of the stall. Revision 14 was restored at the user's request, installed-file verification passed, and the user confirmed that loading works again.
+This is a source repository. Game assets and ready-to-install binaries are not included. Packages are built locally from your supported game installation and must remain local.
 
-Revision 15 combined native inline icons in three short English labels with a nonzero-font card style. Its seven native suites, 18 Python tests, and 10 installer cases passed, but these checks did not establish successful game loading or the visible result. Other languages and the older supported build do not receive this localization replacement.
+1. Follow the [build guide](docs/build.md) to prepare dependencies, run checks, and choose the layouts to include.
+2. Close Crimson Desert and keep DMM unmounted before installation.
+3. Follow the [installation guide](docs/install.md) to verify and install the package. Keep its previous package and rollback files.
 
-Revision 16 is the current working checkpoint. The user confirmed successful loading and icons-only requirements in the shop. Its fourteen UI payloads match revision 14 exactly; the only addition is revision 15's English localization replacement. The runtime log confirms that replacement. This narrows the earlier failure to the revision 15 UI changes, without identifying the exact failing property or override. The icons sit too far below the item name.
+The ASI plugin replaces decoded UI resources in memory. It does not modify signed game archives, indexes, or saves. The installer manages `NativeGrid.asi`, `winmm.dll`, and `winmm.ini` in `bin64` and preserves rollback copies.
 
-Do not install revision 17: the user reported another loading stall after clicking Play. Only its stylesheet differed from revision 16. Revision 16 was restored at the user's request and installed-file verification passed; a fresh launch after this second rollback is not yet confirmed.
+## Development and documentation
 
-Both failed revisions introduced comma-separated selectors. None of 185 extracted stylesheets uses that syntax. Revision 18 expressed the two label selectors as separate rules. The user reached the shop successfully, but its icons remained at the bottom of the card. The runtime log confirms the stylesheet replacement. A build check rejects grouped selectors in custom shop CSS; the exact internal cause of the earlier stalls remains unproven.
+Canonical source lives in `nativegrid/`; build and installation scripts live in `scripts/`. Changes use small commits, exact compatibility guards, and relevant fixture checks. Live UI confirmation is recorded separately from offline test results.
 
-Revision 19 loaded, but the user's screenshot shows the same gap beneath the unavailable item's name. Its direct compound selector and relative `top` offset did not establish a visible improvement. Revisions 16, 18, and 19 are retained as earlier checkpoints.
+- [Changelog](CHANGELOG.md): concise revision history.
+- [Grid troubleshooting](docs/grid-layout-troubleshooting.md): layout failures, their causes, and fixes.
+- [Runtime and compatibility](docs/runtime.md): replacement hooks and native guards.
+- [Repository workflow](AGENTS.md): contribution and publication rules.
 
-Revision 20 gives both requirement labels an explicit 118-by-24-pixel box at the start of the card's price row. It applies a dedicated style in the compiled components and adds matching overrides to the source-created currency widget. The price widget has a fixed 118-pixel width so absolutely positioned labels have a defined containing box. Native visibility and purchase handlers remain unchanged; all original localization and inventory/sell payloads are preserved. Offline checks pass, but the spacing still needs live verification.
+## License
 
-Revision 20 loaded successfully, but its requirement spacing did not improve. Revision 21 targeted `cpp-condition-fail` on a stock-label path and also had no visible effect. Further inspection found that this shop card's `CommonInfoDescription` handler instead marks the requirement container with `font-text-sub-red-negative`. Revision 22 targets that state and preserves the fourteen other payloads. The user reached the shop, but the icons still crossed the card border. Revision 22 is retained as a rollback checkpoint. The troubleshooting guide documents both native paths and the correction.
-
-Revision 23 tests translation of the generated requirement symbols inside the compact shop count wrapper. It removes the ineffective parent offset and preserves all fourteen other payloads. The live test showed no movement.
-
-Read-only inspection found that the game flattened revision 23's descendant selector into an impossible compound. The icons had no resolved translation property. Revision 24 targets the confirmed requirement container directly, and the builder now rejects descendant selectors. The troubleshooting guide records the live tree, normalized selector, and diagnostic property checks.
-
-Revision 24 is installed. On October 30, 2026, the user confirmed that the requirement-icon spacing is fixed in the live shop. Keep `build/shop-24-live-container-translation` as the working shop checkpoint. Seven native suites, 20 Python tests, 10 installer cases, and publication checks passed before installation; installed-file verification also passed. The visual result is user-confirmed, not a post-install memory measurement. Broader shop behavior remains experimental beyond the tested screens.
-
-Revision 25 is installed, and the user confirmed its three-column, four-row refinement grid. Live inspection then found that imported rules kept the images at 88 pixels and the title wrappers at 270 pixels. The Equipped Gear tab also repeats an Equipped badge on every card.
-
-Revision 26 loaded, but its live test exposed two failures: the upgrade indicators disappeared, and Equipped badges remained visible. Read-only inspection confirmed the resized image and title wrapper. The indicator remained a child of the image but sat outside its bounds; the badge's native update changed CSS classes directly, bypassing revision 26's state-setter hook.
-
-Revision 27 gives the indicator space inside the image container while keeping the artwork centered at 52 pixels. It replaces the ineffective state hook with a guarded style-refresh filter scoped to the Equipped Gear tab. Seventeen of eighteen payloads match revision 26, including inventory and shop. Eight native suites, 27 Python tests, 20 installer cases, and package verification pass. Revision 27 was installed. The subsequent user screenshots show restored upgrade indicators and hidden Equipped badges in Equipped Gear; runtime logs also confirm the scoped badge corrections. Other-tab badge behavior is not yet separately confirmed.
-
-Revision 28 refines the card labels: it hides the overflowing material warning on the card, keeps the contribution emblem in the name while removing the duplicate frame overlay, and centers short names with a minimum-width title line. Native disabled shading, material counts, and long-name scrolling remain available. Only the refinement stylesheet changes among the eighteen payloads; runtime source and guards match revision 27. Eight native suites, 27 Python tests, 22 installer cases, and package verification pass. Revision 28 is installed. Its frame-overlay hide is confirmed by live styles, but its inline contribution emblem overlaps the centered name. Keep the package and rollback copy.
-
-Revision 29 removes flex centering from the name's generated inline symbols and left-aligns each symbol's glyph. The name text keeps its centering and minimum width. Live inspection also found that the Pailunese Signet card reports tier zero and has no tier texture; neighboring tier-two gear has its texture. No item tier is changed or fabricated. Eight native suites, 27 Python tests, 24 installer cases, and package verification pass. Revision 29 was installed and failed the live label-alignment check.
-
-Revision 30 centers each complete label box instead of centering its separate native text runs. It preserves sequential inline emblems, centered short names, and clipped long names. The user confirmed the resulting Refinement layout in game. Keep `build/refinement-30-whole-label` as the working checkpoint.
-
-Revision 31 applies the same three-column, four-row cards to Crafting through the optional `--experimental-crafting` flag. Read-only inspection identified the Smithy recipe list in `CookingView3` and its nested item-card template. The new package adds three assets and preserves all eighteen revision 30 payloads. Eight native suites, 32 Python tests, and 31 installer cases pass. Revision 31 is installed, and the user confirmed its Crafting layout. Native category, recipe-variant, material, and crafting handlers remain unchanged.
-
-Revision 32 extends the same card layout to Extraction's initial item-selection screen. It widens the item viewport to fit three columns and four complete rows while retaining the extraction-level selector, result list, and native actions. Build with `--experimental-extraction` in addition to the other experimental flags. All twenty-one revision 31 payloads remain unchanged. Eight native suites, 35 Python tests, and 37 installer cases pass. Revision 32 is not installed or live-verified.
-
-Revision 33 fixes duplicate emblems on compact buy cards, including house icons on furniture and dyes. Live inspection of revision 31 confirmed a full-card emblem in addition to the inline name symbol. The new build hides only that duplicate and applies the proven whole-label centering rules to shop names. It includes the prepared Extraction update and leaves the other twenty payloads from revision 32 unchanged. Eight native suites, 39 Python tests, and 43 installer cases pass. Revision 33 is not installed or live-verified; revision 31 remains the installed rollback checkpoint.
+No license has been selected for the project code. Dependencies retain their own licenses; see [third-party notices](THIRD_PARTY.md).
