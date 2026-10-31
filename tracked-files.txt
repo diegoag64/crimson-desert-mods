@@ -82,3 +82,5 @@ docs/images/npc-buy-after.png
 docs/images/npc-buy-before.png
 docs/images/refinement-after.png
 docs/images/refinement-before.png
+
+LICENSE
