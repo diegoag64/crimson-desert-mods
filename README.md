@@ -35,7 +35,7 @@ This is a source repository. Game assets and ready-to-install binaries are not i
 
 The ASI plugin replaces decoded UI resources in memory. It does not modify signed game archives, indexes, or saves. The installer manages `NativeGrid.asi`, `winmm.dll`, and `winmm.ini` in `bin64` and preserves rollback copies.
 
-To manage revision 41 through DMM's ASI Mods library, use the [DMM export and migration guide](docs/dmm.md). The export preserves the working plugin and omits the shared loader. DMM import and runtime coexistence still need live verification.
+To manage revision 41 through DMM's ASI Mods library, use the [DMM export and migration guide](docs/dmm.md). Import and disable/re-enable deployment are verified with DMM 4.6.0. The plugin and shared loader remain unchanged. In-game testing after migration and coexistence with DMM's runtime remain pending.
 
 ## Development and documentation
 

@@ -6,7 +6,7 @@ The current working checkpoint is **revision 41 on Steam build `26345091`**. Rev
 
 **Do not install revisions 11, 12, 15, 17, or 40.** They were withdrawn or failed startup or loading checks.
 
-- **DMM packaging:** Added a verified local ASI export for revision 41. Plugin bytes are unchanged; DMM import and coexistence remain untested.
+- **DMM packaging:** Revision 41 import and disable/re-enable deployment verified in DMM 4.6.0. Plugin and loader unchanged; in-game migration check and runtime coexistence pending.
 
 | Revision | Change | Result |
 | --- | --- | --- |

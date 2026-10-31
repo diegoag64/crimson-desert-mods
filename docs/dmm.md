@@ -2,7 +2,7 @@
 
 NativeGrid can be imported into DMM's **ASI Mods** library. The export retains the revision 41 plugin, embedded UI replacements, and native fixes. DMM manages deployment and enablement. No archive mount is needed for NativeGrid itself.
 
-The [DMM release page](https://www.nexusmods.com/crimsondesert/mods/633) documents folder-based ASI imports and companion files. The downloaded version reviewed for this export is 4.6.0. Import and coexistence with `DmmRuntime.asi` still need live verification. DMM support does not establish compatibility with other mods.
+The [DMM release page](https://www.nexusmods.com/crimsondesert/mods/633) documents folder-based ASI imports and companion files. ZIP import and disable/re-enable deployment are verified in DMM 4.6.0. In-game testing after migration and coexistence with `DmmRuntime.asi` remain pending. DMM support does not establish compatibility with other mods.
 
 ## Export the working package
 
@@ -24,7 +24,7 @@ The repository workflow requires authorization before changing the game installa
 
 1. Close Crimson Desert. Keep DMM archive mods unmounted for the first check.
 2. Preserve the working package and its rollback journal. Record the installed `bin64/NativeGrid.asi` hash and confirm it matches the package receipt.
-3. Import the ZIP through DMM. If ZIP import is unavailable, extract it outside the game directory and use DMM's ASI folder import on the `NativeGrid` folder.
+3. Open **Mods**, select **Import**, and choose `NativeGrid-r41-DMM.zip`. Then open **ASI Mods**. The **Install ASI Mod** picker is for individual plugin files.
 4. Check the **ASI Mods** library for one managed NativeGrid entry. Enable that entry. Confirm that the deployed `bin64/NativeGrid.asi` hash still matches the receipt. If DMM reports an ownership conflict or a duplicate entry, stop before deleting either copy.
 5. Keep the existing single ASI loader and its configuration. The ZIP deliberately includes neither `winmm.dll` nor `winmm.ini`. Do not add a second loader.
 6. Launch the game and inspect the existing runtime log. Check the working layouts before adding other mods.
@@ -32,6 +32,14 @@ The repository workflow requires authorization before changing the game installa
 Import or enablement can deploy files immediately. Do not perform either while the game runs. The standalone plugin is already named `NativeGrid.asi`; migration must leave one deployed copy, with the DMM library holding the managed source.
 
 After migration, use DMM to disable or update NativeGrid. The standalone installer owns the shared loader and refuses other ASIs. Do not use its uninstall action to remove just NativeGrid from a DMM-managed setup.
+
+## Verified migration checkpoint
+
+The local revision 41 migration used DMM 4.6.0 with the game closed and archive mods unmounted. DMM imported all four ZIP entries into `mods/NativeGrid`. Disabling NativeGrid removed the deployed ASI while retaining the library copy. Re-enabling restored the exact plugin and persisted `activeAsiMods: ["NativeGrid"]`.
+
+The deployed ASI SHA-256 remains `02621114dcb317cdb4724dd4a8b71095fa16d2a7b96eeb08b8622d744848b3e9`. Both `winmm.dll` and `winmm.ini` match the prior installation. There is one deployed NativeGrid ASI, one loader, and no `DmmRuntime.asi`. DMM shows **1 active of 1 plugin** and **NOT MOUNTED**.
+
+The pre-migration files and before/after DMM configuration are preserved locally under `build/rollback/dmm-migration-18031ee46455421197bf41b8c78294e7`. The original `build/comrades-41-validated-tree` package remains intact. This checkpoint verifies DMM management and deployed bytes; it does not record a new game launch.
 
 ## Check other DMM mods separately
 
