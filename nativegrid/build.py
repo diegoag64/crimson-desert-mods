@@ -40,7 +40,7 @@ def output_directory(path, game=None):
 
 def build(game, output, gcc, experimental_shop=False, experimental_refinement=False, experimental_crafting=False,
           experimental_extraction=False, experimental_buy_labels=False, experimental_extraction_scroll=False, experimental_crafting_icons=False,
-          experimental_shop_counts=False):
+          experimental_shop_counts=False, experimental_comrades=False):
     from .archive import Pamt, decrypt
     import lz4.block
 
@@ -48,6 +48,12 @@ def build(game, output, gcc, experimental_shop=False, experimental_refinement=Fa
     matches = [record for record in SUPPORTED_BUILDS if record['exe_sha256'] == exe_hash]
     require(len(matches) == 1, 'Unsupported or ambiguous executable fingerprint')
     support = matches[0]
+    require(not experimental_comrades or experimental_shop_counts,
+            'Comrades grid must preserve revision 38: add --experimental-shop-counts')
+    comrades_pins = support.get('comrades_revisions', {}).get('39', {}) if experimental_comrades else {}
+    if experimental_comrades:
+        from .comrades import COMRADES_PATHS, transform as comrades_transform
+        require(set(comrades_pins) == set(COMRADES_PATHS), 'No audited comrades assets for this game build')
     require(not experimental_shop_counts or experimental_crafting_icons,
             'Shop count repair must preserve revision 36: add --experimental-crafting-icons')
     shop_counts = support.get('shop_count_runtime_revisions', {}).get('37') if experimental_shop_counts else None
@@ -128,12 +134,14 @@ def build(game, output, gcc, experimental_shop=False, experimental_refinement=Fa
     paths += list(refinement_pins)
     paths += list(crafting_pins)
     paths += list(extraction_pins)
+    paths += list(comrades_pins)
     pins = dict(support['shop_assets'] if experimental_shop else support['assets'])
     pins.update(sell_pins)
     pins.update(refinement_pins)
     pins.update(crafting_pins)
     pins.update(extraction_pins)
     pins.update(label_pins)
+    pins.update(comrades_pins)
     if experimental_shop_counts:
         count_assets = support.get('shop_count_assets_revisions', {}).get('38', {})
         require(set(count_assets) == {'ui/xml/gamemain/title/itemicon.css'},
@@ -175,6 +183,9 @@ def build(game, output, gcc, experimental_shop=False, experimental_refinement=Fa
         if path in label_pins:
             after = label_transform(path, after)
             require(len(after) == len(before), 'Buy-label asset must support fixed-buffer reads: ' + path)
+        if path in comrades_pins:
+            after = comrades_transform(path, before)
+            require(len(after) == len(before), 'Comrades asset must support fixed-buffer reads: ' + path)
         require(hashlib.sha256(after).hexdigest() == pins[path]['replacement_sha256'], 'Transform differs from pinned replacement: ' + path)
         payloads.append((path, before, after))
         records.append(dict(path=path, size=len(before), replacement_size=len(after),
@@ -200,6 +211,8 @@ def build(game, output, gcc, experimental_shop=False, experimental_refinement=Fa
         revision = 36
     if experimental_shop_counts:
         revision = 38
+    if experimental_comrades:
+        revision = 39
     manifest = dict(schema=1, revision=revision, experimental_shop=experimental_shop,
                     status='built_not_installed', game_build=support['game_build'],
                     exe_sha256=support['exe_sha256'], master_sha256=support['master_sha256'], pamt_sha256=support['pamt_sha256'],
@@ -251,6 +264,11 @@ def build(game, output, gcc, experimental_shop=False, experimental_refinement=Fa
         manifest.update(experimental_shop_counts=True, shop_count_runtime=shop_counts,
                         shop_count_translation_reset=True)
         (output / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
+    if experimental_comrades:
+        manifest.update(experimental_comrades=True, comrades_columns=5, comrades_rows=3,
+                        comrades_tile_width=124, comrades_tile_height=108,
+                        comrades_status='experimental_no_live_validation')
+        (output / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
     print(f'Built revision {manifest["revision"]}: {len(payloads)} exact-validated payloads; {len(results)} fixture suites passed. {output}')
     return manifest
 
@@ -271,6 +289,7 @@ def main():
     parser.add_argument('--experimental-extraction-scroll', action='store_true', help='Align Extraction scrollbar to its viewport; requires --experimental-buy-labels')
     parser.add_argument('--experimental-crafting-icons', action='store_true', help='Repair empty Crafting image rectangles through audited native layout helpers')
     parser.add_argument('--experimental-shop-counts', action='store_true', help='Clear stale requirement line height from reused buy-card stock labels')
+    parser.add_argument('--experimental-comrades', action='store_true', help='Include experimental 5 by 3 portrait/name comrades grid; requires --experimental-shop-counts')
     args = parser.parse_args()
     require(args.test_only or args.game is not None, '--game is required unless --test-only is used')
     gcc = shutil.which(args.gcc)
@@ -282,7 +301,8 @@ def main():
     else:
         build(args.game.resolve(), output, gcc, args.experimental_shop, args.experimental_refinement,
               args.experimental_crafting, args.experimental_extraction, args.experimental_buy_labels,
-              args.experimental_extraction_scroll, args.experimental_crafting_icons, args.experimental_shop_counts)
+              args.experimental_extraction_scroll, args.experimental_crafting_icons, args.experimental_shop_counts,
+              args.experimental_comrades)
 
 
 if __name__ == '__main__':

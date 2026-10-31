@@ -93,3 +93,9 @@
 !/nativegrid/runtime/native_grid_shop_counts.h
 !/nativegrid/fixtures/shop_counts_fixture.c
 !/tests/test_shop_counts.py
+
+!/nativegrid/comrades.py
+
+!/nativegrid/comrades_grid.css
+
+!/tests/test_comrades.py

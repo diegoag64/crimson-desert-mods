@@ -411,3 +411,15 @@ The package changes one rule in one 92,099-byte stylesheet. The other 23 payload
 The CSS regression checks the delivered class aliases, normal and requirement specificity through repeated state transitions, fixed delivery size, and exclusion of owned counts and unrelated classes. This is a stylesheet-resolution check, not an execution of the game's renderer. Ten native suites, 51 Python tests, and the installer fixtures pass. After installation, the user confirmed that revision 38 resolves the reported visible shop-number misalignment. The installed package hash matches, and its runtime log records the stock line-height repair. This confirmation is separate from the offline tests.
 
 For future pooled-state failures, compare matched properties, derived caches, and final rendered offsets. An absent map entry can coexist with a stale cache. Give both states explicit values when a reusable element changes its transform. Avoid compensating by moving the price or count container, because their captured boxes were already correct.
+
+## Manage Comrades uses a grid controller beneath its list appearance
+
+The revision 38 live hierarchy on build `26345091` identifies `MercenaryManagementBody` as the active document. `MercenaryList` uses `Pet.MercenaryList`, whose compiled attributes already bind the grid panel, thumb, and track. It is configured for one column and four rows, with `Pet.MercenaryManagementListItem` and `Pet.EmptySlotIcon` as its native card components. The list owner retains `IsFocusSave=True` and `SendEventInsteadAutoFocus=true`.
+
+The captured viewport is 650 by 345 CSS pixels. Existing cards are 650 by 84 pixels. Their hover and focus layers resolve to the card bounds, so they do not need new native effects. The portrait binding supplies a 100-pixel texture inside an oversized 170-pixel horizontal wrapper. The name sits in a 280-pixel wrapper, and occupation text sits to its right. Increasing columns alone would reproduce the earlier shop overlap problem.
+
+Revision 39 changes the native dimensions and these card wrappers together. Five 130-pixel horizontal pitches fill the viewport. Three 112-pixel vertical pitches fit its height. The face wrapper is centered above a 116-pixel name row. The visible card contains the native face and name; assignment text and oversized assignment marks are hidden without removing their native elements or handlers. The existing disabled-action overlay follows the new card dimensions.
+
+Keep these changes in the management document. The shared Pet component library also serves horses, pets, shops, and other mercenary lists. Editing its general card sizes would affect those menus. The source and compiled list guards deliberately match the management item component and complete attribute sequence. Other list dimensions and the details panel are preserved.
+
+The initial layout and frame behavior were inspected read-only in the active process. Revision 39's new appearance has not yet been observed in game. Verify first-open portraits, names, selection, hover, and the final partial row after installation before promoting it to a working checkpoint.

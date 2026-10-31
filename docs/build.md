@@ -119,3 +119,15 @@ Revision 37 adds no asset transform or layout detour. It adds a scoped preparati
 Revision 37 passed ten native suites, 50 Python checks, and the installer fixtures, but failed the live scrolling check. It removed the stale line height while leaving a separate cached translation. Preserve that package and its evidence.
 
 Revision 38 adds an explicit zero translation for normal stock labels. The two-class requirement rule retains its existing offset. A separate `shop_count_assets_revisions.38` record pins the changed stylesheet. The other 23 payloads and every native method pin remain unchanged. Builds without the count flag retain the previous stylesheet and pins. The revision 38 package passes ten native suites, 51 Python checks, and the installer fixtures. Its visible scrolling behavior still needs a live check.
+
+## Build the Manage Comrades portrait grid
+
+On build `26345091`, append `--experimental-comrades` to the revision 38 command and choose a new output directory, such as `build/comrades-39-portrait-grid`. The new option requires `--experimental-shop-counts` to preserve the user-confirmed shop correction. Omitting it retains revision 38.
+
+Revision 39 adds three exact-sized replacements: `mercenarymanagementpanel_game.uibinary`, `mercenarymanagementpanel.html`, and `mercenarymanagementpanel.css`. The compatibility record pins each original and replacement hash under `comrades_revisions.39`. The compiled transform changes only the management list's column and row bytes. The source transform supplies the same dimensions on `MercenaryList`. Ship-station and crew-selection list attributes remain unchanged.
+
+The document-local stylesheet creates five columns and three visible rows. Each card is 124 by 108 pixels, with a 130-by-112-pixel pitch. Portraits retain the native texture binding and 100-pixel image size. Names use a centered row beneath the portrait. Occupation text and large assignment marks are hidden; native disabled shading, selection, and hover behavior remain. Shared Pet templates and stylesheets are not replaced.
+
+Five unused decoration rules are removed to fit the stylesheet's original 5,062-byte buffer. The compiled transform rejects the build if any corresponding ID appears. The final stylesheet has 419 padding bytes. The original three asset sizes and all 24 revision 38 payloads remain unchanged. No new native hook is added.
+
+The package passes ten native suites, 55 Python checks, and the installer fixtures. These checks establish transform scope, native-binding preservation, capacity, and compatibility guards. They do not establish live scrolling or portrait rendering. The comrades grid remains experimental pending installation and a live check.

@@ -10,7 +10,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\NativeGrid.ps1 -Acti
 
 Verification checks the package hashes, supported game pins, and existing owned files. It writes nothing to the game. Conflicting files stop the operation.
 
-Revision 15 through 38 shop packages also require the pinned English localization index, `0020/0.pamt`. This is a read-only compatibility check. Installation still changes only the three files listed below. Revisions 15 and 17 failed live loading tests. Revisions 16 and 18 through 23 loaded and displayed icons-only requirements, but spacing remained unresolved. Revision 24 uses a direct container selector after live inspection proved that revision 23's descendant selector could not match. The user confirmed revision 24's spacing fix in the live shop. Preserve `build/shop-24-live-container-translation` as the working shop checkpoint. Preserve revision 23 and its installation rollback journal, and retain revision 16 as an earlier checkpoint.
+Revision 15 through 39 shop packages also require the pinned English localization index, `0020/0.pamt`. This is a read-only compatibility check. Installation still changes only the three files listed below. Revisions 15 and 17 failed live loading tests. Revisions 16 and 18 through 23 loaded and displayed icons-only requirements, but spacing remained unresolved. Revision 24 uses a direct container selector after live inspection proved that revision 23's descendant selector could not match. The user confirmed revision 24's spacing fix in the live shop. Preserve `build/shop-24-live-container-translation` as the working shop checkpoint. Preserve revision 23 and its installation rollback journal, and retain revision 16 as an earlier checkpoint.
 
 ## Install a package
 
@@ -93,3 +93,9 @@ Revision 38 is prepared in `build/shop-38-count-translation`. After the user aut
 The reset changes only the shop stock-label stylesheet. Check ordinary stock quantities after scrolling in both directions through rows that contain requirement items. Confirm that requirement icons retain their spacing and that prices, stock, and owned counts remain on their respective rows. Offline tests and runtime log messages do not establish this visible result.
 
 Revision 38 is installed and its ASI hash matches the package: `7315a9cf1675efc4e3c2aed61d7d3817a8a3016cb57520ecfa9b638b6ff71246`. The user confirmed that the shop numbers now look correct after testing. The active runtime records stock line-height repairs. Preserve `build/shop-38-count-translation` as the working shop checkpoint. Its installation preserved revision 37 under `build/rollback/rollback-1a58f705f50640d999d8335d7e459ba3`. This confirms the reported shop issue, not every shop or game build.
+
+## Install the Manage Comrades grid
+
+Revision 39 is prepared in `build/comrades-39-portrait-grid`. After the user authorizes installation and exits the game, use that package as `-Package` and `build/shop-38-count-translation` as `-PreviousPackage`. Keep DMM unmounted. Preserve revision 38 and the transaction journal as the working rollback checkpoint.
+
+After the user's next launch, inspect the package runtime log for successful replacement of the three `mercenarymanagementpanel` assets. Confirm five portrait-and-name cards per row, centered short names, fitted hover and selection borders, and scrolling through the last partial row. Select different comrades to verify that the details panel still follows selection. Do not dispatch, dismiss, equip, or otherwise change comrades merely to test layout. Follow the user's input-control restrictions. Runtime replacement messages alone do not establish visible success.

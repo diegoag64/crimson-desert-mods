@@ -338,5 +338,21 @@
         "replacement_sha256": "8d148f57064eb748145bd80f553ea5f86160773fafb345618dc5faba0d9314e0"
       }
     }
+  },
+  "comrades_revisions": {
+    "39": {
+      "ui/bin__/mercenarymanagementpanel_game.uibinary": {
+        "original_sha256": "e62d53d70910935811fef85aaa6e6caabaab0ba0c742590f95ae8ca3b472b0c7",
+        "replacement_sha256": "cfd76c063576a0fa446d29a4509b2aae53735863c55d0e9c662c20aa0cd4d8f0"
+      },
+      "ui/xml/gamemain/play/mercenarymanagementpanel.html": {
+        "original_sha256": "dfb030489b8d3d55f5ce45d5096015362b77dea7981dd00f12c6dbcace0b7906",
+        "replacement_sha256": "6dca800a0848a96c9749583f75c06dfd4e4c9ded6ab47bc250b2d65816c27d3d"
+      },
+      "ui/xml/gamemain/play/mercenarymanagementpanel.css": {
+        "original_sha256": "7a7a0fe90c98f95f76df30d84610369e87da31fb96127238d6ebe573cc793b31",
+        "replacement_sha256": "ab48a2866b70ce836d79211697a8437d7542b658c5530cc83ade6783e4d939ee"
+      }
+    }
   }
 }

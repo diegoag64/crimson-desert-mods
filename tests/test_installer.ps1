@@ -400,3 +400,34 @@ $candidate.crafting_nested_layout = $false
 Assert-Throws { Invoke-WrapperVerify } 'revision 38 retains nested Crafting guard'
 $candidate.crafting_nested_layout = $true
 Invoke-WrapperVerify
+
+# Revision 39 adds three exact-sized comrades assets and keeps all 38 guards.
+$candidate.revision = 39
+Assert-Throws { Invoke-WrapperVerify } 'revision 39 requires explicit comrades flag'
+$candidate | Add-Member -NotePropertyMembers @{
+    experimental_comrades=$true; comrades_columns=5; comrades_rows=3
+    comrades_tile_width=124; comrades_tile_height=108
+}
+Assert-Throws { Invoke-WrapperVerify } 'revision 39 rejects missing comrades assets'
+$candidate.payloads += @($updated.comrades_revisions.'39'.PSObject.Properties | ForEach-Object {
+    [pscustomobject]@{path=$_.Name; original_sha256=$_.Value.original_sha256; replacement_sha256=$_.Value.replacement_sha256; size=100; replacement_size=100}
+})
+Invoke-WrapperVerify
+Write-Output 'PASS: revision 39 accepts comrades cards and preserved revision 38'
+$candidate.comrades_columns = 1
+Assert-Throws { Invoke-WrapperVerify } 'revision 39 rejects list dimensions'
+$candidate.comrades_columns = 5
+foreach ($pin in $updated.comrades_revisions.'39'.PSObject.Properties) {
+    $payload = @($candidate.payloads | Where-Object path -CEQ $pin.Name)[0]
+    $saved = $payload.replacement_sha256
+    $payload.replacement_sha256 = 'wrong'
+    Assert-Throws { Invoke-WrapperVerify } "revision 39 rejects changed comrades asset $($pin.Name)"
+    $payload.replacement_sha256 = $saved
+    $payload.replacement_size++
+    Assert-Throws { Invoke-WrapperVerify } "revision 39 rejects resized comrades asset $($pin.Name)"
+    $payload.replacement_size--
+}
+$candidate.shop_count_translation_reset = $false
+Assert-Throws { Invoke-WrapperVerify } 'revision 39 retains working shop-count reset'
+$candidate.shop_count_translation_reset = $true
+Invoke-WrapperVerify
